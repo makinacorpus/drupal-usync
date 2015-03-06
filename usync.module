@@ -1,0 +1,108 @@
+<?php
+/**
+ * @file
+ * µSync module.
+ */
+
+use USync\Config;
+use USync\Context;
+use USync\FieldHelper;
+use USync\FieldInstanceHelper;
+use USync\NodeHelper;
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * Load compatibility layer with other modules.
+ */
+require_once __DIR__ . '/usync.compat.inc';
+
+/**
+ * Implements hook_init().
+ */
+function usync_init() {
+  // usync_import_yaml(DRUPAL_ROOT . '/' . drupal_get_path('module', 'usync') . '/sample/sample.yml');
+  $discovery = new \USync\Discovery\PathDiscovery();
+  usync($discovery->discover(__DIR__ . '/sample/reallife', '*.yml', new \USync\Discovery\YamlParser()));
+}
+
+/**
+ * Do sync.
+ *
+ * @param \USync\Config $config
+ *   System configuration.
+ */
+function usync(Config $config) {
+  $tx = null;
+
+  try {
+    $tx = db_transaction();
+
+    $instanceHelper = new FieldInstanceHelper();
+    $fieldHelper    = new FieldHelper($instanceHelper);
+    $nodeHelper     = new NodeHelper($fieldHelper);
+
+    // Content types first.
+    // @todo Fetch a map of used fields.
+
+    // Always process fields first.
+    // @todo Do not import non used fields.
+
+    if ($section = $config->getSection('field')) {
+      $fieldHelper->processSection($section);
+    }
+
+    if ($section = $config->getSection('entity.node')) {
+      $nodeHelper->processSection($section);
+    }
+
+    unset($tx); // Explicit commit.
+
+  } catch (\Exception $e) {
+    if ($tx) {
+      try {
+        $tx->rollback();
+      } catch (Exception $e2) {}
+    }
+
+    drupal_set_message($e->getMessage(), 'error');
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Sync configuration from the given PHP file.
+ *
+ * @param string $path
+ *   File path.
+ * @param \USync\Config $config
+ *   Configuration for synchronisation.
+ */
+function usync_import_php($path) {
+
+  if (!$config = @include $path) {
+    trigger_error(sprintf("File not found or not readable: %s", $path), E_USER_ERROR);
+    return false;
+  }
+
+  return usync(new Config($config));
+}
+
+/**
+ * Sync configuration from the given PHP file.
+ *
+ * @param string $path
+ *   File path.
+ */
+function usync_import_yaml($path) {
+
+  if (!file_exists($path)) {
+    trigger_error(sprintf("Unable to find file: %s", $path), E_USER_ERROR);
+    return false;
+  }
+
+
+
+  return usync(new Config($config));
+}

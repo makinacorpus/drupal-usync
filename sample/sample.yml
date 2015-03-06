@@ -1,0 +1,108 @@
+# A global options section may be set to force a few behaviors of the
+# importer, such as the tolerated error level.
+options:
+
+  # Error levels are the following:
+  #  - 'warning': break on first warning
+  #  - 'dataloss': break when data will be lost during update
+  #  - 'error': break on existing objects inconsistency
+  #  - 'force': break only on critical errors, force everything else
+  # When errors are raised and the process breaks, transaction operations will
+  # be rollbacked, but be aware that your DBMS might not support DDL operations
+  # rollback such as CREATE TABLE or DROP TABLE, which will eventually lead to
+  # data loss.
+  break_on: dataloss
+
+# Fields description: each key is the field name whereas values are always
+# a key/value map of properties. Those properties as the exact same that
+# you would add into the Drupal field array structure prior to update or
+# save; You can even add further key for pure storage purpose. This map
+# is multidimensional and may contain sub-maps such as the "settings" one
+# which Drupal uses to store field configuration. The only mandatory key
+# is the "type" one which determines the field type.
+field:
+
+  s_image_small:
+    type: image
+    label: "The small image"
+    # Keep allows to you to keep some keys from the existing field and
+    # instances if exists, allowing modules that uses the field config
+    # as a storage for custom behavior management. You can set "all" as
+    # value here and the behavior will be to deeply merge the existing
+    # field config to this one, thus keeping customizations.
+    keep:
+      - properties
+    # On the opposite, drop behavior allows you to force some keys present
+    # in the field config array to be dropped, useful when other modules
+    # keep adding stuff that you don't want into the field config.
+    drop:
+      - some_other_property
+
+  s_image_big:
+    inherit: s_image_small
+    label: "The big image"
+    keep: all
+
+  s_text:
+    inherit: s_image_big
+    type: text_with_summary
+    label: "The text"
+
+# Entities description.
+entity:
+  node:
+
+    # Sample node type, key is the type name and values are various items
+    # you can find in the node_type table, all are optional, defaults are
+    # the same as the node_type_save() function, except a few internals
+    # that mark the type as being locked.
+    s_a:
+      name: "Sample A"
+
+      # A few other options are available; when not recognized by the module
+      # they will be passed along the extenders which may be able to treat it
+      # or not. In case of failure, a warning will be raised.
+      comment: false
+
+      # Fields are the fields, in form display order, this node type will
+      # have. Of course those fields must be defined in the "field" root
+      # section.
+      field:
+        - s_image_small
+        - s_image_big
+        - s_text
+
+      # View mode descrption, each view mode set here will be enabled, non
+      # existing view modes will be created by the module. Each view mode
+      # can be either an array which will carry field properties, 
+      view:
+
+        teaser:
+          # Each value is an existing field, if value is an array, then all
+          # values will be the formatter settings.
+          s_image_small:
+            type: image
+            image_style: thumbnail
+
+          # If value is a string, then it will be the formatter type name
+          # and default settings will be applied, no questions asked.
+          s_text: text_summary
+
+        # It can be a single string, which is supposed to be an existing view
+        # mode, it will then fully inherit from the given view mode settings.
+        intermediate:
+          inherit: teaser
+
+        # When you set the "true" value, the field will 
+        full:
+          s_image_big: default
+          s_text: default
+
+        # Some time, you may need to inherit from an existing view mode but
+        # change only a single field, you then have multiple possibilities:
+        # You first set the 'inherit' key to a view mode name, then you can
+        # define any new field, or override existing one. But you can also
+        # explicitely disable a field by setting its value to false.
+        full_no_image:
+          inherit: full
+          s_image_big: false

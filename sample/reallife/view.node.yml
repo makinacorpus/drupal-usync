@@ -1,0 +1,29 @@
+article:
+
+  teaser:
+    image_cover:
+      formatter: image
+      settings:
+        image_style: cover_teaser
+    abstract: true
+
+  full:
+    image_cover:
+      formatter: image
+      settings:
+        image_style: cover_full
+
+news:
+
+  teaser:
+    image_cover:
+      formatter: image
+      settings:
+        image_style: cover_teaser
+    abstract: true
+
+  full:
+    image_cover:
+      formatter: image
+      settings:
+        image_style: cover_full

@@ -1,0 +1,4 @@
+name = µSync
+description = Simple entity synchronisation helper.
+core = 7.x
+autoload[psr-0][USync] = src

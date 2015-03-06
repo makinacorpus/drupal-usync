@@ -1,0 +1,11 @@
+article:
+  field:
+    image_cover: default
+    text: default
+
+news:
+  field:
+    image_cover: default
+    image_gallery: default
+    abstract: default
+    text: default

@@ -1,0 +1,31 @@
+image_cover:
+  name: "Cover image"
+  cardinality: 1
+  type: image
+  instance:
+    settings:
+      alt_field: 1
+      title_field: 1
+
+image_gallery:
+  inherit: image_cover
+  name: "Gallery"
+  cardinality: -1
+
+abstract:
+  name: "Abstract for lists"
+  type: text_long
+  widget:
+    type: text_textarea
+    settings:
+  instance:
+    settings:
+      text_processing: 1
+
+text:
+  name: "Text"
+  type: paragraph
+  instance:
+    settings:
+      required_title: true
+      in_accordion: false
