@@ -1,12 +1,12 @@
 <?php
 
-namespace USync\Discovery;
+namespace USync\Parsing;
 
 interface ParserInterface
 {
     /**
      * From given blob parse data and return a nice formatted array for
-     * usage with the Config class
+     * usage with the Node class
      *
      * @param string $filename
      */

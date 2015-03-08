@@ -1,6 +1,8 @@
 <?php
 
-namespace USync\Discovery;
+namespace USync\Parsing;
+
+use USync\AST\Node;
 
 class PhpParser implements ParserInterface
 {
@@ -12,6 +14,6 @@ class PhpParser implements ParserInterface
             throw new \InvalidArgumentException("Given data is not valid PHP");
         }
 
-        return $ret;
+        $ret;
     }
 }

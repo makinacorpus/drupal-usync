@@ -1,9 +1,8 @@
 <?php
 
-namespace USync\Discovery;
+namespace USync\Parsing;
 
-use USync\Config;
-use USync\USync;
+use USync\AST\Node;
 
 class PathDiscovery
 {
@@ -30,6 +29,6 @@ class PathDiscovery
             $current = $additions;
         }
 
-        return new Config($data);
+        return Node::createNode($data);
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
-namespace USync\Discovery;
+namespace USync\Parsing;
+
+use USync\AST\Node;
 
 use Symfony\Component\Yaml\Yaml;
 
