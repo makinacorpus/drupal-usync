@@ -2,6 +2,8 @@
 
 namespace USync;
 
+use USync\AST\Node;
+
 class Context
 {
     /**
@@ -37,16 +39,23 @@ class Context
     protected $runner;
 
     /**
-     * Get runner
-     *
-     * @return \USync\Runner
+     * @var \USync\AST\Node
      */
-    public function getRunner()
+    protected $graph;
+
+    public function __construct(Node $graph)
     {
-        if (null === $this->runner) {
-            $this->runner = new Runner($this);
-        }
-        return $this->runner;
+        $this->graph = $graph;
+    }
+
+    /**
+     * Get current config graph
+     *
+     * @return \USync\AST\Node
+     */
+    public function getGraph()
+    {
+        return $this->graph;
     }
 
     /**

@@ -6,6 +6,11 @@ use USync\AST\Node;
 
 class PhpParser implements ParserInterface
 {
+    public function getFileExtensions()
+    {
+        return array('php');
+    }
+
     public function parse($filename)
     {
         $ret = @include $filename;

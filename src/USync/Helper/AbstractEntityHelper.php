@@ -43,7 +43,7 @@ abstract class AbstractEntityHelper extends AbstractHelper
                     // @todo
                 } else {
                     $this
-                        ->getContext()
+                        ->context
                         ->getRunner()
                         ->processObject(
                             $path . Path::SEP . $key,

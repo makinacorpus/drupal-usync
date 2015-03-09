@@ -6,11 +6,20 @@ use USync\AST\Node;
 
 class PathDiscovery
 {
-    static public function discover($path, $pattern = '*', ParserInterface $parser)
+    static public function discover($path, ParserInterface $parser)
     {
         $data = array();
 
-        foreach (glob($path . '/' . $pattern) as $filename) {
+        $ext = $parser->getFileExtensions();
+        if (empty($ext)) {
+            $pattern = '*';
+        } else if (1 === count($ext)) {
+            $pattern = '*.' . $ext;
+        } else {
+            $pattern = '*.{' . implode(',', $ext) . '}';
+        }
+
+        foreach (glob($path . '/' . $pattern, GLOB_BRACE | GLOB_NOESCAPE) as $filename) {
 
             $additions = $parser->parse($filename);
 

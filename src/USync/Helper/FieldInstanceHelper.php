@@ -54,7 +54,7 @@ class FieldInstanceHelper extends AbstractHelper
         if ($existing = field_info_instance($entityType, $fieldName, $bundle)) {
             return $existing;
         }
-        $this->getContext()->logCritical(sprintf("%s does not exists", $path));
+        $this->context->logCritical(sprintf("%s does not exists", $path));
     }
 
     public function deleteExistingObject($path)
@@ -63,7 +63,7 @@ class FieldInstanceHelper extends AbstractHelper
         $existing = field_info_instance($entityType, $fieldName, $bundle);
 
         if ($existing) {
-            $this->getContext()->logWarning(sprintf("%s does not exists", $path));
+            $this->context->logWarning(sprintf("%s does not exists", $path));
             return false;
         }
 

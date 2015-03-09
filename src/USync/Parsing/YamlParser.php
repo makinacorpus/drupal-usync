@@ -8,6 +8,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class YamlParser implements ParserInterface
 {
+    public function getFileExtensions()
+    {
+        return array('yml', 'yaml');
+    }
+
     public function parse($filename)
     {
         if (!class_exists('\Symfony\Yaml\Yaml')) {

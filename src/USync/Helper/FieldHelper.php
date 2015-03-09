@@ -75,7 +75,7 @@ class FieldHelper extends AbstractHelper
         if ($info = field_info_field($name)) {
             return $info;
         }
-        $this->getContext()->logCritical(sprintf("%s does not exist", $path));
+        $this->context->logCritical(sprintf("%s does not exist", $path));
     }
 
     public function deleteExistingObject($path)
@@ -84,7 +84,7 @@ class FieldHelper extends AbstractHelper
         $field = $this->getExistingObject($name);
 
         if (!$field) {
-            $this->getContext()->log(sprintf("%s does not exists", $name), E_USER_WARNING);
+            $this->context->log(sprintf("%s does not exists", $name), E_USER_WARNING);
             return false;
         }
 
@@ -101,10 +101,8 @@ class FieldHelper extends AbstractHelper
 
     public function synchronize($path, array $object)
     {
-        $context = $this->getContext();
-
         if (!isset($object['type'])) {
-            $context->logCritical(sprintf("%s has no type", $path));
+            $this->context->logCritical(sprintf("%s has no type", $path));
         }
 
         $name = $this->getLastPathSegment($path);
@@ -112,7 +110,7 @@ class FieldHelper extends AbstractHelper
         $typeInfo = field_info_field_types($type);
 
         if (empty($typeInfo)) {
-            $context->logCritical(sprintf("%s: type %s does not exist", $name, $type));
+            $this->context->logCritical(sprintf("%s: type %s does not exist", $name, $type));
         }
 
         if ($this->exists($path)) {
@@ -121,13 +119,18 @@ class FieldHelper extends AbstractHelper
             $existing = null;
         }
 
+        // Instance only defines the instance default values, we don't care
+        // much about those when installing the field however we will use it
+        // when synchronizing the instance itself
+        unset($object['instance']);
+
         $object['field_name'] = $name;
         if (empty($object['cardinality'])) {
             $object['cardinality'] = 1;
         }
 
         if ($existing) {
-            $context->log(sprintf("%s: field exists", $name));
+            $this->context->log(sprintf("%s: field exists", $name));
 
             $doDelete = false;
             $eType = $existing['type'];
@@ -136,13 +139,13 @@ class FieldHelper extends AbstractHelper
             $cardinality = $object['cardinality'] - $existing['cardinality'];
             if (0 !== $cardinality) {
                 if (0 < $cardinality) {
-                    $context->log(sprintf("%s: safe cardinality change", $name));
+                    $this->context->log(sprintf("%s: safe cardinality change", $name));
                 } else {
                     // @todo Ensure there is data we can save in field
                     if (false) {
-                        $context->log(sprintf("%s: safe cardinality change due to data shape", $name));
+                        $this->context->log(sprintf("%s: safe cardinality change due to data shape", $name));
                     } else {
-                        $context->logDataloss(sprintf("%s: unsafe cardinality change", $name));
+                        $this->context->logDataloss(sprintf("%s: unsafe cardinality change", $name));
                     }
                 }
             }
@@ -153,17 +156,17 @@ class FieldHelper extends AbstractHelper
                 $instances = $this->getInstances($name);
 
                 if (empty($instances)) {
-                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $name, $type, $eType));
+                    $this->context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $name, $type, $eType));
                 } else {
                   // @todo Ensure there is data if there is instances
                   if (false) {
-                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $name, $type, $eType));
+                      $this->context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $name, $type, $eType));
                   } else {
                         // @todo Safe should ensure schema is the same
                         if (false) {
-                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $name, $type, $eType));
+                            $this->context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $name, $type, $eType));
                         } else {
-                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected - replace denied", $name, $type, $eType));
+                            $this->context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected - replace denied", $name, $type, $eType));
                         }
                     }
                 }

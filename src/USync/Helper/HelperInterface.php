@@ -2,13 +2,20 @@
 
 namespace USync\Helper;
 
-use USync\ContextAwareInterface;
+use \USync\Context;
 
 /**
  * What a helper needs to do.
  */
-interface HelperInterface extends ContextAwareInterface
+interface HelperInterface
 {
+    /**
+     * Set context
+     *
+     * @param \USync\Context $context
+     */
+    public function setContext(Context $context);
+
     /**
      * Get internal component type, used for hooks mostly
      *

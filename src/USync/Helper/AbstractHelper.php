@@ -2,12 +2,22 @@
 
 namespace USync\Helper;
 
-use USync\AbstractContextAware;
 use USync\AST\Node;
 use USync\AST\Path;
+use USync\Context;
 
-abstract class AbstractHelper extends AbstractContextAware implements HelperInterface
+abstract class AbstractHelper implements HelperInterface
 {
+    /**
+     * @var \USync\Context
+     */
+    protected $context;
+
+    public function setContext(Context $context)
+    {
+        $this->context = $context;
+    }
+
     /**
      * Helper function to get the key of a certain node.
      *
@@ -24,14 +34,14 @@ abstract class AbstractHelper extends AbstractContextAware implements HelperInte
     public function rename($path, $newpath, $force = false)
     {
         if (!$this->exists($path)) {
-            $this->getContext()->logCritical(sprintf("%s rename: does not exists", $path));
+            $this->context->logCritical(sprintf("%s rename: does not exists", $path));
         }
 
         if ($this->exists($newpath)) {
             if ($force) {
-                $this->getContext()->logWarning(sprintf("%s rename: %s already exists", $newpath, $path));
+                $this->context->logWarning(sprintf("%s rename: %s already exists", $newpath, $path));
             } else {
-                $this->getContext()->logError(sprintf("%s rename: %s already exists", $newpath, $path));
+                $this->context->logError(sprintf("%s rename: %s already exists", $newpath, $path));
             }
             $this->deleteExistingObject($path);
         }

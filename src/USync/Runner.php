@@ -3,20 +3,28 @@
 namespace USync;
 
 use USync\AST\Node;
+use USync\AST\InheritProcessor;
+use USync\AST\Visitor;
 use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
 use USync\Helper\HelperInterface;
 use USync\Helper\NodeEntityHelper;
-use USync\Parsing\Preprocessor;
 
-class Runner extends AbstractContextAware
+class Runner
 {
+    /**
+     * @var \USync\Helper\HelperInterface[]
+     */
     protected $helpers = array();
 
+    /**
+     * Default constructor
+     *
+     * @param \USync\Context $context
+     *   @todo This should move out
+     */
     public function __construct(Context $context)
     {
-        $this->setContext($context);
-
         // @todo Make this better
         // Content types first.
         // @todo Fetch a map of used fields.
@@ -35,8 +43,37 @@ class Runner extends AbstractContextAware
         );
     }
 
-    public function processObject($path, array $object, HelperInterface $helper)
+    /**
+     * Process the given node using the given helper
+     *
+     * @param Node $node
+     * @param HelperInterface $helper
+     */
+    public function processObject(Node $node, HelperInterface $helper, Context $context)
     {
+        $path = $node->getPath();
+        $object = $node->getValue();
+
+        // Deal with magic values first.
+        if (is_string($object)) {
+            switch ($object) {
+
+                case 'delete':
+                    if ($helper->exists($path)) {
+                        $helper->deleteExistingObject($path);
+                    }
+                    return;
+
+                // Any object marked as default will inherit from the Drupal
+                // defaults or any previous definition known only by helper:
+                // for example, any field instance set to default will inherit
+                // from label and widget defined at the field level
+                case 'default':
+                    $object = array();
+                    break;
+            }
+        }
+
         if ($helper->exists($path)) {
 
             $existing = $helper->getExistingObject($path);
@@ -52,7 +89,7 @@ class Runner extends AbstractContextAware
                         }
                     }
                 } else {
-                    $this->getContext()->logError(sprintf("%s malformed 'keep' property, must be 'all' or an array of string property names", $path));
+                    $context->logError(sprintf("%s malformed 'keep' property, must be 'all' or an array of string property names", $path));
                 }
             }
             if (!empty($object['drop'])) {
@@ -63,7 +100,7 @@ class Runner extends AbstractContextAware
                         }
                     }
                 } else {
-                    $this->getContext()->logError(sprintf("%s malformed 'drop' property, must be an array of string property names", $path));
+                    $context->logError(sprintf("%s malformed 'drop' property, must be an array of string property names", $path));
                 }
             }
         }
@@ -78,15 +115,16 @@ class Runner extends AbstractContextAware
      *
      * @param Config $config
      */
-    public function run(Node $config)
+    public function run(Node $config, Context $context)
     {
-        $preprocessor = new Preprocessor();
-        $preprocessor->setContext($this->getContext());
-        $preprocessor->execute($config);
+        $visitor = new Visitor();
+        $visitor->addProcessor(new InheritProcessor());
+        $visitor->execute($config, $context);
 
+        // @todo This should be a visitor to, but based upon pattern matching
         foreach ($this->helpers as $pattern => $helper) {
-            foreach ($config->find($pattern) as $path => $node) {
-                $helper->synchronize($path, $node->getValue());
+            foreach ($config->find($pattern) as $node) {
+                $this->processObject($node, $helper, $context);
             }
         }
     }

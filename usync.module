@@ -6,12 +6,12 @@
 
 use USync\AST\Node;
 use USync\Parsing\PathDiscovery;
-use USync\Parsing\Preprocessor;
 use USync\Parsing\YamlParser;
 use USync\Runner;
 
 use Symfony\Component\Yaml\Yaml;
 use USync\Context;
+use USync\USync;
 
 /**
  * Load compatibility layer with other modules.
@@ -24,23 +24,24 @@ require_once __DIR__ . '/usync.compat.inc';
 function usync_init() {
   // usync_import_yaml(DRUPAL_ROOT . '/' . drupal_get_path('module', 'usync') . '/sample/sample.yml');
   $discovery = new PathDiscovery();
-  usync($discovery->discover(__DIR__ . '/sample/reallife', '*.yml', new YamlParser()));
+  usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
 }
 
 /**
  * Do sync.
  *
- * @param \USync\Node $node
+ * @param \USync\Node $graph
  *   System configuration.
  */
-function usync(Node $node) {
+function usync(Node $graph) {
   $tx = null;
 
   try {
     $tx = db_transaction();
 
-    $context = new Context();
-    $context->getRunner()->run($node);
+    $context = new Context($graph);
+    $runner = new Runner($context);
+    $runner->run($context->getGraph(), $context);
 
     unset($tx); // Explicit commit.
 
