@@ -2,11 +2,6 @@
 
 namespace USync\AST;
 
-/**
- * @todo
- *   find() method should be removed from the Node class and implemented
- *   on this class instead
- */
 class Path
 {
     const SEP = '.';
