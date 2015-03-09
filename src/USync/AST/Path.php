@@ -2,6 +2,11 @@
 
 namespace USync\AST;
 
+/**
+ * @todo
+ *   find() method should be removed from the Node class and implemented
+ *   on this class instead
+ */
 class Path
 {
     const SEP = '.';
@@ -17,11 +22,6 @@ class Path
     protected $segments;
 
     /**
-     * @var int
-     */
-    protected $current = 0;
-
-    /**
      * Default constructor
      *
      * @param string $path
@@ -32,26 +32,37 @@ class Path
         $this->segments = explode(self::SEP, $path);
     }
 
-    public function next()
+    protected function _find(Node $node, array $segments)
     {
-        ++$this->current;
+        $ret = array();
 
-        return $this->current < count($this->segments);
+        $current = array_shift($segments);
+
+        if ('%' === $current || $node->getName() === $current) {
+            if (empty($segments)) {
+                $ret[$node->getPath()] = $node;
+            } else {
+                foreach ($node->getChildren() as $child) {
+                    $ret += $this->_find($child, $segments);
+                }
+            }
+        }
+
+        return $ret;
     }
 
-    public function matches(Node $node)
+    public function find(Node $node, $ignoreRoot = true)
     {
-        // @todo While node parent
-        throw new \Exception("Not implemented");
-    }
+        $ret = array();
 
-    public function getCurrent()
-    {
-        return $this->segments[$this->current];
-    }
+        if ($ignoreRoot && $node->isRoot()) {
+            foreach ($node->getChildren() as $child) {
+                $ret += $this->_find($child, $this->segments);
+            }
+        } else {
+            $ret = $this->_find($node, $this->segments);
+        }
 
-    public function matchesCurrent($key)
-    {
-        return '%' === $this->segments[$this->current] || $key === $this->segments[$this->current];
+        return $ret;
     }
 }

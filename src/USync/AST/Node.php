@@ -155,6 +155,16 @@ class Node
         return $this->parent;
     }
 
+    public function hasParent()
+    {
+        return !empty($this->parent);
+    }
+
+    public function isRoot()
+    {
+        return !$this->hasParent();
+    }
+
     public function getRoot()
     {
         if (null === $this->parent) {
@@ -194,28 +204,10 @@ class Node
 
     public function find($path)
     {
-        $ret = array();
-
         if (is_string($path)) {
             $path = new Path($path);
         }
 
-        $matches = array();
-
-        foreach ($this->children as $key => $node) {
-            if ($path->matchesCurrent($key)) {
-                $matches[$node->path] = $node;
-            }
-        }
-
-        if ($path->next()) {
-            foreach ($matches as $node) {
-                $ret += $node->find($path);
-            }
-        } else {
-            $ret += $matches;
-        }
-
-        return $ret;
+        return $path->find($this);
     }
 }
