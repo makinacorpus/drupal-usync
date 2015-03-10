@@ -64,9 +64,8 @@ function usync(Node $graph) {
   try {
     $tx = db_transaction();
 
-    $context = new Context($graph);
-    $runner = new Runner($context);
-    $runner->run($context->getGraph(), $context);
+    $runner = new Runner();
+    $runner->run(new Context($graph));
 
     unset($tx); // Explicit commit.
 

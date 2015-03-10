@@ -23,11 +23,8 @@ class Runner
 
     /**
      * Default constructor
-     *
-     * @param \USync\Context $context
-     *   @todo This should move out
      */
-    public function __construct(Context $context)
+    public function __construct()
     {
         // @todo Make this better
         // Content types first.
@@ -125,8 +122,10 @@ class Runner
      *
      * @param Config $config
      */
-    public function run(Node $config, Context $context)
+    public function run(Context $context)
     {
+        $config = $context->getGraph();
+
         $visitor = new Visitor();
         $visitor->addProcessor(new InheritProcessor());
         $visitor->execute($config, $context);
