@@ -46,14 +46,14 @@ abstract class AbstractHelper implements HelperInterface
     public function rename($path, $newpath, $force = false, Context $context)
     {
         if (!$this->exists($path, $context)) {
-            $context->logCritical(sprintf("%s rename: does not exists", $path));
+            $context->logCritical(sprintf("%s: rename: does not exists", $path));
         }
 
         if ($this->exists($newpath, $context)) {
             if ($force) {
-                $context->logWarning(sprintf("%s rename: %s already exists", $newpath, $path));
+                $context->logWarning(sprintf("%s: rename: %s already exists", $path, $newpath));
             } else {
-                $context->logError(sprintf("%s rename: %s already exists", $newpath, $path));
+                $context->logError(sprintf("%s: rename: %s already exists", $path, $newpath));
             }
             $this->deleteExistingObject($path, $context);
         }

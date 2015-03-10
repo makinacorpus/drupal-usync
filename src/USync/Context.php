@@ -66,7 +66,7 @@ class Context
      */
     final public function log($message, $level = E_USER_NOTICE)
     {
-        trigger_error(get_class($this) . ': ' . $message, $level);
+        trigger_error($message, $level);
     }
 
     /**

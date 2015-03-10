@@ -16,9 +16,13 @@ class Node
     static protected function _createNode($value, $name = 'root', Node $parent = null)
     {
         if (!is_array($value)) {
-            if (null === $value || true === $value || 'delete' === $value) {
+            if (null === $value) {
+                $node = new NullNode($name, $parent);
+            } else if (is_bool($value)) {
+                $node = new BooleanNode($name, $parent, $value);
+            } else if ('delete' === $value) {
                 $node = new DeleteNode($name, $parent);
-            } else if (true === $value || 'default' === $value) {
+            } else if ('default' === $value) {
                 $node = new DefaultNode($name, $parent);
             } else {
                 $node = new ValueNode($name, $parent, $value);

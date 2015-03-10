@@ -23,6 +23,7 @@ class InheritProcessor implements ProcessorInterface
     {
         $sorted = array();
         $orphans = array();
+        $path = $node->getPath();
 
         foreach ($node->getChildren() as $key => $child) {
 
@@ -30,13 +31,13 @@ class InheritProcessor implements ProcessorInterface
                 $parent = $child->getChild('inherit')->getValue();
 
                 if (!is_string($parent)) {
-                    $context->logCritical(sprintf("%s: malformed inherit directive", $key));
+                    $context->logCritical(sprintf("%s: %s: malformed inherit directive", $path, $key));
                 }
                 if (!$node->hasChild($parent)) {
-                    $context->logCritical(sprintf("%s: cannot inherit from non existing: %s", $key, $parent));
+                    $context->logCritical(sprintf("%s: %s: cannot inherit from non existing: %s", $path, $key, $parent));
                 }
                 if ($key === $parent) {
-                    $context->logCritical(sprintf("%s: cannot inherit from itself", $key));
+                    $context->logCritical(sprintf("%s: %s: cannot inherit from itself", $path, $key));
                 }
 
                 $orphans[$key] = $parent;
@@ -55,7 +56,7 @@ class InheritProcessor implements ProcessorInterface
                 }
             }
             if (count($orphans) === $count) {
-                $context->logCritical(sprintf("Circular dependency detected"));
+                $context->logCritical(sprintf("%s: circular dependency detected", $path));
             }
         }
 

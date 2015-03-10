@@ -44,8 +44,10 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    protected function getFieldDefault($name, $entityType, $bundle, $fieldName, Context $context)
+    protected function getFieldDefault($path, $entityType, $bundle, $fieldName, Context $context)
     {
+        list($entityType, $bundle, $name) = $this->getInstanceIdFromPath($path);
+
         $default = array(
             'type' => 'hidden',
             'label' => 'hidden',
@@ -64,7 +66,7 @@ class ViewModeHelper extends AbstractHelper
         if (!empty($field['default_formatter'])) {
             $formatter = $field['default_formatter'];
             if (!field_info_formatter_types($formatter)) {
-                $context->logWarning(sprintf("%s defines non existing default formatter: %s", $fieldName, $formatter));
+                $context->logWarning(sprintf("%s: field %s defines non existing default formatter: %s", $path, $fieldName, $formatter));
                 $formatter = null;
             }
         }
@@ -141,7 +143,7 @@ class ViewModeHelper extends AbstractHelper
                         continue;
                     }
                     if ($formatter !== true || $formatter !== 'default') {
-                        $context->logWarning(sprintf("%s extra field display can only be 'delete', ~, 'default' or true", $propertyName));
+                        $context->logWarning(sprintf("%s: %s extra field display can only be 'delete', ~, 'default' or true", $path, $propertyName));
                     }
                     // Fallback.
                     $formatter = array();
@@ -149,7 +151,7 @@ class ViewModeHelper extends AbstractHelper
 
                 // Merge default and save
                 $displayField[$propertyName] = drupal_array_merge_deep(
-                    $this->getFieldDefault($name, $entityType, $bundle, $propertyName, $context),
+                    $this->getFieldDefault($path, $entityType, $bundle, $propertyName, $context),
                     $formatter,
                     array('weight' => $weight++)
                 );
@@ -162,14 +164,14 @@ class ViewModeHelper extends AbstractHelper
                     continue;
                 }
                 if ($formatter !== true || $formatter !== 'default') {
-                    $context->logWarning(sprintf("%s extra field display can only be 'delete', ~, 'default' or true", $propertyName));
+                    $context->logWarning(sprintf("%s: %s extra field display can only be 'delete', ~, 'default' or true", $path, $propertyName));
                 }
 
                 // Merge default and save
                 $displayExtra[$propertyName] = array('visible' => true, 'weight' => $weight++);
 
             } else {
-                $context->logError(sprintf("%s property is nor a field nor an extra field", $propertyName));
+                $context->logError(sprintf("%s: %s property is nor a field nor an extra field", $path, $propertyName));
             }
         }
 

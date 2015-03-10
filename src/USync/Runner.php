@@ -2,17 +2,19 @@
 
 namespace USync;
 
-use USync\AST\Node;
+use USync\AST\BooleanNode;
+use USync\AST\DefaultNode;
+use USync\AST\DeleteNode;
 use USync\AST\InheritProcessor;
+use USync\AST\Node;
+use USync\AST\NullNode;
+use USync\AST\ValueNode;
 use USync\AST\Visitor;
 use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
 use USync\Helper\HelperInterface;
 use USync\Helper\NodeEntityHelper;
 use USync\Helper\ViewModeHelper;
-use USync\AST\DeleteNode;
-use USync\AST\DefaultNode;
-use USync\AST\ValueNode;
 
 class Runner
 {
@@ -53,12 +55,18 @@ class Runner
     {
         $path = $node->getPath();
 
-        if ($node instanceof DeleteNode) {
+        if ($node instanceof DeleteNode || $node instanceof NullNode) {
             $mode = 'delete';
         } else if ($node instanceof DefaultNode) {
             $mode = 'sync';
+        } else if ($node instanceof BooleanNode) {
+            if ($node->getValue()) {
+                $mode = 'sync';
+            } else {
+                $mode = 'delete';
+            }
         } else if ($node instanceof ValueNode) {
-            $context->logError(sprintf("%s invalid value type, ignoring", $path));
+            $context->logError(sprintf("%s: invalid value type, ignoring", $path));
             return;
         } else {
             $mode = 'sync';
@@ -94,7 +102,7 @@ class Runner
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s malformed 'keep' property, must be 'all' or an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $path));
                         }
                     }
                     if (!empty($object['drop'])) {
@@ -105,7 +113,7 @@ class Runner
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s malformed 'drop' property, must be an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $path));
                         }
                     }
                 }

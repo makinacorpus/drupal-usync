@@ -35,7 +35,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         );
 
         if (empty($info['name'])) {
-            $context->logWarning(sprintf('%s has no name', $bundle));
+            $context->logWarning(sprintf('%s: has no name', $path));
             $info['name'] = $bundle;
         }
 
@@ -53,7 +53,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle));
 
         if ($exists) {
-            $context->logDataloss(sprintf("%s node type has nodes"));
+            $context->logDataloss(sprintf("%s: node type has nodes", $path));
         }
 
         node_type_delete($bundle);
@@ -62,7 +62,7 @@ class NodeEntityHelper extends AbstractEntityHelper
     public function getExistingObject($path, Context $context)
     {
         if (!$this->exists($path, $context)) {
-            $context->logCritical(sprintf("%s node types does not exist"));
+            $context->logCritical(sprintf("%s: node type does not exist", $path));
         }
 
         return (array)node_type_load($this->getLastPathSegment($path));

@@ -77,16 +77,16 @@ class FieldHelper extends AbstractHelper
         if ($info = field_info_field($name)) {
             return $info;
         }
-        $context->logCritical(sprintf("%s does not exist", $path));
+        $context->logCritical(sprintf("%s: does not exist", $path));
     }
 
     public function deleteExistingObject($path, Context $context)
     {
         $name = $this->getLastPathSegment($path);
-        $field = $this->getExistingObject($name, $context);
+        $field = $this->getExistingObject($path, $context);
 
         if (!$field) {
-            $context->log(sprintf("%s does not exists", $name), E_USER_WARNING);
+            $context->log(sprintf("%s: does not exists", $path), E_USER_WARNING);
             return false;
         }
 
@@ -106,7 +106,7 @@ class FieldHelper extends AbstractHelper
     public function synchronize($path, array $object, Context $context)
     {
         if (!isset($object['type'])) {
-            $context->logCritical(sprintf("%s has no type", $path));
+            $context->logCritical(sprintf("%s: has no type", $path));
         }
 
         $name = $this->getLastPathSegment($path);
@@ -114,7 +114,7 @@ class FieldHelper extends AbstractHelper
         $typeInfo = field_info_field_types($type);
 
         if (empty($typeInfo)) {
-            $context->logCritical(sprintf("%s: type %s does not exist", $name, $type));
+            $context->logCritical(sprintf("%s: type %s does not exist", $path, $type));
         }
 
         if ($this->exists($path, $context)) {
@@ -134,7 +134,7 @@ class FieldHelper extends AbstractHelper
         }
 
         if ($existing) {
-            $context->log(sprintf("%s: field exists", $name));
+            $context->log(sprintf("%s: field exists", $path));
 
             $doDelete = false;
             $eType = $existing['type'];
@@ -143,13 +143,13 @@ class FieldHelper extends AbstractHelper
             $cardinality = $object['cardinality'] - $existing['cardinality'];
             if (0 !== $cardinality) {
                 if (0 < $cardinality) {
-                    $context->log(sprintf("%s: safe cardinality change", $name));
+                    $context->log(sprintf("%s: safe cardinality change", $path));
                 } else {
                     // @todo Ensure there is data we can save in field
                     if (false) {
-                        $context->log(sprintf("%s: safe cardinality change due to data shape", $name));
+                        $context->log(sprintf("%s: safe cardinality change due to data shape", $path));
                     } else {
-                        $context->logDataloss(sprintf("%s: unsafe cardinality change", $name));
+                        $context->logDataloss(sprintf("%s: unsafe cardinality change", $path));
                     }
                 }
             }
@@ -160,17 +160,17 @@ class FieldHelper extends AbstractHelper
                 $instances = $this->getInstances($name);
 
                 if (empty($instances)) {
-                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $name, $type, $eType));
+                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $path, $type, $eType));
                 } else {
                   // @todo Ensure there is data if there is instances
                   if (false) {
-                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $name, $type, $eType));
+                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $path, $type, $eType));
                   } else {
                         // @todo Safe should ensure schema is the same
                         if (false) {
-                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $name, $type, $eType));
+                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $path, $type, $eType));
                         } else {
-                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected - replace denied", $name, $type, $eType));
+                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected", $path, $type, $eType));
                         }
                     }
                 }

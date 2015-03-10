@@ -10,8 +10,6 @@ use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlParser;
 use USync\Runner;
 
-use Symfony\Component\Yaml\Yaml;
-
 /**
  * View mode variable nae.
  */
@@ -27,7 +25,7 @@ require_once __DIR__ . '/usync.compat.inc';
  */
 function usync_init() {
   $discovery = new PathDiscovery();
-  //usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
+  usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
 }
 
 /**
