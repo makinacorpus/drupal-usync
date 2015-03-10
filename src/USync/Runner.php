@@ -41,7 +41,7 @@ class Runner
             'field.%' => $fieldHelper,
             'entity.node.%' => $nodeHelper,
             'entity.%.%.field.%' => $instanceHelper,
-            // 'view.%.%.%' => $viewHelper, // @todo Unstable yet
+            'view.%.%.%' => $viewHelper,
         );
     }
 
@@ -75,6 +75,7 @@ class Runner
         switch ($mode) {
 
             case 'delete':
+                $context->log(sprintf(" - %s", $path));
                 if ($helper->exists($path, $context)) {
                     $helper->deleteExistingObject($path, $context);
                 }
@@ -88,6 +89,7 @@ class Runner
                 }
 
                 if ($helper->exists($path, $context)) {
+                    $context->log(sprintf(" ~ %s", $path));
 
                     $existing = $helper->getExistingObject($path, $context);
 
@@ -116,6 +118,8 @@ class Runner
                             $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $path));
                         }
                     }
+                } else {
+                    $context->log(sprintf(" + %s", $path));
                 }
 
                 unset($object['keep'], $object['drop']);

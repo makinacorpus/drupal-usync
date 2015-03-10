@@ -34,9 +34,8 @@ function drush_usync_run_test() {
     $discovery = new PathDiscovery();
     $graph = $discovery->discover(__DIR__ . '/sample/reallife', new YamlParser());
 
-    $context = new Context($graph);
-    $runner = new Runner($context);
-    $runner->run($context->getGraph(), $context);
+    $runner = new Runner();
+    $runner->run(new Context($graph));
 
     unset($tx); // Explicit commit.
 

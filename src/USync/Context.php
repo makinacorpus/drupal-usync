@@ -66,7 +66,15 @@ class Context
      */
     final public function log($message, $level = E_USER_NOTICE)
     {
-        trigger_error($message, $level);
+        switch ($level) {
+
+            case E_USER_NOTICE:
+                drupal_set_message($message);
+                break;
+
+            default:
+                trigger_error($message, $level);
+        }
     }
 
     /**

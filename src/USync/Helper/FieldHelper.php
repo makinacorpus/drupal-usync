@@ -86,7 +86,7 @@ class FieldHelper extends AbstractHelper
         $field = $this->getExistingObject($path, $context);
 
         if (!$field) {
-            $context->log(sprintf("%s: does not exists", $path), E_USER_WARNING);
+            $context->logWarning(sprintf("%s: does not exists", $path));
             return false;
         }
 
@@ -134,8 +134,6 @@ class FieldHelper extends AbstractHelper
         }
 
         if ($existing) {
-            $context->log(sprintf("%s: field exists", $path));
-
             $doDelete = false;
             $eType = $existing['type'];
 

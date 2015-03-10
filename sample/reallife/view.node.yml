@@ -2,28 +2,30 @@ article:
 
   teaser:
     image_cover:
-      formatter: image
+      type: image
       settings:
         image_style: cover_teaser
-    abstract: true
 
   full:
     image_cover:
-      formatter: image
+      type: image
       settings:
         image_style: cover_full
+    text: true
 
 news:
 
   teaser:
     image_cover:
-      formatter: image
+      type: image
       settings:
         image_style: cover_teaser
     abstract: true
 
   full:
     image_cover:
-      formatter: image
+      type: image
       settings:
         image_style: cover_full
+    abstract: true
+    text: true

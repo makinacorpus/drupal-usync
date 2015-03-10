@@ -4,7 +4,15 @@ namespace USync\AST;
 
 class Path
 {
+    /**
+     * Path separator
+     */
     const SEP = '.';
+
+    /**
+     * Path unique segment wildcard
+     */
+    const WILDCARD = '%';
 
     /**
      * @var string
@@ -27,13 +35,23 @@ class Path
         $this->segments = explode(self::SEP, $path);
     }
 
+    /**
+     * Internal recursion for find()
+     *
+     * @param Node $node
+     *
+     * @param string[] $segments
+     *   Path as a set of ordered splitted segments
+     *
+     * @return \USync\AST\Node[]
+     */
     protected function _find(Node $node, array $segments)
     {
         $ret = array();
 
         $current = array_shift($segments);
 
-        if ('%' === $current || $node->getName() === $current) {
+        if (self::WILDCARD === $current || $node->getName() === $current) {
             if (empty($segments)) {
                 $ret[$node->getPath()] = $node;
             } else {
@@ -46,6 +64,15 @@ class Path
         return $ret;
     }
 
+    /**
+     * Find matching nodes among node children
+     * 
+     * @param Node $node
+     *
+     * @param string $ignoreRoot
+     *
+     * @return \USync\AST\Node[]
+     */
     public function find(Node $node, $ignoreRoot = true)
     {
         $ret = array();

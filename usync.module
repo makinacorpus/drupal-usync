@@ -24,27 +24,25 @@ require_once __DIR__ . '/usync.compat.inc';
  * Implements hook_init().
  */
 function usync_init() {
-  $discovery = new PathDiscovery();
-  usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
+  //$discovery = new PathDiscovery(); usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
 }
 
 /**
  * Implements hook_entity_info_alter().
  */
 function usync_entity_info_alter(&$entity_info) {
-return; // @todo
+
   // @todo Export other entity options.
 
   // Export view modes we found during synchronization.
-  foreach (variable_get(USYNC_VAR_VIEW_MODE, array()) as $entity_type => $settings) {
+  foreach (variable_get(USYNC_VAR_VIEW_MODE, array()) as $entity_type => $view_modes) {
     if (isset($entity_info[$entity_type])) {
       // @todo Add a "strict" mode that disables all other view modes.
-      foreach ($settings['view'] as $name => $properties) {
-        $properties += array(
-          'label' => $name,
+      foreach ($view_modes as $name => $label) {
+        $entity_info['view modes'][$name] = array(
+          'label' => $label,
           'custom settings' => true
         );
-        $entity_info['view modes'][$name] = $properties;
       }
     }
   }

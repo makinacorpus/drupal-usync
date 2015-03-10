@@ -172,6 +172,13 @@ class Node
         $this->children[$key] = $node;
     }
 
+    /**
+     * Get child
+     *
+     * @param string $key
+     *
+     * @return \USync\AST\Node
+     */
     public function getChild($key)
     {
         if (!isset($this->children[$key])) {
@@ -181,21 +188,43 @@ class Node
         return $this->children[$key];
     }
 
+    /**
+     * Get parent node if any
+     *
+     * @return \USync\AST\Node
+     */
     public function getParent()
     {
         return $this->parent;
     }
 
+    /**
+     * Does this node have a parent
+     *
+     * @return boolean
+     */
     public function hasParent()
     {
         return !empty($this->parent);
     }
 
+    /**
+     * Is this node root
+     *
+     * This method is functionnally equivalent to hasParent()
+     *
+     * @return boolean
+     */
     public function isRoot()
     {
         return !$this->hasParent();
     }
 
+    /**
+     * Get tree root node
+     *
+     * @return \USync\AST\Node
+     */
     public function getRoot()
     {
         if (null === $this->parent) {
@@ -210,11 +239,21 @@ class Node
         return $node;
     }
 
+    /**
+     * Get all children
+     *
+     * @return \USync\AST\Node
+     */
     public function getChildren()
     {
         return $this->children;
     }
 
+    /**
+     * Get value as a multidimentional array of PHP scalar values
+     *
+     * @return mixed
+     */
     public function getValue()
     {
         $ret = array();
@@ -233,6 +272,16 @@ class Node
         return $ret;
     }
 
+    /**
+     * Find matching node among children
+     *
+     * @deprecated
+     *   Use \USync\AST\Path::find() directly
+     *
+     * @param string|Path $path
+     *
+     * @return \USync\AST\Node[]
+     */
     public function find($path)
     {
         if (is_string($path)) {
