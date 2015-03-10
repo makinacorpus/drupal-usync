@@ -9,6 +9,10 @@ use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
 use USync\Helper\HelperInterface;
 use USync\Helper\NodeEntityHelper;
+use USync\Helper\ViewModeHelper;
+use USync\AST\DeleteNode;
+use USync\AST\DefaultNode;
+use USync\AST\ValueNode;
 
 class Runner
 {
@@ -31,15 +35,14 @@ class Runner
         // Always process fields first.
         // @todo Do not import non used fields.
         $instanceHelper = new FieldInstanceHelper();
-        $instanceHelper->setContext($context);
         $fieldHelper = new FieldHelper($instanceHelper);
-        $fieldHelper->setContext($context);
         $nodeHelper = new NodeEntityHelper($fieldHelper);
-        $nodeHelper->setContext($context);
+        $viewHelper = new ViewModeHelper();
         $this->helpers = array(
             'field.%' => $fieldHelper,
             'entity.node.%' => $nodeHelper,
-            'entity.%.field' => $instanceHelper,
+            'entity.%.%.field.%' => $instanceHelper,
+            // 'view.%.%.%' => $viewHelper, // @todo Unstable yet
         );
     }
 
@@ -52,62 +55,69 @@ class Runner
     public function processObject(Node $node, HelperInterface $helper, Context $context)
     {
         $path = $node->getPath();
-        $object = $node->getValue();
 
-        // Deal with magic values first.
-        if (is_string($object)) {
-            switch ($object) {
+        if ($node instanceof DeleteNode) {
+            $mode = 'delete';
+        } else if ($node instanceof DefaultNode) {
+            $mode = 'sync';
+        } else if ($node instanceof ValueNode) {
+            $context->logError(sprintf("%s invalid value type, ignoring", $path));
+            return;
+        } else {
+            $mode = 'sync';
+        }
 
-                case 'delete':
-                    if ($helper->exists($path)) {
-                        $helper->deleteExistingObject($path);
-                    }
-                    return;
+        switch ($mode) {
 
-                // Any object marked as default will inherit from the Drupal
-                // defaults or any previous definition known only by helper:
-                // for example, any field instance set to default will inherit
-                // from label and widget defined at the field level
-                case 'default':
+            case 'delete':
+                if ($helper->exists($path, $context)) {
+                    $helper->deleteExistingObject($path, $context);
+                }
+                return;
+
+            case 'sync':
+                $object = $node->getValue();
+
+                if (!is_array($object)) {
                     $object = array();
-                    break;
-            }
-        }
+                }
 
-        if ($helper->exists($path)) {
+                if ($helper->exists($path, $context)) {
 
-            $existing = $helper->getExistingObject($path);
+                    $existing = $helper->getExistingObject($path, $context);
 
-            // Proceed to merge accordingly to 'keep' and 'drop' keys.
-            if (!empty($object['keep'])) {
-                if ('all' === $object['keep']) {
-                    drupal_array_merge_deep($existing, $object);
-                } else if (is_array($object['keep'])) {
-                    foreach ($object['keep'] as $key) {
-                        if (array_key_exists($key, $existing)) {
-                            $object[$key] = $existing[$key];
+                    // Proceed to merge accordingly to 'keep' and 'drop' keys.
+                    if (!empty($object['keep'])) {
+                        if ('all' === $object['keep']) {
+                            drupal_array_merge_deep($existing, $object);
+                        } else if (is_array($object['keep'])) {
+                            foreach ($object['keep'] as $key) {
+                                if (array_key_exists($key, $existing)) {
+                                    $object[$key] = $existing[$key];
+                                }
+                            }
+                        } else {
+                            $context->logError(sprintf("%s malformed 'keep' property, must be 'all' or an array of string property names", $path));
                         }
                     }
-                } else {
-                    $context->logError(sprintf("%s malformed 'keep' property, must be 'all' or an array of string property names", $path));
-                }
-            }
-            if (!empty($object['drop'])) {
-                if (is_array($object['drop'])) {
-                    foreach ($object['drop'] as $key) {
-                        if (isset($object[$key])) {
-                            unset($object[$key]);
+                    if (!empty($object['drop'])) {
+                        if (is_array($object['drop'])) {
+                            foreach ($object['drop'] as $key) {
+                                if (isset($object[$key])) {
+                                    unset($object[$key]);
+                                }
+                            }
+                        } else {
+                            $context->logError(sprintf("%s malformed 'drop' property, must be an array of string property names", $path));
                         }
                     }
-                } else {
-                    $context->logError(sprintf("%s malformed 'drop' property, must be an array of string property names", $path));
                 }
-            }
+
+                unset($object['keep'], $object['drop']);
+
+                $helper->synchronize($path, $object, $context);
+                break;
         }
-
-        unset($object['keep'], $object['drop']);
-
-        $helper->synchronize($path, $object);
     }
 
     /**

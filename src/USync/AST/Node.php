@@ -4,19 +4,44 @@ namespace USync\AST;
 
 class Node
 {
-    static public function createNode($array, $name = 'root')
+    /**
+     * Internal recursion for createNode()
+     *
+     * @param mixed $value
+     * @param string $name
+     * @param Node $parent
+     *
+     * @return \USync\AST\Node
+     */
+    static protected function _createNode($value, $name = 'root', Node $parent = null)
     {
-        if (!is_array($array)) {
-            return new ValueNode($array);
+        if (!is_array($value)) {
+            if (null === $value || true === $value || 'delete' === $value) {
+                $node = new DeleteNode($name, $parent);
+            } else if (true === $value || 'default' === $value) {
+                $node = new DefaultNode($name, $parent);
+            } else {
+                $node = new ValueNode($name, $parent, $value);
+            }
+        } else {
+            $node = new Node($name, $parent);
+            foreach ($value as $key => $value) {
+                $node->addChild($key, self::_createNode($value, $key, $node));
+            }
         }
-
-        $node = new Node($name);
-
-        foreach ($array as $key => $value) {
-            $node->addChild($key, self::createNode($value, $key));
-        }
-
         return $node;
+    }
+
+    /**
+     * Recursively build the AST from the given array
+     *
+     * @param mixed $value
+     *
+     * @return \USync\AST\Node
+     */
+    static public function createNode($value)
+    {
+        return self::_createNode($value);
     }
 
     /**
@@ -59,7 +84,9 @@ class Node
         $this->name = $name;
         $this->parent = $parent;
         if (null === $parent) {
-            $this->path = $name;
+            $this->path = '';
+        } else if (empty($parent->path)) {
+            $this->path =   $name;
         } else {
             $this->path = $parent->path . Path::SEP . $name;
         }

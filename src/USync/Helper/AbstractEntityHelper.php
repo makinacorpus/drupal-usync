@@ -2,8 +2,7 @@
 
 namespace USync\Helper;
 
-use USync\AST\Node;
-use USync\AST\Path;
+use USync\Context;
 
 abstract class AbstractEntityHelper extends AbstractHelper
 {
@@ -29,56 +28,16 @@ abstract class AbstractEntityHelper extends AbstractHelper
         $this->fieldHelper = $fieldHelper;
     }
 
-    /**
-     * Process a single field instance
-     *
-     * @param string $name
-     * @param string|array $object
-     */
-    protected function processFieldAll($path, array $object)
-    {
-        if (!empty($object['field'])) {
-            foreach ($object['field'] as $key => $child) {
-                if ('default' === $child) {
-                    // @todo
-                } else {
-                    $this
-                        ->context
-                        ->getRunner()
-                        ->processObject(
-                            $path . Path::SEP . $key,
-                            $child,
-                            $this->fieldHelper
-                        );
-                }
-            }
-        }
-    }
-
-    /**
-     * Really create or update the entity type
-     *
-     * @param string $name
-     * @param array $object
-     */
-    abstract protected function doSync($name, array $object);
-
     public function getType()
     {
         return 'entity_' . $this->entityType;
     }
 
-    public function exists($path)
+    public function exists($path, Context $context)
     {
         $bundle = $this->getLastPathSegment($path);
         $info = entity_get_info($this->entityType);
 
         return !empty($info) && !empty($info['bundles'][$bundle]);
-    }
-
-    public function synchronize($path, array $object)
-    {
-        $this->doSync($path, $object);
-        $this->processFieldAll($path, $object);
     }
 }

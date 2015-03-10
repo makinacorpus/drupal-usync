@@ -5,13 +5,17 @@
  */
 
 use USync\AST\Node;
+use USync\Context;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlParser;
 use USync\Runner;
 
 use Symfony\Component\Yaml\Yaml;
-use USync\Context;
-use USync\USync;
+
+/**
+ * View mode variable nae.
+ */
+const USYNC_VAR_VIEW_MODE = 'usync_view_mode';
 
 /**
  * Load compatibility layer with other modules.
@@ -22,9 +26,30 @@ require_once __DIR__ . '/usync.compat.inc';
  * Implements hook_init().
  */
 function usync_init() {
-  // usync_import_yaml(DRUPAL_ROOT . '/' . drupal_get_path('module', 'usync') . '/sample/sample.yml');
   $discovery = new PathDiscovery();
-  usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
+  //usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function usync_entity_info_alter(&$entity_info) {
+return; // @todo
+  // @todo Export other entity options.
+
+  // Export view modes we found during synchronization.
+  foreach (variable_get(USYNC_VAR_VIEW_MODE, array()) as $entity_type => $settings) {
+    if (isset($entity_info[$entity_type])) {
+      // @todo Add a "strict" mode that disables all other view modes.
+      foreach ($settings['view'] as $name => $properties) {
+        $properties += array(
+          'label' => $name,
+          'custom settings' => true
+        );
+        $entity_info['view modes'][$name] = $properties;
+      }
+    }
+  }
 }
 
 /**

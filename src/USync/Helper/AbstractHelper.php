@@ -9,13 +9,25 @@ use USync\Context;
 abstract class AbstractHelper implements HelperInterface
 {
     /**
-     * @var \USync\Context
+     * Update
      */
-    protected $context;
+    const HOOK_UPDATE = 'update';
 
-    public function setContext(Context $context)
+    /**
+     * Insert
+     */
+    const HOOK_INSERT = 'insert';
+
+    /**
+     * Invoke a hook to modules to allow them to alter data
+     *
+     * @param string $hook
+     * @param string $name
+     * @param array $object
+     */
+    protected function alter($hook, $path, array &$object)
     {
-        $this->context = $context;
+        drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $path);
     }
 
     /**
@@ -31,22 +43,22 @@ abstract class AbstractHelper implements HelperInterface
         return $parts[count($parts) - 1];
     }
 
-    public function rename($path, $newpath, $force = false)
+    public function rename($path, $newpath, $force = false, Context $context)
     {
-        if (!$this->exists($path)) {
-            $this->context->logCritical(sprintf("%s rename: does not exists", $path));
+        if (!$this->exists($path, $context)) {
+            $context->logCritical(sprintf("%s rename: does not exists", $path));
         }
 
-        if ($this->exists($newpath)) {
+        if ($this->exists($newpath, $context)) {
             if ($force) {
-                $this->context->logWarning(sprintf("%s rename: %s already exists", $newpath, $path));
+                $context->logWarning(sprintf("%s rename: %s already exists", $newpath, $path));
             } else {
-                $this->context->logError(sprintf("%s rename: %s already exists", $newpath, $path));
+                $context->logError(sprintf("%s rename: %s already exists", $newpath, $path));
             }
-            $this->deleteExistingObject($path);
+            $this->deleteExistingObject($path, $context);
         }
 
-        $this->synchronize($newpath, $this->getExistingObject($path));
-        $this->deleteExistingObject($path);
+        $this->synchronize($newpath, $this->getExistingObject($path, $context), $context);
+        $this->deleteExistingObject($path, $context);
     }
 }

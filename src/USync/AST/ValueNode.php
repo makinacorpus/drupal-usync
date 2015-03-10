@@ -9,9 +9,9 @@ class ValueNode extends Node
      */
     protected $value;
 
-    public function __construct($value, Node $parent = null)
+    public function __construct($name, Node $parent = null, $value)
     {
-        parent::__construct($parent);
+        parent::__construct($name, $parent);
 
         $this->value = $value;
     }

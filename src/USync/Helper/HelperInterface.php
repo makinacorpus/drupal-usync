@@ -2,20 +2,13 @@
 
 namespace USync\Helper;
 
-use \USync\Context;
+use USync\Context;
 
 /**
  * What a helper needs to do.
  */
 interface HelperInterface
 {
-    /**
-     * Set context
-     *
-     * @param \USync\Context $context
-     */
-    public function setContext(Context $context);
-
     /**
      * Get internal component type, used for hooks mostly
      *
@@ -28,7 +21,7 @@ interface HelperInterface
      *
      * @param string $path
      */
-    public function exists($path);
+    public function exists($path, Context $context);
 
     /**
      * Fill defaults into the given object
@@ -38,21 +31,21 @@ interface HelperInterface
      *
      * @return array
      */
-    public function fillDefaults($path, array $object);
+    public function fillDefaults($path, array $object, Context $context);
 
     /**
      * Delete existing object from site
      *
      * @param string $path
      */
-    public function deleteExistingObject($path);
+    public function deleteExistingObject($path, Context $context);
 
     /**
      * Get existing object
      *
      * @param string $path
      */
-    public function getExistingObject($path);
+    public function getExistingObject($path, Context $context);
 
     /**
      * Rename an existing object
@@ -61,7 +54,7 @@ interface HelperInterface
      * @param string $newpath
      * @param boolean $force
      */
-    public function rename($path, $newpath, $force = false);
+    public function rename($path, $newpath, $force = false, Context $context);
 
     /**
      * Synchronize incoming object
@@ -69,5 +62,5 @@ interface HelperInterface
      * @param string $path
      * @param array $object
      */
-    public function synchronize($path, array $object);
+    public function synchronize($path, array $object, Context $context);
 }

@@ -2,6 +2,10 @@ article:
   field:
     image_cover: default
     text: default
+    # Remove default fields from standard profile
+    body: ~
+    field_tags: ~
+    field_image: ~
 
 news:
   field:

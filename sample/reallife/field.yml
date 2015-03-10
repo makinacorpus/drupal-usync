@@ -2,15 +2,15 @@ image_cover:
   name: "Cover image"
   cardinality: 1
   type: image
-  instance:
-    settings:
-      alt_field: 1
-      title_field: 1
+  instance_settings:
+    alt_field: 1
+    title_field: 1
 
 image_gallery:
   inherit: image_cover
   name: "Gallery"
   cardinality: -1
+  settings:
 
 abstract:
   name: "Abstract for lists"
@@ -18,14 +18,12 @@ abstract:
   widget:
     type: text_textarea
     settings:
-  instance:
-    settings:
-      text_processing: 1
+  instance_settings:
+    text_processing: 1
 
 text:
   name: "Text"
   type: paragraph
-  instance:
-    settings:
-      required_title: true
-      in_accordion: false
+  instance_settings:
+    required_title: true
+    in_accordion: false

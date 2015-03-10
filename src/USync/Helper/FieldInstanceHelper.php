@@ -2,8 +2,8 @@
 
 namespace USync\Helper;
 
-use USync\AST\Node;
 use USync\AST\Path;
+use USync\Context;
 
 class FieldInstanceHelper extends AbstractHelper
 {
@@ -17,21 +17,22 @@ class FieldInstanceHelper extends AbstractHelper
      */
     protected function getInstanceIdFromPath($path)
     {
-        $parts = explode(Path::SEP, $path);
+        $parts = array_reverse(explode(Path::SEP, $path));
 
-        return array_reverse(array(
-            array_shift($parts),
-            array_shift($parts),
-            array_shift($parts),
-        ));
+        $fieldName = array_shift($parts);
+        array_shift($parts); // 'field'
+        $bundle = array_shift($parts);
+        $entityType = array_shift($parts);
+
+        return array($entityType, $bundle, $fieldName);
     }
 
     public function getType()
     {
-        return 'field';
+        return 'field_instance';
     }
 
-    public function exists($path)
+    public function exists($path, Context $context)
     {
         list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
 
@@ -42,44 +43,46 @@ class FieldInstanceHelper extends AbstractHelper
         }
     }
 
-    public function fillDefaults($path, array $object)
+    public function fillDefaults($path, array $object, Context $context)
     {
         throw new \Exception("Not implemented");
     }
 
-    public function getExistingObject($path)
+    public function getExistingObject($path, Context $context)
     {
         list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
 
         if ($existing = field_info_instance($entityType, $fieldName, $bundle)) {
             return $existing;
         }
-        $this->context->logCritical(sprintf("%s does not exists", $path));
+        $context->logCritical(sprintf("%s does not exists", $path));
     }
 
-    public function deleteExistingObject($path)
+    public function deleteExistingObject($path, Context $context)
     {
         list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
         $existing = field_info_instance($entityType, $fieldName, $bundle);
 
-        if ($existing) {
-            $this->context->logWarning(sprintf("%s does not exists", $path));
+        if (!$existing) {
+            $context->logWarning(sprintf("%s does not exists", $path));
             return false;
         }
 
         field_delete_instance($existing);
     }
 
-    public function synchronize($name, array $object)
+    public function synchronize($path, array $object, Context $context)
     {
-        list($entityType, $bundle, $fieldName) = explode('.', $name, 3);
+        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
         $existing = field_info_instance($entityType, $fieldName, $bundle);
 
         $instance = array(
             'entity_type' => $entityType,
             'bundle'      => $bundle,
             'field_name'  => $fieldName,
-        ) + $object;
+        ) + $object + array(
+            'display'     => array('default' => array('type' => 'hidden')),
+        );
 
         // Even thought this is not mandatory few modules such as the 'image'
         // module will attempt to access this property, without carying about
@@ -89,10 +92,10 @@ class FieldInstanceHelper extends AbstractHelper
         }
 
         if ($existing) {
-            $this->alter(self::HOOK_UPDATE, $name, $instance);
+            $this->alter(self::HOOK_UPDATE, $path, $instance);
             field_update_instance($instance);
         } else {
-            $this->alter(self::HOOK_INSERT, $name, $instance);
+            $this->alter(self::HOOK_INSERT, $path, $instance);
             field_create_instance($instance);
         }
     }
