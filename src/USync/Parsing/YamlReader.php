@@ -6,14 +6,14 @@ use USync\AST\Node;
 
 use Symfony\Component\Yaml\Yaml;
 
-class YamlParser implements ParserInterface
+class YamlReader implements ReaderInterface
 {
     public function getFileExtensions()
     {
         return array('yml', 'yaml');
     }
 
-    public function parse($filename)
+    public function read($filename)
     {
         if (!class_exists('\Symfony\Yaml\Yaml')) {
             if (!@include_once __DIR__ . '/../../../vendor/autoload.php') {

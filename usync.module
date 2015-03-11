@@ -7,7 +7,7 @@
 use USync\AST\Node;
 use USync\Context;
 use USync\Parsing\PathDiscovery;
-use USync\Parsing\YamlParser;
+use USync\Parsing\YamlReader;
 use USync\Runner;
 
 /**
@@ -24,7 +24,7 @@ require_once __DIR__ . '/usync.compat.inc';
  * Implements hook_init().
  */
 function usync_init() {
-  //$discovery = new PathDiscovery(); usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlParser()));
+  //$discovery = new PathDiscovery(); usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlReader()));
 }
 
 /**

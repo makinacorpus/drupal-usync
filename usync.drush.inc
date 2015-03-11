@@ -7,7 +7,7 @@
 use USync\Context;
 use USync\Runner;
 use USync\Parsing\PathDiscovery;
-use USync\Parsing\YamlParser;
+use USync\Parsing\YamlReader;
 
 /**
  * Implements hook_drush_command().
@@ -32,11 +32,11 @@ function drush_usync_run_test() {
     $tx = db_transaction();
 
     //$discovery = new PathDiscovery();
-    //$graph = $discovery->discover(__DIR__ . '/sample/reallife', new YamlParser());
+    //$graph = $discovery->discover(__DIR__ . '/sample/reallife', new YamlReader());
 
     // Another example, using one file only
-    $parser = new YamlParser();
-    $graph = \USync\AST\Node::createNode($parser->parse(__DIR__ . '/sample/blog.yml'));
+    $reader = new YamlReader();
+    $graph = \USync\AST\Node::createNode($reader->read(__DIR__ . '/sample/blog.yml'));
 
     $runner = new Runner();
     $runner->run(new Context($graph));

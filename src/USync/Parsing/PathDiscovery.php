@@ -6,11 +6,11 @@ use USync\AST\Node;
 
 class PathDiscovery
 {
-    static public function discover($path, ParserInterface $parser)
+    static public function discover($path, ReaderInterface $reader)
     {
         $data = array();
 
-        $ext = $parser->getFileExtensions();
+        $ext = $reader->getFileExtensions();
         if (empty($ext)) {
             $pattern = '*';
         } else if (1 === count($ext)) {
@@ -21,7 +21,7 @@ class PathDiscovery
 
         foreach (glob($path . '/' . $pattern, GLOB_BRACE | GLOB_NOESCAPE) as $filename) {
 
-            $additions = $parser->parse($filename);
+            $additions = $reader->read($filename);
 
             // Fetch section name
             $parts = explode('.', basename($filename));

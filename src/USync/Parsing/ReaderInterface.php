@@ -2,7 +2,7 @@
 
 namespace USync\Parsing;
 
-interface ParserInterface
+interface ReaderInterface
 {
     /**
      * Return a list of supported file extensions
@@ -12,13 +12,13 @@ interface ParserInterface
     public function getFileExtensions();
 
     /**
-     * From given blob parse data and return a nice formatted array for
+     * From given blob read data and return a nice formatted array for
      * usage with the Node class
      *
      * @param string $filename
      *
      * @return array
-     *   PHP array of parsed raw data
+     *   PHP array of read raw data
      */
-    public function parse($filename);
+    public function read($filename);
 }

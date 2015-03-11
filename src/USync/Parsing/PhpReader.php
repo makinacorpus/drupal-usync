@@ -4,14 +4,14 @@ namespace USync\Parsing;
 
 use USync\AST\Node;
 
-class PhpParser implements ParserInterface
+class PhpReader implements ReaderInterface
 {
     public function getFileExtensions()
     {
         return array('php');
     }
 
-    public function parse($filename)
+    public function read($filename)
     {
         $ret = @include $filename;
 
@@ -19,6 +19,6 @@ class PhpParser implements ParserInterface
             throw new \InvalidArgumentException("Given data is not valid PHP");
         }
 
-        $ret;
+        return $ret;
     }
 }
