@@ -46,7 +46,7 @@ class ViewModeHelper extends AbstractHelper
 
     protected function getFieldDefault($path, $entityType, $bundle, $fieldName, Context $context)
     {
-        list($entityType, $bundle, $name) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle,) = $this->getInstanceIdFromPath($path);
 
         $default = array(
             'type'     => 'hidden',
@@ -75,6 +75,7 @@ class ViewModeHelper extends AbstractHelper
         if ($formatter) {
             $default = array(
                 'type' => $formatter,
+                'label' => 'hidden',
                 'settings' => field_info_formatter_settings($formatter),
             );
         }
@@ -177,7 +178,6 @@ class ViewModeHelper extends AbstractHelper
             }
         }
 
-
         // Iterate over the fields and update each instance: we don't
         // need to do it with the $displayExtra property since it is
         // already the correctly formatted variable
@@ -203,5 +203,8 @@ class ViewModeHelper extends AbstractHelper
         $bundleSettings['view_modes'][$name] = array('label' => $name, 'custom_settings' => true);
         $bundleSettings['extra_fields']['display'] = $displayExtra;
         field_bundle_settings($entityType, $bundle, $bundleSettings);
+
+        // So our custom view modes will appear
+        entity_info_cache_clear();
     }
 }

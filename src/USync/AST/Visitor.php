@@ -2,6 +2,7 @@
 
 namespace USync\AST;
 
+use USync\AST\Processing\ProcessorInterface;
 use USync\Context;
 
 /**

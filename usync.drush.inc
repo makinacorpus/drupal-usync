@@ -31,8 +31,12 @@ function drush_usync_run_test() {
   try {
     $tx = db_transaction();
 
-    $discovery = new PathDiscovery();
-    $graph = $discovery->discover(__DIR__ . '/sample/reallife', new YamlParser());
+    //$discovery = new PathDiscovery();
+    //$graph = $discovery->discover(__DIR__ . '/sample/reallife', new YamlParser());
+
+    // Another example, using one file only
+    $parser = new YamlParser();
+    $graph = \USync\AST\Node::createNode($parser->parse(__DIR__ . '/sample/blog.yml'));
 
     $runner = new Runner();
     $runner->run(new Context($graph));

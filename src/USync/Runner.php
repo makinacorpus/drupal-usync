@@ -5,15 +5,16 @@ namespace USync;
 use USync\AST\BooleanNode;
 use USync\AST\DefaultNode;
 use USync\AST\DeleteNode;
-use USync\AST\InheritProcessor;
 use USync\AST\Node;
 use USync\AST\NullNode;
+use USync\AST\Processing\InheritProcessor;
 use USync\AST\ValueNode;
 use USync\AST\Visitor;
 use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
 use USync\Helper\HelperInterface;
 use USync\Helper\NodeEntityHelper;
+use USync\Helper\VariableHelper;
 use USync\Helper\ViewModeHelper;
 
 class Runner
@@ -37,11 +38,13 @@ class Runner
         $fieldHelper = new FieldHelper($instanceHelper);
         $nodeHelper = new NodeEntityHelper($fieldHelper);
         $viewHelper = new ViewModeHelper();
+        $variableHelper = new VariableHelper();
         $this->helpers = array(
             'field.%' => $fieldHelper,
             'entity.node.%' => $nodeHelper,
             'entity.%.%.field.%' => $instanceHelper,
             'view.%.%.%' => $viewHelper,
+            'variable.%' => $variableHelper,
         );
     }
 
@@ -148,5 +151,8 @@ class Runner
                 $this->processObject($node, $helper, $context);
             }
         }
+
+        // Sorry.
+        menu_rebuild();
     }
 }

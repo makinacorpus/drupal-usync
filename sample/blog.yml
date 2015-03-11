@@ -1,0 +1,50 @@
+field:
+  post_image:
+    type: image
+    label: Post image
+  autre_image:
+    inherit: post_image
+
+entity:
+  node:
+    post:
+      name: Blog post
+      field:
+        post_image: true
+        body:
+          label: Post text
+
+image:
+  post_thumbnail:
+    name: Post thumbnail
+
+view:
+  node:
+    post:
+
+      home_square:
+        post_image:
+          type: image
+          settings:
+            image_style: thumbnail
+
+      teaser:
+        post_image:
+          type: image
+          settings:
+            image_style: thumbnail
+        body:
+          type: text_summary_or_trimmed
+          settings:
+            trim_length: 200
+
+      teaser_mais_mieux:
+        inherit: teaser
+        body: ~
+
+      full:
+        post_image:
+          type: image
+          settings:
+            image_style: thumbnail
+        body: true

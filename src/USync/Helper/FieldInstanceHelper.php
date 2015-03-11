@@ -75,12 +75,18 @@ class FieldInstanceHelper extends AbstractHelper
     {
         list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
         $existing = field_info_instance($entityType, $fieldName, $bundle);
+        $field = field_info_field($fieldName);
 
-        $instance = array(
+        $default = array(
             'entity_type' => $entityType,
             'bundle'      => $bundle,
             'field_name'  => $fieldName,
-        ) + $object + array(
+        );
+        if (!empty($field['label'])) {
+            $default['label'] = $field['label'];
+        }
+
+        $instance = $default + $object + array(
             'display'     => array('default' => array('type' => 'hidden')),
         );
 
@@ -100,3 +106,4 @@ class FieldInstanceHelper extends AbstractHelper
         }
     }
 }
+ 

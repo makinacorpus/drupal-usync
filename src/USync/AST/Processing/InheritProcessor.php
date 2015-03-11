@@ -1,7 +1,8 @@
 <?php
 
-namespace USync\AST; 
+namespace USync\AST\Processing; 
 
+use USync\AST\Node;
 use USync\Context;
 
 class InheritProcessor implements ProcessorInterface

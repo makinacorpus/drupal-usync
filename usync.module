@@ -39,7 +39,7 @@ function usync_entity_info_alter(&$entity_info) {
     if (isset($entity_info[$entity_type])) {
       // @todo Add a "strict" mode that disables all other view modes.
       foreach ($view_modes as $name => $label) {
-        $entity_info['view modes'][$name] = array(
+        $entity_info[$entity_type]['view modes'][$name] = array(
           'label' => $label,
           'custom settings' => true
         );

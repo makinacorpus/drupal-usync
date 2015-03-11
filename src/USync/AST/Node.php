@@ -2,7 +2,7 @@
 
 namespace USync\AST;
 
-class Node
+class Node implements NodeInterface
 {
     /**
      * Internal recursion for createNode()
@@ -96,74 +96,42 @@ class Node
         }
     }
 
-    /**
-     * Is this node terminal
-     *
-     * @return boolean
-     */
     public function isTerminal()
     {
         return false;
     }
 
-    /**
-     * Get node local name in the graph
-     *
-     * @return string
-     */
+    public function isExternal()
+    {
+        return false;
+    }
+
     public function getName()
     {
         return $this->name;
     }
 
-    /**
-     * Get node path
-     *
-     * @return string
-     */
     public function getPath()
     {
         return $this->path;
     }
 
-    /**
-     * Sets the node which this node inherits from
-     * 
-     * @param \USync\AST\Node $node
-     */
-    public function setBaseNode(Node $node)
+    public function setBaseNode(NodeInterface $node)
     {
         $this->baseNode = $node;
     }
 
-    /**
-     * Get the node this node inherits from
-     *
-     * @return \USync\AST\Node
-     */
     public function getBaseNode()
     {
         return $this->baseNode;
     }
 
-    /**
-     * Does the identifier children exist
-     *
-     * @param string $key
-     */
     public function hasChild($key)
     {
         return isset($this->children[$key]);
     }
 
-    /**
-     * Add child
-     *
-     * @param string $key
-     *   Local child name in the graph
-     * @param \USync\AST\Node $node
-     */
-    public function addChild($key, Node $node)
+    public function addChild($key, NodeInterface $node)
     {
         if ($this->isTerminal()) {
             throw new \LogicException("I am terminal");
@@ -172,14 +140,8 @@ class Node
         $this->children[$key] = $node;
     }
 
-    /**
-     * Get child
-     *
-     * @param string $key
-     *
-     * @return \USync\AST\Node
-     */
-    public function getChild($key)
+
+        public function getChild($key)
     {
         if (!isset($this->children[$key])) {
             throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
@@ -188,43 +150,21 @@ class Node
         return $this->children[$key];
     }
 
-    /**
-     * Get parent node if any
-     *
-     * @return \USync\AST\Node
-     */
     public function getParent()
     {
         return $this->parent;
     }
 
-    /**
-     * Does this node have a parent
-     *
-     * @return boolean
-     */
     public function hasParent()
     {
         return !empty($this->parent);
     }
 
-    /**
-     * Is this node root
-     *
-     * This method is functionnally equivalent to hasParent()
-     *
-     * @return boolean
-     */
     public function isRoot()
     {
         return !$this->hasParent();
     }
 
-    /**
-     * Get tree root node
-     *
-     * @return \USync\AST\Node
-     */
     public function getRoot()
     {
         if (null === $this->parent) {
@@ -239,21 +179,11 @@ class Node
         return $node;
     }
 
-    /**
-     * Get all children
-     *
-     * @return \USync\AST\Node
-     */
     public function getChildren()
     {
         return $this->children;
     }
 
-    /**
-     * Get value as a multidimentional array of PHP scalar values
-     *
-     * @return mixed
-     */
     public function getValue()
     {
         $ret = array();
@@ -272,16 +202,6 @@ class Node
         return $ret;
     }
 
-    /**
-     * Find matching node among children
-     *
-     * @deprecated
-     *   Use \USync\AST\Path::find() directly
-     *
-     * @param string|Path $path
-     *
-     * @return \USync\AST\Node[]
-     */
     public function find($path)
     {
         if (is_string($path)) {
