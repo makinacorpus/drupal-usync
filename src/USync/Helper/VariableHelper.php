@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\Context;
 
 class VariableHelper extends AbstractHelper
@@ -11,30 +12,23 @@ class VariableHelper extends AbstractHelper
         return 'variable';
     }
 
-    public function exists($path, Context $context)
+    public function exists(Node $node, Context $context)
     {
-        $name = $this->getLastPathSegment($path);
-
-        return array_key_exists($name, $GLOBALS['conf']);
+        return array_key_exists($node->getName(), $GLOBALS['conf']);
     }
 
-    public function fillDefaults($path, array $object, Context $context)
+    public function getExistingObject(Node $node, Context $context)
     {
-        return null;
+        return variable_get($node->getName());
     }
 
-    public function getExistingObject($path, Context $context)
+    public function deleteExistingObject(Node $node, Context $context)
     {
-        return variable_get($this->getLastPathSegment($path));
+        variable_del($node->getName());
     }
 
-    public function deleteExistingObject($path, Context $context)
+    public function synchronize(Node $node, Context $context)
     {
-        variable_del($this->getLastPathSegment($path));
-    }
-
-    public function synchronize($path, array $object, Context $context)
-    {
-        variable_set($this->getLastPathSegment($path), $object);
+        variable_set($node->getName(), $node->getValue());
     }
 }

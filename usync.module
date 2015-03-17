@@ -31,9 +31,7 @@ function usync_init() {
  * Implements hook_entity_info_alter().
  */
 function usync_entity_info_alter(&$entity_info) {
-
   // @todo Export other entity options.
-
   // Export view modes we found during synchronization.
   foreach (variable_get(USYNC_VAR_VIEW_MODE, array()) as $entity_type => $view_modes) {
     if (isset($entity_info[$entity_type])) {

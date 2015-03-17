@@ -56,11 +56,16 @@ interface NodeInterface
     /**
      * Add child
      *
-     * @param string $key
-     *   Local child name in the graph
      * @param \USync\AST\Node $node
      */
-    public function addChild($key, NodeInterface $node);
+    public function addChild(NodeInterface $node);
+
+    /**
+     * Remove child
+     *
+     * @param string $key
+     */
+    public function removeChild($key);
 
     /**
      * Get child
@@ -70,6 +75,13 @@ interface NodeInterface
      * @return \USync\AST\Node
      */
     public function getChild($key);
+
+    /**
+     * Set parent and update internals accordingly
+     *
+     * @param NodeInterface $parent
+     */
+    public function setParent(NodeInterface $parent);
 
     /**
      * Get parent node if any

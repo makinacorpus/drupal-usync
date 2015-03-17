@@ -10,6 +10,40 @@ class Path
     const SEP = '.';
 
     /**
+     * Match all wildcard
+     */
+    const MATCHALL = '%';
+
+    /**
+     * Does the given path matches the given pattern
+     *
+     * @param string $path
+     * @param string $pattern
+     * @param boolean $partial
+     *
+     * @return boolean
+     */
+    static public function match($path, $pattern, $partial = false)
+    {
+        $parts = explode(self::SEP, $path);
+        $segments = explode(self::SEP, $pattern);
+
+        $length = count($parts);
+
+        if ($length !== count($segments)) {
+            return false;
+        }
+
+        for ($i = 0; $i < $length; ++$i) {
+            if (self::MATCHALL !== $segments[$i] && self::SEP !== $segments[$i] && $parts[$i] !== $segments[$i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Path unique segment wildcard
      */
     const WILDCARD = '%';

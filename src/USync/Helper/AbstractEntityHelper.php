@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\Context;
 
 abstract class AbstractEntityHelper extends AbstractHelper
@@ -33,11 +34,10 @@ abstract class AbstractEntityHelper extends AbstractHelper
         return 'entity_' . $this->entityType;
     }
 
-    public function exists($path, Context $context)
+    public function exists(Node $node, Context $context)
     {
-        $bundle = $this->getLastPathSegment($path);
         $info = entity_get_info($this->entityType);
 
-        return !empty($info) && !empty($info['bundles'][$bundle]);
+        return !empty($info) && !empty($info['bundles'][$node->getName()]);
     }
 }

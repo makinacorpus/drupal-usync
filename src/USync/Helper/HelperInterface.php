@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\Context;
 
 /**
@@ -19,48 +20,42 @@ interface HelperInterface
     /**
      * Does the object exists in site
      *
-     * @param string $path
+     * @param \USync\AST\Node $node
+     * @param \USync\Context $context
      */
-    public function exists($path, Context $context);
-
-    /**
-     * Fill defaults into the given object
-     *
-     * @param string $path
-     * @param array $object
-     *
-     * @return array
-     */
-    public function fillDefaults($path, array $object, Context $context);
+    public function exists(Node $node, Context $context);
 
     /**
      * Delete existing object from site
      *
-     * @param string $path
+     * @param \USync\AST\Node $node
+     * @param \USync\Context $context
      */
-    public function deleteExistingObject($path, Context $context);
+    public function deleteExistingObject(Node $node, Context $context);
 
     /**
      * Get existing object
      *
-     * @param string $path
+     * @param \USync\AST\Node $node
+     * @param \USync\Context $context
      */
-    public function getExistingObject($path, Context $context);
+    public function getExistingObject(Node $node, Context $context);
 
     /**
      * Rename an existing object
      *
-     * @param string $path
+     * @param \USync\AST\Node $node
      * @param string $newpath
      * @param boolean $force
+     * @param \USync\Context $context
      */
-    public function rename($path, $newpath, $force = false, Context $context);
+    public function rename(Node $node, $newpath, $force = false, Context $context);
 
     /**
      * Synchronize incoming object
      *
-     * @param string $path
-     * @param array $object
+     * @param \USync\AST\Node $node
+     * @param \USync\Context $context
      */
-    public function synchronize($path, array $object, Context $context);
+    public function synchronize(Node $node, Context $context);
 }

@@ -41,6 +41,8 @@ class InheritProcessor implements ProcessorInterface
                     $context->logCritical(sprintf("%s: %s: cannot inherit from itself", $path, $key));
                 }
 
+                $child->removeChild('inherit');
+
                 $orphans[$key] = $parent;
             } else {
                 $sorted[$key] = array();

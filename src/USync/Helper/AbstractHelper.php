@@ -22,43 +22,36 @@ abstract class AbstractHelper implements HelperInterface
      * Invoke a hook to modules to allow them to alter data
      *
      * @param string $hook
-     * @param string $name
+     * @param Node $node
+     *   Node from the graph
      * @param array $object
+     *   Drupal object being saved
      */
-    protected function alter($hook, $path, array &$object)
+    protected function alter($hook, Node $node, array &$object)
     {
-        drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $path);
+        drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $node);
     }
 
-    /**
-     * Helper function to get the key of a certain node.
-     *
-     * @param string $path
-     *
-     * @return string
-     */
-    public function getLastPathSegment($path)
+    public function rename(Node $node, $newpath, $force = false, Context $context)
     {
-        $parts = explode(Path::SEP, $path);
-        return $parts[count($parts) - 1];
-    }
+        throw new \Exception("Not implemented");
 
-    public function rename($path, $newpath, $force = false, Context $context)
-    {
-        if (!$this->exists($path, $context)) {
-            $context->logCritical(sprintf("%s: rename: does not exists", $path));
+        /*
+        if (!$this->exists($node, $context)) {
+            $context->logCritical(sprintf("%s: rename: does not exists", $node->getPath()));
         }
 
         if ($this->exists($newpath, $context)) {
             if ($force) {
-                $context->logWarning(sprintf("%s: rename: %s already exists", $path, $newpath));
+                $context->logWarning(sprintf("%s: rename: %s already exists", $node->getPath(), $newpath));
             } else {
-                $context->logError(sprintf("%s: rename: %s already exists", $path, $newpath));
+                $context->logError(sprintf("%s: rename: %s already exists", $node->getPath(), $newpath));
             }
-            $this->deleteExistingObject($path, $context);
+            $this->deleteExistingObject($node, $context);
         }
 
-        $this->synchronize($newpath, $this->getExistingObject($path, $context), $context);
-        $this->deleteExistingObject($path, $context);
+        $this->synchronize($newpath, $this->getExistingObject($node, $context), $context);
+        $this->deleteExistingObject($node, $context);
+         */
     }
 }

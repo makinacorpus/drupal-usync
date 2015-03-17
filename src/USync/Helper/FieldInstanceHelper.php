@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\AST\Path;
 use USync\Context;
 
@@ -15,9 +16,9 @@ class FieldInstanceHelper extends AbstractHelper
      * @return string
      *   Entity type, bundle and field name.
      */
-    protected function getInstanceIdFromPath($path)
+    protected function getInstanceIdFromNode(Node $node)
     {
-        $parts = array_reverse(explode(Path::SEP, $path));
+        $parts = array_reverse(explode(Path::SEP, $node->getPath()));
 
         $fieldName = array_shift($parts);
         array_shift($parts); // 'field'
@@ -32,9 +33,9 @@ class FieldInstanceHelper extends AbstractHelper
         return 'field_instance';
     }
 
-    public function exists($path, Context $context)
+    public function exists(Node $node, Context $context)
     {
-        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromNode($node);
 
         if (field_info_instance($entityType, $fieldName, $bundle)) {
             return true;
@@ -43,37 +44,32 @@ class FieldInstanceHelper extends AbstractHelper
         }
     }
 
-    public function fillDefaults($path, array $object, Context $context)
+    public function getExistingObject(Node $node, Context $context)
     {
-        throw new \Exception("Not implemented");
-    }
-
-    public function getExistingObject($path, Context $context)
-    {
-        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromNode($node);
 
         if ($existing = field_info_instance($entityType, $fieldName, $bundle)) {
             return $existing;
         }
-        $context->logCritical(sprintf("%s: does not exists", $path));
+        $context->logCritical(sprintf("%s: does not exists", $node->getPath()));
     }
 
-    public function deleteExistingObject($path, Context $context)
+    public function deleteExistingObject(Node $node, Context $context)
     {
-        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromNode($node);
         $existing = field_info_instance($entityType, $fieldName, $bundle);
 
         if (!$existing) {
-            $context->logWarning(sprintf("%s: does not exists", $path));
+            $context->logWarning(sprintf("%s: does not exists", $node->getPath()));
             return false;
         }
 
         field_delete_instance($existing);
     }
 
-    public function synchronize($path, array $object, Context $context)
+    public function synchronize(Node $node, Context $context)
     {
-        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle, $fieldName) = $this->getInstanceIdFromNode($node);
         $existing = field_info_instance($entityType, $fieldName, $bundle);
         $field = field_info_field($fieldName);
 
@@ -84,6 +80,11 @@ class FieldInstanceHelper extends AbstractHelper
         );
         if (!empty($field['label'])) {
             $default['label'] = $field['label'];
+        }
+
+        $object = $node->getValue();
+        if (!is_array($object)) {
+            $object = array();
         }
 
         $instance = $default + $object + array(
@@ -98,10 +99,10 @@ class FieldInstanceHelper extends AbstractHelper
         }
 
         if ($existing) {
-            $this->alter(self::HOOK_UPDATE, $path, $instance);
+            $this->alter(self::HOOK_UPDATE, $node, $instance);
             field_update_instance($instance);
         } else {
-            $this->alter(self::HOOK_INSERT, $path, $instance);
+            $this->alter(self::HOOK_INSERT, $node, $instance);
             field_create_instance($instance);
         }
     }

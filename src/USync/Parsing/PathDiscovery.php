@@ -38,6 +38,6 @@ class PathDiscovery
             $current = $additions;
         }
 
-        return Node::createNode($data);
+        return $data;
     }
 }

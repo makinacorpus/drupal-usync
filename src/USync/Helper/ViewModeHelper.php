@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\AST\Path;
 use USync\Context;
 
@@ -10,14 +11,14 @@ class ViewModeHelper extends AbstractHelper
     /**
      * Get instance identifiers from path
      *
-     * @param string $path
+     * @param Node $node
      *
      * @return string
      *   Entity type, view mode name.
      */
-    protected function getInstanceIdFromPath($path)
+    protected function getInstanceIdFromNode(Node $node)
     {
-        $parts = array_reverse(explode(Path::SEP, $path));
+        $parts = array_reverse(explode(Path::SEP, $node->getPath()));
 
         $viewMode = array_shift($parts);
         $bundle = array_shift($parts);
@@ -31,22 +32,17 @@ class ViewModeHelper extends AbstractHelper
         return 'view_mode';
     }
 
-    public function exists($path, Context $context)
+    public function exists(Node $node, Context $context)
     {
-        list($entityType,, $name) = $this->getInstanceIdFromPath($path);
+        list($entityType,, $name) = $this->getInstanceIdFromNode($node);
         $info = entity_get_info($entityType);
 
         return isset($info['view modes'][$name]);
     }
 
-    public function fillDefaults($path, array $object, Context $context)
+    protected function getFieldDefault(Node $node, $entityType, $bundle, $fieldName, Context $context)
     {
-        throw new \Exception("Not implemented");
-    }
-
-    protected function getFieldDefault($path, $entityType, $bundle, $fieldName, Context $context)
-    {
-        list($entityType, $bundle,) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle,) = $this->getInstanceIdFromNode($node);
 
         $default = array(
             'type'     => 'hidden',
@@ -59,7 +55,7 @@ class ViewModeHelper extends AbstractHelper
             return $default;
         }
         if (!$field = field_info_field_types($field['type'])) {
-            $context->logError("%s: %s field type does not exist", $path, $field['types']);
+            $context->logError("%s: %s field type does not exist", $node->getPath(), $field['types']);
             return $default;
         }
 
@@ -67,7 +63,7 @@ class ViewModeHelper extends AbstractHelper
         if (!empty($field['default_formatter'])) {
             $formatter = $field['default_formatter'];
             if (!field_info_formatter_types($formatter)) {
-                $context->logWarning(sprintf("%s: field %s defines non existing default formatter: %s", $path, $fieldName, $formatter));
+                $context->logWarning(sprintf("%s: field %s defines non existing default formatter: %s", $node->getPath(), $fieldName, $formatter));
                 $formatter = null;
             }
         }
@@ -83,7 +79,7 @@ class ViewModeHelper extends AbstractHelper
         return $default;
     }
 
-    public function deleteExistingObject($path, Context $context)
+    public function deleteExistingObject(Node $node, Context $context)
     {
         // @todo Can we really delete a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -91,15 +87,15 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    public function getExistingObject($path, Context $context)
+    public function getExistingObject(Node $node, Context $context)
     {
-        list($entityType,, $name) = $this->getInstanceIdFromPath($path);
+        list($entityType,, $name) = $this->getInstanceIdFromNode($node);
         $info = entity_get_info($entityType);
 
         return $info['view modes'][$name];
     }
 
-    public function rename($path, $newpath, $force = false, Context $context)
+    public function rename(Node $node, $newpath, $force = false, Context $context)
     {
         // @todo Can we really rename a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -107,9 +103,9 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    public function synchronize($path, array $object, Context $context)
+    public function synchronize(Node $node, Context $context)
     {
-        list($entityType, $bundle, $name) = $this->getInstanceIdFromPath($path);
+        list($entityType, $bundle, $name) = $this->getInstanceIdFromNode($node);
 
         // First populate the variable that will be used during the
         // hook_entity_info_alter() call to populate the view modes
@@ -128,7 +124,7 @@ class ViewModeHelper extends AbstractHelper
         $displayField = array();
 
         // Then deal with fields and such
-        foreach ($object as $propertyName => $formatter) {
+        foreach ($node->getValue() as $propertyName => $formatter) {
 
             if (isset($instances[$propertyName])) {
 
@@ -141,7 +137,7 @@ class ViewModeHelper extends AbstractHelper
                     } else if (false === $formatter || null === $formatter || 'delete' === $formatter) {
                         continue;
                     } else if (!is_string($formatter)) {
-                        $context->logWarning(sprintf("%s: %s invalid value for formatter", $path, $propertyName));
+                        $context->logWarning(sprintf("%s: %s invalid value for formatter", $node->getPath(), $propertyName));
                         $formatter = array();
                     } else {
                         $display['type'] = $formatter;
@@ -152,7 +148,7 @@ class ViewModeHelper extends AbstractHelper
 
                 // Merge default and save
                 $displayField[$propertyName] = drupal_array_merge_deep(
-                    $this->getFieldDefault($path, $entityType, $bundle, $propertyName, $context),
+                    $this->getFieldDefault($node, $entityType, $bundle, $propertyName, $context),
                     $display,
                     array('weight' => $weight++)
                 );
@@ -166,7 +162,7 @@ class ViewModeHelper extends AbstractHelper
                     } else if (false === $formatter || null === $formatter || 'delete' === $formatter) {
                         continue;
                     } else {
-                        $context->logWarning(sprintf("%s: %s extra fields can only be delete or default", $path, $propertyName));
+                        $context->logWarning(sprintf("%s: %s extra fields can only be delete or default", $node->getPath(), $propertyName));
                     }
                 }
 
@@ -174,7 +170,7 @@ class ViewModeHelper extends AbstractHelper
                 $displayExtra[$propertyName] = array('visible' => true, 'weight' => $weight++);
 
             } else {
-                $context->logError(sprintf("%s: %s property is nor a field nor an extra field", $path, $propertyName));
+                $context->logError(sprintf("%s: %s property is nor a field nor an extra field", $node->getPath(), $propertyName));
             }
         }
 

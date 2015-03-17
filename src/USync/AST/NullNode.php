@@ -2,15 +2,10 @@
 
 namespace USync\AST;
 
-class NullNode extends Node
+class NullNode extends ValueNode
 {
     public function getValue()
     {
         return null;
-    }
-
-    public function isTerminal()
-    {
-        return true;
     }
 }

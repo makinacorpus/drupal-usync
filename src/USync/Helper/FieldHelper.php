@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Node;
 use USync\Context;
 
 class FieldHelper extends AbstractHelper
@@ -56,9 +57,9 @@ class FieldHelper extends AbstractHelper
         return 'field';
     }
 
-    public function exists($path, Context $context)
+    public function exists(Node $node, Context $context)
     {
-        $name = $this->getLastPathSegment($path);
+        $name = $node->getName();
         if (field_info_field($name)) {
             return true;
         } else {
@@ -66,33 +67,28 @@ class FieldHelper extends AbstractHelper
         }
     }
 
-    public function fillDefaults($path, array $object, Context $context)
+    public function getExistingObject(Node $node, Context $context)
     {
-        throw new \Exception("Not implemented");
-    }
-
-    public function getExistingObject($path, Context $context)
-    {
-        $name = $this->getLastPathSegment($path);
+        $name = $node->getName();
         if ($info = field_info_field($name)) {
             return $info;
         }
-        $context->logCritical(sprintf("%s: does not exist", $path));
+        $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
-    public function deleteExistingObject($path, Context $context)
+    public function deleteExistingObject(Node $node, Context $context)
     {
-        $name = $this->getLastPathSegment($path);
-        $field = $this->getExistingObject($path, $context);
+        $name = $node->getName();
+        $field = $this->getExistingObject($node, $context);
 
         if (!$field) {
-            $context->logWarning(sprintf("%s: does not exists", $path));
+            $context->logWarning(sprintf("%s: does not exists", $node->getPath()));
             return false;
         }
 
         $nameList = array();
         foreach ($this->getInstances($name) as $instance) {
-            $nameList[] = $this->instanceHelper->getInstanceIdFromPath($instance['entity_type'], $instance['bundle'], $name);
+            $nameList[] = $this->instanceHelper->getInstanceIdFromNode($instance['entity_type'], $instance['bundle'], $name);
         }
         if (!empty($nameList)) {
             foreach ($nameList as $name) {
@@ -103,22 +99,27 @@ class FieldHelper extends AbstractHelper
         field_delete_field($name);
     }
 
-    public function synchronize($path, array $object, Context $context)
+    public function synchronize(Node $node, Context $context)
     {
-        if (!isset($object['type'])) {
-            $context->logCritical(sprintf("%s: has no type", $path));
+        $object = $node->getValue();
+        if (!is_array($object)) {
+            $object = array();
         }
 
-        $name = $this->getLastPathSegment($path);
+        if (!isset($object['type'])) {
+            $context->logCritical(sprintf("%s: has no type", $node->getPath()));
+        }
+
+        $name = $node->getName();
         $type = $object['type'];
         $typeInfo = field_info_field_types($type);
 
         if (empty($typeInfo)) {
-            $context->logCritical(sprintf("%s: type %s does not exist", $path, $type));
+            $context->logCritical(sprintf("%s: type %s does not exist", $node->getPath(), $type));
         }
 
-        if ($this->exists($path, $context)) {
-            $existing = $this->getExistingObject($path, $context);
+        if ($this->exists($node, $context)) {
+            $existing = $this->getExistingObject($node, $context);
         } else {
             $existing = null;
         }
@@ -141,13 +142,13 @@ class FieldHelper extends AbstractHelper
             $cardinality = $object['cardinality'] - $existing['cardinality'];
             if (0 !== $cardinality) {
                 if (0 < $cardinality) {
-                    $context->log(sprintf("%s: safe cardinality change", $path));
+                    $context->log(sprintf("%s: safe cardinality change", $node->getPath()));
                 } else {
                     // @todo Ensure there is data we can save in field
                     if (false) {
-                        $context->log(sprintf("%s: safe cardinality change due to data shape", $path));
+                        $context->log(sprintf("%s: safe cardinality change due to data shape", $node->getPath()));
                     } else {
-                        $context->logDataloss(sprintf("%s: unsafe cardinality change", $path));
+                        $context->logDataloss(sprintf("%s: unsafe cardinality change", $node->getPath()));
                     }
                 }
             }
@@ -158,17 +159,17 @@ class FieldHelper extends AbstractHelper
                 $instances = $this->getInstances($name);
 
                 if (empty($instances)) {
-                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $path, $type, $eType));
+                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $node->getPath(), $type, $eType));
                 } else {
                   // @todo Ensure there is data if there is instances
                   if (false) {
-                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $path, $type, $eType));
+                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $node->getPath(), $type, $eType));
                   } else {
                         // @todo Safe should ensure schema is the same
                         if (false) {
-                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $path, $type, $eType));
+                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $node->getPath(), $type, $eType));
                         } else {
-                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected", $path, $type, $eType));
+                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected", $node->getPath(), $type, $eType));
                         }
                     }
                 }

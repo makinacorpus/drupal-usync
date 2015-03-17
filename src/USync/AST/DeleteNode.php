@@ -2,15 +2,10 @@
 
 namespace USync\AST;
 
-class DeleteNode extends Node
+class DeleteNode extends ValueNode
 {
     public function getValue()
     {
         return 'delete';
-    }
-
-    public function isTerminal()
-    {
-        return true;
     }
 }

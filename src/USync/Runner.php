@@ -56,8 +56,6 @@ class Runner
      */
     public function processObject(Node $node, HelperInterface $helper, Context $context)
     {
-        $path = $node->getPath();
-
         if ($node instanceof DeleteNode || $node instanceof NullNode) {
             $mode = 'delete';
         } else if ($node instanceof DefaultNode) {
@@ -69,7 +67,7 @@ class Runner
                 $mode = 'delete';
             }
         } else if ($node instanceof ValueNode) {
-            $context->logError(sprintf("%s: invalid value type, ignoring", $path));
+            $context->logError(sprintf("%s: invalid value type, ignoring", $node->getPath()));
             return;
         } else {
             $mode = 'sync';
@@ -78,23 +76,26 @@ class Runner
         switch ($mode) {
 
             case 'delete':
-                $context->log(sprintf(" - %s", $path));
-                if ($helper->exists($path, $context)) {
-                    $helper->deleteExistingObject($path, $context);
+                $context->log(sprintf(" - %s", $node->getPath()));
+                if ($helper->exists($node, $context)) {
+                    $helper->deleteExistingObject($node, $context);
                 }
                 return;
 
             case 'sync':
+                /*
                 $object = $node->getValue();
 
                 if (!is_array($object)) {
                     $object = array();
                 }
+                 */
 
-                if ($helper->exists($path, $context)) {
-                    $context->log(sprintf(" ~ %s", $path));
+                if ($helper->exists($node, $context)) {
+                    $context->log(sprintf(" ~ %s", $node->getPath()));
 
-                    $existing = $helper->getExistingObject($path, $context);
+                    /*
+                    $existing = $helper->getExistingObject($node, $context);
 
                     // Proceed to merge accordingly to 'keep' and 'drop' keys.
                     if (!empty($object['keep'])) {
@@ -107,7 +108,7 @@ class Runner
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $node->getPath()));
                         }
                     }
                     if (!empty($object['drop'])) {
@@ -118,16 +119,17 @@ class Runner
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $node->getPath()));
                         }
                     }
+                     */
                 } else {
-                    $context->log(sprintf(" + %s", $path));
+                    $context->log(sprintf(" + %s", $node->getPath()));
                 }
 
-                unset($object['keep'], $object['drop']);
+                // unset($object['keep'], $object['drop']);
 
-                $helper->synchronize($path, $object, $context);
+                $helper->synchronize($node, $context);
                 break;
         }
     }

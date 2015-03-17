@@ -2,7 +2,7 @@
 
 namespace USync\AST;
 
-class Node implements NodeInterface
+class StubNode implements NodeInterface
 {
     /**
      * @var string
@@ -20,18 +20,6 @@ class Node implements NodeInterface
     protected $path = '';
 
     /**
-     * The node this one inherits from
-     *
-     * @var \USync\AST\Node
-     */
-    protected $baseNode;
-
-    /**
-     * @var \USync\AST\Node[]
-     */
-    protected $children = array();
-
-    /**
      * Default constructor
      *
      * @param string $name
@@ -46,12 +34,12 @@ class Node implements NodeInterface
 
     public function isTerminal()
     {
-        return false;
+        return true;
     }
 
     public function isExternal()
     {
-        return false;
+        return true;
     }
 
     public function getName()
@@ -66,12 +54,10 @@ class Node implements NodeInterface
 
     public function setBaseNode(NodeInterface $node)
     {
-        $this->baseNode = $node;
     }
 
     public function getBaseNode()
     {
-        return $this->baseNode;
     }
 
     public function hasChild($key)
@@ -81,31 +67,17 @@ class Node implements NodeInterface
 
     public function addChild(NodeInterface $node)
     {
-        if ($this->isTerminal()) {
-            throw new \LogicException("I am terminal");
-        }
-
-        $node->setParent($this);
-
-        $this->children[$node->getName()] = $node;
+        throw new \LogicException("I am terminal");
     }
 
     public function removeChild($key)
     {
-        if (!isset($this->children[$key])) {
-            throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
-        }
-
-        unset($this->children[$key]);
+        throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
     }
 
     public function getChild($key)
     {
-        if (!isset($this->children[$key])) {
-            throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
-        }
-
-        return $this->children[$key];
+        throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
     }
 
     public function setParent(NodeInterface $parent)
@@ -152,33 +124,16 @@ class Node implements NodeInterface
 
     public function getChildren()
     {
-        return $this->children;
+        return [];
     }
 
     public function getValue()
     {
-        $ret = array();
-
-        foreach ($this->children as $key => $node)  {
-            $ret[$key] = $node->getValue();
-        }
-
-        // Ensure inheritance is propagated in result array
-        if ($this->baseNode) {
-            if ($base = $this->baseNode->getValue()) {
-                $ret = drupal_array_merge_deep($base, $ret);
-            }
-        }
-
-        return $ret;
+        return null;
     }
 
     public function find($path)
     {
-        if (is_string($path)) {
-            $path = new Path($path);
-        }
-
-        return $path->find($this);
+        return [];
     }
 }

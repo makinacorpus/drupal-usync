@@ -4,8 +4,8 @@ namespace USync\AST;
 
 class BooleanNode extends ValueNode
 {
-    public function __construct($name, Node $parent = null, $value)
+    public function __construct($name, $value = null)
     {
-        parent::__construct($name, $parent, (bool)$value);
+        parent::__construct($name, (bool)$value);
     }
 }
