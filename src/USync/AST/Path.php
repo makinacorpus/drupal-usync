@@ -12,7 +12,12 @@ class Path
     /**
      * Match all wildcard
      */
-    const MATCHALL = '%';
+    const WILDCARD = '%';
+
+    /**
+     * Property name wildcard
+     */
+    const MATCH = '?';
 
     /**
      * Does the given path matches the given pattern
@@ -25,6 +30,8 @@ class Path
      */
     static public function match($path, $pattern, $partial = false)
     {
+        $properties = array();
+
         $parts = explode(self::SEP, $path);
         $segments = explode(self::SEP, $pattern);
 
@@ -35,18 +42,19 @@ class Path
         }
 
         for ($i = 0; $i < $length; ++$i) {
-            if (self::MATCHALL !== $segments[$i] && self::SEP !== $segments[$i] && $parts[$i] !== $segments[$i]) {
-                return false;
+            if (self::MATCH === $segments[$i][0]) {
+                if (!isset($segments[$i][0])) {
+                    throw new \InvalidArgumentException("Empty property name");
+                }
+                $name = substr($segments[$i], 1);
+                $properties[$name] = $parts[$i];
+            } else if (self::WILDCARD !== $segments[$i] && $parts[$i] !== $segments[$i]) {
+                return false; // Shortcut
             }
         }
 
-        return true;
+        return $properties;
     }
-
-    /**
-     * Path unique segment wildcard
-     */
-    const WILDCARD = '%';
 
     /**
      * @var string
@@ -85,7 +93,7 @@ class Path
 
         $current = array_shift($segments);
 
-        if (self::WILDCARD === $current || $node->getName() === $current) {
+        if (self::MATCH === $current[0] || self::WILDCARD === $current || $node->getName() === $current) {
             if (empty($segments)) {
                 $ret[$node->getPath()] = $node;
             } else {

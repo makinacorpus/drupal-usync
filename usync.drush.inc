@@ -41,7 +41,7 @@ function drush_usync_run_test() {
 
     $parser = new ArrayParser();
     $graph = $parser->parse($data);
-    print_r($graph);die();
+    //print_r($graph);die();
 
     $runner = new Runner();
     $runner->run(new Context($graph));

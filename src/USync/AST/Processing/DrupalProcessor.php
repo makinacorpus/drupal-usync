@@ -9,18 +9,32 @@ use USync\AST\ValueNode;
 use USync\Context;
 use USync\Helper\HelperInterface;
 
-abstract class AbstractDrupalProcessor implements ProcessorInterface, HelperInterface
+class DrupalProcessor implements ProcessorInterface
 {
+    /**
+     * @var \USync\Helper\HelperInterface[]
+     */
+    protected $helpers;
+
+    /**
+     * Default constructor
+     *
+     * @param \USync\Helper\HelperInterface[] $helpers
+     */
+    public function __construct($helpers)
+    {
+        $this->helpers = $helpers;
+    }
+
     /**
      * Implementation for execute()
      *
      * @param Node $node
      * @param Context $context
+     * @param \USync\Helper\HelperInterface $helper
      */
-    public function _execute(Node $node, Context $context)
+    public function _execute(Node $node, Context $context, HelperInterface $helper)
     {
-        $path = $node->getPath();
-
         if ($node instanceof DeleteNode || $node instanceof NullNode) {
             $mode = 'delete';
         } else if ($node instanceof DefaultNode) {
@@ -32,7 +46,7 @@ abstract class AbstractDrupalProcessor implements ProcessorInterface, HelperInte
                 $mode = 'delete';
             }
         } else if ($node instanceof ValueNode) {
-            $context->logError(sprintf("%s: invalid value type, ignoring", $path));
+            $context->logError(sprintf("%s: invalid value type, ignoring", $node->getPath()));
             return;
         } else {
             $mode = 'sync';
@@ -41,23 +55,26 @@ abstract class AbstractDrupalProcessor implements ProcessorInterface, HelperInte
         switch ($mode) {
 
             case 'delete':
-                $context->log(sprintf(" - %s", $path));
-                if ($this->exists($path, $context)) {
-                    $this->deleteExistingObject($path, $context);
+                $context->log(sprintf(" - %s", $node->getPath()));
+                if ($helper->exists($node, $context)) {
+                    $helper->deleteExistingObject($node, $context);
                 }
-                break;
+                return;
 
             case 'sync':
+                /*
                 $object = $node->getValue();
 
                 if (!is_array($object)) {
                     $object = array();
                 }
+                 */
 
-                if ($this->exists($path, $context)) {
-                    $context->log(sprintf(" ~ %s", $path));
+                if ($helper->exists($node, $context)) {
+                    $context->log(sprintf(" ~ %s", $node->getPath()));
 
-                    $existing = $this->getExistingObject($path, $context);
+                    /*
+                    $existing = $helper->getExistingObject($node, $context);
 
                     // Proceed to merge accordingly to 'keep' and 'drop' keys.
                     if (!empty($object['keep'])) {
@@ -70,7 +87,7 @@ abstract class AbstractDrupalProcessor implements ProcessorInterface, HelperInte
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $node->getPath()));
                         }
                     }
                     if (!empty($object['drop'])) {
@@ -81,31 +98,27 @@ abstract class AbstractDrupalProcessor implements ProcessorInterface, HelperInte
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $path));
+                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $node->getPath()));
                         }
                     }
+                     */
                 } else {
-                    $context->log(sprintf(" + %s", $path));
+                    $context->log(sprintf(" + %s", $node->getPath()));
                 }
 
-                unset($object['keep'], $object['drop']);
+                // unset($object['keep'], $object['drop']);
 
-                $this->synchronize($node, $context);
+                $helper->synchronize($node, $context);
                 break;
         }
     }
 
-    /**
-     * Does the given node matches this processor
-     *
-     * @param Node $node
-     */
-    abstract public function matches(Node $node);
-
     public function execute(Node $node, Context $context)
     {
-        if ($this->matches($node)) {
-            return $this->_execute($node, $context);
+        foreach ($this->helpers as $helper) {
+            if ($helper->canProcess($node)) {
+                return $this->_execute($node, $context, $helper);
+            }
         }
     }
 }

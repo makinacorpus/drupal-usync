@@ -2,31 +2,13 @@
 
 namespace USync\Helper;
 
+use USync\AST\Drupal\ViewNode;
 use USync\AST\Node;
 use USync\AST\Path;
 use USync\Context;
 
 class ViewModeHelper extends AbstractHelper
 {
-    /**
-     * Get instance identifiers from path
-     *
-     * @param Node $node
-     *
-     * @return string
-     *   Entity type, view mode name.
-     */
-    protected function getInstanceIdFromNode(Node $node)
-    {
-        $parts = array_reverse(explode(Path::SEP, $node->getPath()));
-
-        $viewMode = array_shift($parts);
-        $bundle = array_shift($parts);
-        $entityType = array_shift($parts);
-
-        return array($entityType, $bundle, $viewMode);
-    }
-
     public function getType()
     {
         return 'view_mode';
@@ -34,15 +16,19 @@ class ViewModeHelper extends AbstractHelper
 
     public function exists(Node $node, Context $context)
     {
-        list($entityType,, $name) = $this->getInstanceIdFromNode($node);
-        $info = entity_get_info($entityType);
+        /* @var $node ViewNode */
+        $entityType = $node->getEntityType();
+        $name       = $node->getName();
+        $info       = entity_get_info($entityType);
 
         return isset($info['view modes'][$name]);
     }
 
     protected function getFieldDefault(Node $node, $entityType, $bundle, $fieldName, Context $context)
     {
-        list($entityType, $bundle,) = $this->getInstanceIdFromNode($node);
+        /* @var $node ViewNode */
+        $entityType = $node->getEntityType();
+        $bundle     = $node->getBundle();
 
         $default = array(
             'type'     => 'hidden',
@@ -89,8 +75,10 @@ class ViewModeHelper extends AbstractHelper
 
     public function getExistingObject(Node $node, Context $context)
     {
-        list($entityType,, $name) = $this->getInstanceIdFromNode($node);
-        $info = entity_get_info($entityType);
+        /* @var $node ViewNode */
+        $entityType = $node->getEntityType();
+        $name       = $node->getName();
+        $info       = entity_get_info($entityType);
 
         return $info['view modes'][$name];
     }
@@ -105,7 +93,10 @@ class ViewModeHelper extends AbstractHelper
 
     public function synchronize(Node $node, Context $context)
     {
-        list($entityType, $bundle, $name) = $this->getInstanceIdFromNode($node);
+        /* @var $node ViewNode */
+        $entityType = $node->getEntityType();
+        $bundle     = $node->getBundle();
+        $name       = $node->getName();
 
         // First populate the variable that will be used during the
         // hook_entity_info_alter() call to populate the view modes
@@ -202,5 +193,10 @@ class ViewModeHelper extends AbstractHelper
 
         // So our custom view modes will appear
         entity_info_cache_clear();
+    }
+
+    public function canProcess(Node $node)
+    {
+        return $node instanceof ViewNode;
     }
 }

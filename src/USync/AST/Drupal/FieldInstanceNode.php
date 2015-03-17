@@ -17,23 +17,25 @@ class FieldInstanceNode extends Node implements DrupalNodeInterface
     }
 
     /**
-     * Get bundle this instance is attached to
+     * Get field name
+     *
+     * This is an alias to getName();
      *
      * @return string
      */
-    public function getBundle()
+    public function getFieldName()
     {
-        throw new \Exception("Not implemented");
+        return $this->name;
     }
 
-    /**
-     * Get entity type this instance is attached to
-     *
-     * @return string
-     */
     public function getEntityType()
     {
-        throw new \Exception("Not implemented");
+        return $this->getProperty('type');
+    }
+
+    public function getBundle()
+    {
+        return $this->getProperty('bundle');
     }
 
     public function exists()

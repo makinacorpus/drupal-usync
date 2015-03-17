@@ -58,4 +58,11 @@ interface HelperInterface
      * @param \USync\Context $context
      */
     public function synchronize(Node $node, Context $context);
+
+    /**
+     * Can this helper process the given node
+     *
+     * @param Node $node
+     */
+    public function canProcess(Node $node);
 }

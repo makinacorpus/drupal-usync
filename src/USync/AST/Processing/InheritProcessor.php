@@ -7,19 +7,6 @@ use USync\Context;
 
 class InheritProcessor implements ProcessorInterface
 {
-    /**
-     * List of path patterns that can use inheritance
-     *
-     * @todo Use this
-     */
-    static protected $inheritable = array(
-        'entity.%',
-        'field.%',
-        'image.%',
-        'view.%.%',
-        'view.%.%.%',
-    );
-
     public function execute(Node $node, Context $context)
     {
         $sorted = array();

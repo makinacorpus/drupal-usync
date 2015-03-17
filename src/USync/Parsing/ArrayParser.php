@@ -11,13 +11,11 @@ use USync\AST\Path;
 class ArrayParser
 {
     static $pathMap = [
-        'field.%'             => '\USync\AST\Drupal\FieldNode',
-        'entity.%.%'          => '\USync\AST\Drupal\EntityNode',
-        'entity.%.%.field.%'  => '\USync\AST\Drupal\FieldInstanceNode',
-        'view.%'              => '\USync\AST\Drupal\EntityRefNode',
-        'view.%.%'            => '\USync\AST\Drupal\ViewCollectionNode',
-        'view.%.%.%'          => '\USync\AST\Drupal\ViewNode',
-        'variable.%'          => '\USync\AST\Drupal\VariableNode',
+        'field.%'                      => '\USync\AST\Drupal\FieldNode',
+        'entity.?type.?bundle'         => '\USync\AST\Drupal\EntityNode',
+        'entity.?type.?bundle.field.%' => '\USync\AST\Drupal\FieldInstanceNode',
+        'view.?type.?bundle.%'         => '\USync\AST\Drupal\ViewNode',
+        'variable.%'                   => '\USync\AST\Drupal\VariableNode',
     ];
 
     protected function _parse(Node $parent, $name, $value = null)
@@ -32,8 +30,9 @@ class ArrayParser
 
         if (null === $node) {
             foreach (self::$pathMap as $pattern => $class) {
-                if (class_exists($class) && Path::match($path, $pattern)) {
+                if (class_exists($class) && ($properties = Path::match($path, $pattern))) {
                     $node = new $class($name, $value);
+                    $node->setProperties($properties);
                     break;
                 }
             }

@@ -52,6 +52,20 @@ class StubNode implements NodeInterface
         return $this->path;
     }
 
+    public function setProperty($name, $value)
+    {
+    }
+
+    public function getProperty($name)
+    {
+        throw new \InvalidArgumentException(sprintf("%s property does not exists", $name));
+    }
+
+    public function getProperties()
+    {
+        return [];
+    }
+
     public function setBaseNode(NodeInterface $node)
     {
     }

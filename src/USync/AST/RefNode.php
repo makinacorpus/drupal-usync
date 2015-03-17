@@ -21,6 +21,10 @@ class RefNode extends Node
 
     public function getReference()
     {
+        if (null === $this->ref) {
+            throw new \LogicException(sprintf("%s: referenced node is not set", $this->path));
+        }
+
         return $this->ref;
     }
 

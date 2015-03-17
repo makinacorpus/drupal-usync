@@ -33,6 +33,35 @@ interface NodeInterface
     public function getPath();
 
     /**
+     * Set arbitrary property
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function setProperty($name, $value);
+
+    /**
+     * Get arbitrary property
+     *
+     * @param string $name
+     */
+    public function getProperty($name);
+
+    /**
+     * Set all properties at once
+     *
+     * @param mixed[] $properties
+     */
+    public function setProperties($properties);
+
+    /**
+     * Get arbitrary set properties
+     *
+     * @return mixed[]
+     */
+    public function getProperties();
+
+    /**
      * Sets the node which this node inherits from
      * 
      * @param \USync\AST\Node $node

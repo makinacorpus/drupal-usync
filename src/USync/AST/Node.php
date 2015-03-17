@@ -29,7 +29,12 @@ class Node implements NodeInterface
     /**
      * @var \USync\AST\Node[]
      */
-    protected $children = array();
+    protected $children = [];
+
+    /**
+     * @var mixed[]
+     */
+    protected $properties = [];
 
     /**
      * Default constructor
@@ -62,6 +67,30 @@ class Node implements NodeInterface
     public function getPath()
     {
         return $this->path;
+    }
+
+    public function setProperty($name, $value)
+    {
+        $this->properties[$name] = $value;
+    }
+
+    public function getProperty($name)
+    {
+        if (array_key_exists($name, $this->properties)) {
+            return $this->properties[$name];
+        }
+
+        throw new \InvalidArgumentException(sprintf("%s property does not exists", $name));
+    }
+
+    public function setProperties($properties)
+    {
+        return $this->properties = $properties;
+    }
+
+    public function getProperties()
+    {
+        return $this->properties;
     }
 
     public function setBaseNode(NodeInterface $node)

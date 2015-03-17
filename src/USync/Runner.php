@@ -2,13 +2,9 @@
 
 namespace USync;
 
-use USync\AST\BooleanNode;
-use USync\AST\DefaultNode;
-use USync\AST\DeleteNode;
 use USync\AST\Node;
-use USync\AST\NullNode;
+use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Processing\InheritProcessor;
-use USync\AST\ValueNode;
 use USync\AST\Visitor;
 use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
@@ -35,103 +31,13 @@ class Runner
         // Always process fields first.
         // @todo Do not import non used fields.
         $instanceHelper = new FieldInstanceHelper();
-        $fieldHelper = new FieldHelper($instanceHelper);
-        $nodeHelper = new NodeEntityHelper($fieldHelper);
-        $viewHelper = new ViewModeHelper();
-        $variableHelper = new VariableHelper();
         $this->helpers = array(
-            'field.%' => $fieldHelper,
-            'entity.node.%' => $nodeHelper,
+            'field.%'            => new FieldHelper($instanceHelper),
+            'entity.node.%'      => new NodeEntityHelper(),
             'entity.%.%.field.%' => $instanceHelper,
-            'view.%.%.%' => $viewHelper,
-            'variable.%' => $variableHelper,
+            'view.%.%.%'         => new ViewModeHelper(),
+            'variable.%'         => new VariableHelper(),
         );
-    }
-
-    /**
-     * Process the given node using the given helper
-     *
-     * @param Node $node
-     * @param HelperInterface $helper
-     */
-    public function processObject(Node $node, HelperInterface $helper, Context $context)
-    {
-        if ($node instanceof DeleteNode || $node instanceof NullNode) {
-            $mode = 'delete';
-        } else if ($node instanceof DefaultNode) {
-            $mode = 'sync';
-        } else if ($node instanceof BooleanNode) {
-            if ($node->getValue()) {
-                $mode = 'sync';
-            } else {
-                $mode = 'delete';
-            }
-        } else if ($node instanceof ValueNode) {
-            $context->logError(sprintf("%s: invalid value type, ignoring", $node->getPath()));
-            return;
-        } else {
-            $mode = 'sync';
-        }
-
-        switch ($mode) {
-
-            case 'delete':
-                $context->log(sprintf(" - %s", $node->getPath()));
-                if ($helper->exists($node, $context)) {
-                    $helper->deleteExistingObject($node, $context);
-                }
-                return;
-
-            case 'sync':
-                /*
-                $object = $node->getValue();
-
-                if (!is_array($object)) {
-                    $object = array();
-                }
-                 */
-
-                if ($helper->exists($node, $context)) {
-                    $context->log(sprintf(" ~ %s", $node->getPath()));
-
-                    /*
-                    $existing = $helper->getExistingObject($node, $context);
-
-                    // Proceed to merge accordingly to 'keep' and 'drop' keys.
-                    if (!empty($object['keep'])) {
-                        if ('all' === $object['keep']) {
-                            drupal_array_merge_deep($existing, $object);
-                        } else if (is_array($object['keep'])) {
-                            foreach ($object['keep'] as $key) {
-                                if (array_key_exists($key, $existing)) {
-                                    $object[$key] = $existing[$key];
-                                }
-                            }
-                        } else {
-                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $node->getPath()));
-                        }
-                    }
-                    if (!empty($object['drop'])) {
-                        if (is_array($object['drop'])) {
-                            foreach ($object['drop'] as $key) {
-                                if (isset($object[$key])) {
-                                    unset($object[$key]);
-                                }
-                            }
-                        } else {
-                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $node->getPath()));
-                        }
-                    }
-                     */
-                } else {
-                    $context->log(sprintf(" + %s", $node->getPath()));
-                }
-
-                // unset($object['keep'], $object['drop']);
-
-                $helper->synchronize($node, $context);
-                break;
-        }
     }
 
     /**
@@ -147,12 +53,9 @@ class Runner
         $visitor->addProcessor(new InheritProcessor());
         $visitor->execute($config, $context);
 
-        // @todo This should be a visitor to, but based upon pattern matching
-        foreach ($this->helpers as $pattern => $helper) {
-            foreach ($config->find($pattern) as $node) {
-                $this->processObject($node, $helper, $context);
-            }
-        }
+        $visitor = new Visitor();
+        $visitor->addProcessor(new DrupalProcessor($this->helpers));
+        $visitor->execute($config, $context);
 
         // Sorry.
         menu_rebuild();

@@ -2,19 +2,15 @@
 
 namespace USync\Helper;
 
+use USync\AST\Drupal\EntityNode;
 use USync\AST\Node;
 use USync\Context;
 
 class NodeEntityHelper extends AbstractEntityHelper
 {
-    /**
-     * Default constructor
-     *
-     * @param \USync\Helper\FieldHelper $fieldHelper
-     */
-    public function __construct(FieldHelper $fieldHelper)
+    public function __construct()
     {
-        parent::__construct($fieldHelper, 'node');
+        parent::__construct('node');
     }
 
     public function deleteExistingObject(Node $node, Context $context)
@@ -67,5 +63,10 @@ class NodeEntityHelper extends AbstractEntityHelper
         }
 
         node_type_save((object)$info);
+    }
+
+    public function canProcess(Node $node)
+    {
+        return $node instanceof EntityNode /* && 'node' === $node->getEntityType() */;
     }
 }

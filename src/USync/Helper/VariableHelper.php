@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Drupal\VariableNode;
 use USync\AST\Node;
 use USync\Context;
 
@@ -30,5 +31,10 @@ class VariableHelper extends AbstractHelper
     public function synchronize(Node $node, Context $context)
     {
         variable_set($node->getName(), $node->getValue());
+    }
+
+    public function canProcess(Node $node)
+    {
+        return $node instanceof VariableNode;
     }
 }

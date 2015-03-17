@@ -2,6 +2,7 @@
 
 namespace USync\Helper;
 
+use USync\AST\Drupal\FieldNode;
 use USync\AST\Node;
 use USync\Context;
 
@@ -60,6 +61,7 @@ class FieldHelper extends AbstractHelper
     public function exists(Node $node, Context $context)
     {
         $name = $node->getName();
+
         if (field_info_field($name)) {
             return true;
         } else {
@@ -185,5 +187,10 @@ class FieldHelper extends AbstractHelper
         } else {
             field_create_field($object);
         }
+    }
+
+    public function canProcess(Node $node)
+    {
+        return $node instanceof FieldNode;
     }
 }
