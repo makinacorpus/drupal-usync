@@ -5,6 +5,7 @@ namespace USync;
 use USync\AST\Node;
 use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Processing\InheritProcessor;
+use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Helper\FieldHelper;
 use USync\Helper\FieldInstanceHelper;
@@ -21,6 +22,11 @@ class Runner
     protected $helpers = array();
 
     /**
+     * @var \USync\AST\Processing\StatProcessor
+     */
+    protected $statProcessor;
+
+    /**
      * Default constructor
      */
     public function __construct()
@@ -32,32 +38,49 @@ class Runner
         // @todo Do not import non used fields.
         $instanceHelper = new FieldInstanceHelper();
         $this->helpers = array(
-            'field.%'            => new FieldHelper($instanceHelper),
-            'entity.node.%'      => new NodeEntityHelper(),
-            'entity.%.%.field.%' => $instanceHelper,
-            'view.%.%.%'         => new ViewModeHelper(),
-            'variable.%'         => new VariableHelper(),
+            new FieldHelper($instanceHelper),
+            new NodeEntityHelper(),
+            $instanceHelper,
+            new ViewModeHelper(),
+            new VariableHelper(),
         );
+
+        $this->statProcessor = new StatProcessor();
+    }
+
+    /**
+     * Get stat processor
+     *
+     * @return \USync\AST\Processing\StatProcessor
+     */
+    public function getStatProcessor()
+    {
+        return $this->statProcessor;
     }
 
     /**
      * Run changes following the given configuration
      *
-     * @param Config $config
+     * @param \USync\Context $config
+     * @param boolean $doProcess
+     *   Effectively writes Drupal data
      */
-    public function run(Context $context)
+    public function run(Context $context, $doProcess = true)
     {
         $config = $context->getGraph();
 
+        $this->statProcessor->reset();
+
         $visitor = new Visitor();
         $visitor->addProcessor(new InheritProcessor());
+        $visitor->addProcessor($this->statProcessor);
         $visitor->execute($config, $context);
 
-        $visitor = new Visitor();
-        $visitor->addProcessor(new DrupalProcessor($this->helpers));
-        $visitor->execute($config, $context);
-
-        // Sorry.
-        menu_rebuild();
+        if ($doProcess) {
+            $visitor = new Visitor();
+            $visitor->addProcessor(new DrupalProcessor($this->helpers));
+            $visitor->execute($config, $context);
+            menu_rebuild(); // Sorry.
+        }
     }
 }

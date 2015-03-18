@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\EntityNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\Context;
 
 class NodeEntityHelper extends AbstractEntityHelper
@@ -13,7 +13,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         parent::__construct('node');
     }
 
-    public function deleteExistingObject(Node $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context)
     {
         $bundle = $node->getName();
         $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle));
@@ -25,7 +25,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         node_type_delete($bundle);
     }
 
-    public function getExistingObject(Node $node, Context $context)
+    public function getExistingObject(NodeInterface $node, Context $context)
     {
         if (!$this->exists($node, $context)) {
             $context->logCritical(sprintf("%s: node type does not exist", $node->getPath()));
@@ -34,7 +34,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         return (array)node_type_load($node->getName());
     }
 
-    public function synchronize(Node $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context)
     {
         $bundle = $node->getName();
 
@@ -65,7 +65,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         node_type_save((object)$info);
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof EntityNode /* && 'node' === $node->getEntityType() */;
     }

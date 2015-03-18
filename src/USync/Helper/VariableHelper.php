@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\VariableNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\Context;
 
 class VariableHelper extends AbstractHelper
@@ -13,27 +13,27 @@ class VariableHelper extends AbstractHelper
         return 'variable';
     }
 
-    public function exists(Node $node, Context $context)
+    public function exists(NodeInterface $node, Context $context)
     {
         return array_key_exists($node->getName(), $GLOBALS['conf']);
     }
 
-    public function getExistingObject(Node $node, Context $context)
+    public function getExistingObject(NodeInterface $node, Context $context)
     {
         return variable_get($node->getName());
     }
 
-    public function deleteExistingObject(Node $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context)
     {
         variable_del($node->getName());
     }
 
-    public function synchronize(Node $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context)
     {
         variable_set($node->getName(), $node->getValue());
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof VariableNode;
     }

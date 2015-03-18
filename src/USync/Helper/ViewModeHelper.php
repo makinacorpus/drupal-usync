@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\ViewNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
@@ -14,7 +14,7 @@ class ViewModeHelper extends AbstractHelper
         return 'view_mode';
     }
 
-    public function exists(Node $node, Context $context)
+    public function exists(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();
@@ -24,7 +24,7 @@ class ViewModeHelper extends AbstractHelper
         return isset($info['view modes'][$name]);
     }
 
-    protected function getFieldDefault(Node $node, $entityType, $bundle, $fieldName, Context $context)
+    protected function getFieldDefault(NodeInterface $node, $entityType, $bundle, $fieldName, Context $context)
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();
@@ -65,7 +65,7 @@ class ViewModeHelper extends AbstractHelper
         return $default;
     }
 
-    public function deleteExistingObject(Node $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context)
     {
         // @todo Can we really delete a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -73,7 +73,7 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    public function getExistingObject(Node $node, Context $context)
+    public function getExistingObject(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();
@@ -83,7 +83,7 @@ class ViewModeHelper extends AbstractHelper
         return $info['view modes'][$name];
     }
 
-    public function rename(Node $node, $newpath, $force = false, Context $context)
+    public function rename(NodeInterface $node, $newpath, $force = false, Context $context)
     {
         // @todo Can we really rename a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -91,7 +91,7 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    public function synchronize(Node $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();
@@ -195,7 +195,7 @@ class ViewModeHelper extends AbstractHelper
         entity_info_cache_clear();
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof ViewNode;
     }

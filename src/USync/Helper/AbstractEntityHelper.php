@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\EntityNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\Context;
 
 abstract class AbstractEntityHelper extends AbstractHelper
@@ -28,14 +28,14 @@ abstract class AbstractEntityHelper extends AbstractHelper
         return 'entity_' . $this->entityType;
     }
 
-    public function exists(Node $node, Context $context)
+    public function exists(NodeInterface $node, Context $context)
     {
         $info = entity_get_info($this->entityType);
 
         return !empty($info) && !empty($info['bundles'][$node->getName()]);
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof EntityNode;
     }

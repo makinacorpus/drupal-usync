@@ -2,7 +2,7 @@
 
 namespace USync\Helper;
 
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\Context;
 
 /**
@@ -20,49 +20,49 @@ interface HelperInterface
     /**
      * Does the object exists in site
      *
-     * @param \USync\AST\Node $node
+     * @param \USync\AST\NodeInterface $node
      * @param \USync\Context $context
      */
-    public function exists(Node $node, Context $context);
+    public function exists(NodeInterface $node, Context $context);
 
     /**
      * Delete existing object from site
      *
-     * @param \USync\AST\Node $node
+     * @param \USync\AST\NodeInterface $node
      * @param \USync\Context $context
      */
-    public function deleteExistingObject(Node $node, Context $context);
+    public function deleteExistingObject(NodeInterface $node, Context $context);
 
     /**
      * Get existing object
      *
-     * @param \USync\AST\Node $node
+     * @param \USync\AST\NodeInterface $node
      * @param \USync\Context $context
      */
-    public function getExistingObject(Node $node, Context $context);
+    public function getExistingObject(NodeInterface $node, Context $context);
 
     /**
      * Rename an existing object
      *
-     * @param \USync\AST\Node $node
+     * @param \USync\AST\NodeInterface $node
      * @param string $newpath
      * @param boolean $force
      * @param \USync\Context $context
      */
-    public function rename(Node $node, $newpath, $force = false, Context $context);
+    public function rename(NodeInterface $node, $newpath, $force = false, Context $context);
 
     /**
      * Synchronize incoming object
      *
-     * @param \USync\AST\Node $node
+     * @param \USync\AST\NodeInterface $node
      * @param \USync\Context $context
      */
-    public function synchronize(Node $node, Context $context);
+    public function synchronize(NodeInterface $node, Context $context);
 
     /**
      * Can this helper process the given node
      *
-     * @param Node $node
+     * @param \USync\AST\NodeInterface $node
      */
-    public function canProcess(Node $node);
+    public function canProcess(NodeInterface $node);
 }

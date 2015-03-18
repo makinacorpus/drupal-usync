@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\FieldInstanceNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
@@ -14,7 +14,7 @@ class FieldInstanceHelper extends AbstractHelper
         return 'field_instance';
     }
 
-    public function exists(Node $node, Context $context)
+    public function exists(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         if (field_info_instance($node->getEntityType(), $node->getName(), $node->getBundle())) {
@@ -24,7 +24,7 @@ class FieldInstanceHelper extends AbstractHelper
         }
     }
 
-    public function getExistingObject(Node $node, Context $context)
+    public function getExistingObject(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         $existing = field_info_instance($node->getEntityType(), $node->getName(), $node->getBundle());
@@ -36,7 +36,7 @@ class FieldInstanceHelper extends AbstractHelper
         return $existing;
     }
 
-    public function deleteExistingObject(Node $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         $existing = field_info_instance($node->getEntityType(), $node->getName(), $node->getBundle());
@@ -49,7 +49,7 @@ class FieldInstanceHelper extends AbstractHelper
         field_delete_instance($existing);
     }
 
-    public function synchronize(Node $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         $entityType = $node->getEntityType();
@@ -93,7 +93,7 @@ class FieldInstanceHelper extends AbstractHelper
         }
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof FieldInstanceNode;
     }

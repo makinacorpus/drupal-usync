@@ -2,7 +2,7 @@
 
 namespace USync\Helper;
 
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
@@ -22,17 +22,17 @@ abstract class AbstractHelper implements HelperInterface
      * Invoke a hook to modules to allow them to alter data
      *
      * @param string $hook
-     * @param Node $node
+     * @param NodeInterface $node
      *   Node from the graph
      * @param array $object
      *   Drupal object being saved
      */
-    protected function alter($hook, Node $node, array &$object)
+    protected function alter($hook, NodeInterface $node, array &$object)
     {
         drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $node);
     }
 
-    public function rename(Node $node, $newpath, $force = false, Context $context)
+    public function rename(NodeInterface $node, $newpath, $force = false, Context $context)
     {
         throw new \Exception("Not implemented");
 

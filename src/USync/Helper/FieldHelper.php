@@ -3,7 +3,7 @@
 namespace USync\Helper;
 
 use USync\AST\Drupal\FieldNode;
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 use USync\Context;
 
 class FieldHelper extends AbstractHelper
@@ -58,7 +58,7 @@ class FieldHelper extends AbstractHelper
         return 'field';
     }
 
-    public function exists(Node $node, Context $context)
+    public function exists(NodeInterface $node, Context $context)
     {
         $name = $node->getName();
 
@@ -69,7 +69,7 @@ class FieldHelper extends AbstractHelper
         }
     }
 
-    public function getExistingObject(Node $node, Context $context)
+    public function getExistingObject(NodeInterface $node, Context $context)
     {
         $name = $node->getName();
         if ($info = field_info_field($name)) {
@@ -78,7 +78,7 @@ class FieldHelper extends AbstractHelper
         $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
-    public function deleteExistingObject(Node $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context)
     {
         $name = $node->getName();
         $field = $this->getExistingObject($node, $context);
@@ -101,7 +101,7 @@ class FieldHelper extends AbstractHelper
         field_delete_field($name);
     }
 
-    public function synchronize(Node $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context)
     {
         $object = $node->getValue();
         if (!is_array($object)) {
@@ -189,7 +189,7 @@ class FieldHelper extends AbstractHelper
         }
     }
 
-    public function canProcess(Node $node)
+    public function canProcess(NodeInterface $node)
     {
         return $node instanceof FieldNode;
     }

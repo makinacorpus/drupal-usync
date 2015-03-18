@@ -26,7 +26,9 @@ class Path
      * @param string $pattern
      * @param boolean $partial
      *
-     * @return boolean
+     * @return string[]
+     *   Matched properties. Warning the entry might be an empty array, if
+     *   path does not match at all, strict false will be returned instead
      */
     static public function match($path, $pattern, $partial = false)
     {

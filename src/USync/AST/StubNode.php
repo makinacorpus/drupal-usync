@@ -61,6 +61,10 @@ class StubNode implements NodeInterface
         throw new \InvalidArgumentException(sprintf("%s property does not exists", $name));
     }
 
+    public function setProperties($properties)
+    {
+    }
+
     public function getProperties()
     {
         return [];

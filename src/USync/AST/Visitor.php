@@ -2,6 +2,7 @@
 
 namespace USync\AST;
 
+use USync\AST\Processing\CallableProcessor;
 use USync\AST\Processing\ProcessorInterface;
 use USync\Context;
 
@@ -19,12 +20,19 @@ class Visitor
     protected $processors;
 
     /**
-     * Add processor for the traversa
-     * @param ProcessorInterface $processor
+     * Add processor for the traversal
+     *
+     * @param callable|ProcessorInterface $processor
      */
-    public function addProcessor(ProcessorInterface $processor)
+    public function addProcessor($processor)
     {
-        $this->processors[] = $processor;
+        if ($processor instanceof ProcessorInterface) {
+            $this->processors[] = $processor;
+        } else if (is_callable($processor)) {
+            $this->processors[] = new CallableProcessor($processor);
+        } else {
+            throw new \InvalidArgumentException("Processor is not callable or does not implement \USync\AST\Processing\ProcessorInterface");
+        }
     }
 
     /**
