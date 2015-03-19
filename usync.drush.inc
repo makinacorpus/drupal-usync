@@ -176,9 +176,6 @@ function drush_usync_run() {
     $pathes = null;
   } else {
     $pathes = explode(',', $pathes);
-    // @todo
-    drush_print(dt("--match=PATH is not implemented yet"));
-    drush_die();
   }
 
   $tx = null;
@@ -197,7 +194,20 @@ function drush_usync_run() {
     $visitor->execute($graph, $context);
 
     $visitor = new Visitor();
-    $visitor->addProcessor(new DrupalProcessor($helpers));
+    $drupalProcessor = new DrupalProcessor($helpers);
+
+    if (null !== $pathes) {
+      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $pathes, $partial) {
+        foreach ($pathes as $pattern) {
+          if (false !== Path::match($node->getPath(), $pattern, $partial)) {
+            $drupalProcessor->execute($node, $context);
+          }
+        }
+      });
+    } else {
+      $visitor->addProcessor($drupalProcessor);
+    }
+
     $visitor->execute($graph, $context);
 
     menu_rebuild(); // Sorry.
