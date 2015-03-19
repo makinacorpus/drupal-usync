@@ -4,11 +4,10 @@
  * µSync module.
  */
 
-use USync\AST\Node;
-use USync\Context;
+use USync\AST\NodeInterface;
+use USync\Parsing\ArrayParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
-use USync\Runner;
 
 /**
  * View mode variable nae.
@@ -19,13 +18,6 @@ const USYNC_VAR_VIEW_MODE = 'usync_view_mode';
  * Load compatibility layer with other modules.
  */
 require_once __DIR__ . '/usync.compat.inc';
-
-/**
- * Implements hook_init().
- */
-function usync_init() {
-  //$discovery = new PathDiscovery(); usync($discovery->discover(__DIR__ . '/sample/reallife', new YamlReader()));
-}
 
 /**
  * Implements hook_entity_info_alter().
@@ -47,32 +39,125 @@ function usync_entity_info_alter(&$entity_info) {
 }
 
 /**
- * Do sync.
+ * Find modules implementing our own hook.
  *
- * @param \USync\Node $graph
- *   System configuration.
+ * @return string[][]
+ *   First dimension keys are module internal names, values are arrays
+ *   of listed sources, a source is supposed to be a file or directory
+ *   path relative to the module root.
  */
-function usync(Node $graph) {
-  $tx = null;
+function usync_module_list() {
+  $ret = [];
 
-  try {
-    $tx = db_transaction();
+  foreach (system_list('module_enabled') as $module => $data) {
+    if (!empty($data->info['usync'])) {
 
-    $runner = new Runner();
-    $runner->run(new Context($graph));
+      $sources = $data->info['usync'];
+      // For lazy people this module allows to declare only one source
+      // not using the info array form ([]). Lazy people are lazy there
+      // is no point in fighting against them.
+      if (!is_array($sources)) {
+        $sources = [$sources];
+      }
 
-    unset($tx); // Explicit commit.
+      $ret[$module] = $sources;
+    }
+  }
 
-  } catch (\Exception $e) {
-    if ($tx) {
-      try {
-        $tx->rollback();
-      } catch (Exception $e2) {}
+  return $ret;
+}
+
+/**
+ * Create a graph from the given sources.
+ *
+ * @param string[] $sources
+ *   Array of file or directory paths.
+ * @param string $type
+ *   Datatype to look for.
+ *   @deprecated
+ *   @todo Move the 'type' switch into each source
+ *
+ * @return \USync\AST\NodeInterface
+ *   Merged graph of everything.
+ */
+function usync_graph_create($sources, $type = 'yaml') {
+  $full = array();
+
+  foreach ($sources as $source) {
+
+    if (!is_dir($source) && !is_file($source)) {
+      trigger_error(sprintf("%s: file does not exists", $source));
+      return false;
     }
 
-    drupal_set_message($e->getMessage(), 'error');
+    if (!empty($type)) {
+      $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
+      if (!class_exists($readerClass)) {
+        trigger_error(sprintf("'%s': type is not supported", $type));
+        return false;
+      }
+      $reader = new $readerClass();
+    } else {
+      $reader = new YamlReader();
+    }
+  
+    if (is_file($source)) {
+      $data = $reader->read($source);
+    } else if (is_dir($source)) {
+      $discovery = new PathDiscovery();
+      $data = $discovery->discover($source, $reader);
+    }
+
+    if (empty($data)) {
+      triggger_error(sprintf("%s: Could not parse file or folder", $source));
+      return false;
+    }
+
+    $full = drupal_array_merge_deep($full, $data);
+  }
+
+  $parser = new ArrayParser();
+
+  return $parser->parse($full);
+}
+
+/**
+ * Get graph from the given module.
+ *
+ * @param string $module
+ *   The module for which to get the graph.
+ * @param string[] $sources
+ *   List of declared source names you want to join into this graph.
+ *
+ * @return \USync\AST\NodeInterface
+ *   The graph.
+ */
+function usync_module_graph_get($module, array $sources = null) {
+
+  $list = usync_module_list();
+
+  if (!module_exists($module)) {
+    trigger_error(sprintf("%s is not enable or does not exist", $module));
+    return false;
+  }
+  if (!isset($list[$module])) {
+    trigger_error(sprintf("%s does not declare any synchronization sources", $module));
     return false;
   }
 
-  return true;
+  if (null === $sources) {
+    $sources = $list[$module];
+  }
+
+  $path = drupal_get_path('module', $module);
+
+  foreach ($sources as $index => $source) {
+    if (!in_array($source, $list[$module])) {
+      trigger_error(sprintf("%s does not declare the '%s' source", $module, $source));
+      return false;
+    }
+    $sources[$index] = $path . '/' . $source;
+  }
+
+  return usync_graph_create($sources);
 }

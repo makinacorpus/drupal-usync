@@ -21,66 +21,98 @@ use USync\AST\Drupal\DrupalNodeInterface;
  */
 function usync_drush_command() {
   return array(
-    'usync-run-test' => array(
-      'description' => "Run test import; WARNING: this writes data into your site!",
-      'aliases'     => array('urt'),
+    'usync-run' => array(
+      'description' => "Run synchronization",
+      'aliases'     => array("usr"),
+      'options'     => array(
+        'source'    => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+        'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
+        'match'     => "Filters only components that matches the given path",
+        'partial'   => "Do partial match (by prefix) only",
+      ),
+      'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
+    ),
+    'usync-stat' => array(
+      'description' => "List all components in the given source",
+      'aliases'     => array("uss"),
+      'options'     => array(
+        'source'    => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+        'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
+        'match'     => "Filters only components that matches the given path",
+        'partial'   => "Do partial match (by prefix) only",
+      ),
       'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
     'usync-list' => array(
-      'description' => "List sources",
+      'description' => "List sources modules",
       'aliases'     => array("usl"),
-      'options'     => array(
-        'source'    => "Path to source file (folder or file)",
-        'type'      => "File type to match (default is 'yaml')",
-        'match'     => "Filters only components that matches the given path.",
-        'partial'   => "Do partial match (by prefix) only",
-      ),
+      'options'     => array(),
       'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
   );
 }
 
 /**
- * List what's in the source
+ * Get graph using Drush common options.
+ *
+ * @return \USync\AST\NodeInterface
  */
-function drush_usync_list() {
+function _drush_usync_list() {
 
   $source  = drush_get_option('source');
-  $pathes  = drush_get_option('match');
   $type    = drush_get_option('type');
-  $partial = (bool)drush_get_option('partial');
+  $module  = null;
 
   if (empty($source)) {
     drush_print(dt("--source=PATH option is mandatory"));
     drush_die();
   }
-  if (!is_dir($source) && !is_file($source)) {
-    drush_print(dt("@path does not exists", array('@path' => $source)));
-    drush_die();
-  }
 
-  if (!empty($type)) {
-    $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
-    if (!class_exists($readerClass)) {
-      drush_print(dt("'@type' type is not supported", array('@type' => $type)));
+  if (strpos($source, ':')) {
+    list($module, $source) = explode(':', $source);
+    if (!module_exists($module)) {
+      drush_print(dt("@module does not exist", array('@module' => $module)));
       drush_die();
     }
-    $reader = new $readerClass();
+    if (empty($source)) {
+      $graph = usync_module_graph_get($module);
+    } else {
+      $graph = usync_module_graph_get($module, [$source]);
+    }
   } else {
-    $reader = new YamlReader();
+    $graph = usync_graph_create([$source], $type);
   }
 
-  if (is_file($source)) {
-    $data = $reader->read($source);
-  } else if (is_dir($source)) {
-    $discovery = new PathDiscovery();
-    $data = $discovery->discover($source, $reader);
-  }
-
-  if (empty($data)) {
-    drush_print(dt("Could not parse file or folder"));
+  if (empty($graph)) {
     drush_die();
   }
+
+  return $graph;
+}
+
+/**
+ * List all modules declaring stuff to sync.
+ */
+function drush_usync_list() {
+  $rows = [
+    [dt("Module"), dt("Source")]
+  ];
+  foreach (usync_module_list() as $module => $sources) {
+    foreach ($sources as $source) {
+      $rows[] = [$module, $source];
+      $module = ''; // Display module name once.
+    }
+  }
+  drush_print_table($rows, true);
+}
+
+/**
+ * List what's in the source.
+ */
+function drush_usync_stat() {
+
+  $pathes  = drush_get_option('match');
+  $partial = (bool)drush_get_option('partial');
 
   if (empty($pathes)) {
     $pathes = null;
@@ -88,46 +120,44 @@ function drush_usync_list() {
     $pathes = explode(',', $pathes);
   }
 
-  $parser = new ArrayParser();
-  $graph = $parser->parse($data);
+  $graph = _drush_usync_list();
+  $found = [];
 
   $statProcessor = new StatProcessor();
   $visitor = new Visitor();
   $visitor->addProcessor(new InheritProcessor());
   $visitor->addProcessor($statProcessor);
 
-  // This visitor has the only purpose to find Drupal revelant entries
-  // in the graph, that would trigger a Drupal update. Any other info
-  // is not revelant for Drupal users.
-  $found = [];
   $visitor->addProcessor(function (NodeInterface $node, Context $context) use (&$found, $pathes, $partial) {
-
-    // First check if the current node matches
+    // This visitor has the only purpose to find Drupal revelant entries in the
+    // graph, that would trigger a Drupal update. Any other info isn't revelant
+    // for Drupal users.
     if (!$node instanceof DrupalNodeInterface) {
       return;
     }
-
-    // Proceed to patch match.
-    $matches = false;
-
-    if (null !== $pathes) {
+    if (null !== $pathes) { // Proceed to patch match.
       foreach ($pathes as $pattern) {
         if (false !== Path::match($node->getPath(), $pattern, $partial)) {
-          $matches = true;
+          $found[] = $node;
           break;
         }
       }
     } else {
-      $matches = true;
-    }
-
-    if ($matches) {
       $found[] = $node;
-      drush_print(" - " . $node->getPath());
     }
   });
 
   $visitor->execute($graph, new Context($graph));
+
+  foreach ($found as $node) {
+    $output = [];
+    $output[] = " - " . $node->getPath();
+    if ($parent = $node->getBaseNode()) {
+      $output[] = "extends " . $parent->getPath();
+    }
+    drush_print(implode(" ", $output));
+  }
+
   drush_print(dt("@count/@total displayed nodes", array(
     '@count' => count($found),
     '@total' => count($statProcessor),
@@ -135,25 +165,28 @@ function drush_usync_list() {
 }
 
 /**
- * Run test.
+ * Run sync.
  */
-function drush_usync_run_test() {
+function drush_usync_run() {
+
+  $pathes  = drush_get_option('match');
+  $partial = (bool)drush_get_option('partial');
+
+  if (empty($pathes)) {
+    $pathes = null;
+  } else {
+    $pathes = explode(',', $pathes);
+    // @todo
+    drush_print(dt("--match=PATH is not implemented yet"));
+    drush_die();
+  }
+
   $tx = null;
 
   try {
     $tx = db_transaction();
 
-    $reader = new YamlReader();
-
-    $discovery = new PathDiscovery();
-    $data = $discovery->discover(__DIR__ . '/sample/reallife', $reader);
-    // Another example, using one file only
-    //$data = $reader->read(__DIR__ . '/sample/blog.yml');
-
-    $parser = new ArrayParser();
-    $graph = $parser->parse($data);
-    //print_r($graph);die();
-
+    $graph = _drush_usync_list();
     $runner = new Runner();
     $runner->run(new Context($graph));
 
@@ -165,10 +198,6 @@ function drush_usync_run_test() {
         $tx->rollback();
       } catch (Exception $e2) {}
     }
-
     drupal_set_message($e->getMessage(), 'error');
-    return false;
   }
-
-  return true;
 }
