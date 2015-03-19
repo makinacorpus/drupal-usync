@@ -15,7 +15,6 @@ use USync\Context;
 use USync\Parsing\ArrayParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
-use USync\AST\USync\AST;
 
 /**
  * Implements hook_drush_command().
