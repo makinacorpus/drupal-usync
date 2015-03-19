@@ -1,10 +1,12 @@
 body:
   name: Body
   type: text_with_summary
+  keep: all
 
 field_image:
   name: Image
   type: image
+  keep: all
 
 image_cover:
   name: "Cover image"

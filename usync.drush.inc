@@ -151,7 +151,20 @@ function drush_usync_stat() {
 
   foreach ($found as $node) {
     $output = [];
-    $output[] = " - " . $node->getPath();
+    /*
+    if ($node instanceof DrupalNodeInterface) {
+      if ($node->exists()) {
+        $output[] = " ~";
+      } else if (false) { // @todo Handle delete
+        $output[] = " -";
+      } else {
+        $output[] = " +";
+      }
+      // @todo Handle modified?
+    }
+     */
+    $output[] = " +";
+    $output[] = $node->getPath();
     if ($parent = $node->getBaseNode()) {
       $output[] = "extends " . $parent->getPath();
     }
