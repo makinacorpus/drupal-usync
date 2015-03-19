@@ -68,6 +68,29 @@ function usync_module_list() {
 }
 
 /**
+ * Fetch all known helper instances.
+ *
+ * @return \USync\Helper\HelperInterface[]
+ */
+function usync_helper_list() {
+
+  // Core helpers
+  $instanceHelper = new \USync\Helper\FieldInstanceHelper();
+  $helpers = [
+     new \USync\Helper\FieldHelper($instanceHelper),
+     new \USync\Helper\NodeEntityHelper(),
+     $instanceHelper,
+     new \USync\Helper\ViewModeHelper(),
+     new \USync\Helper\VariableHelper(),
+  ];
+
+  // @todo make this better.
+  drupal_alter(__FUNCTION__, $helpers);
+
+  return $helpers;
+}
+
+/**
  * Create a graph from the given sources.
  *
  * @param string[] $sources

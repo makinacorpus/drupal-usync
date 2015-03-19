@@ -2,7 +2,7 @@
 
 namespace USync;
 
-use USync\AST\Node;
+use USync\AST\NodeInterface;
 
 class Context
 {
@@ -34,28 +34,13 @@ class Context
     public $breakOn = self::BREAK_DATALOSS;
 
     /**
-     * @var \USync\Runner
-     */
-    protected $runner;
-
-    /**
-     * @var \USync\AST\Node
-     */
-    protected $graph;
-
-    public function __construct(Node $graph)
-    {
-        $this->graph = $graph;
-    }
-
-    /**
-     * Get current config graph
+     * Default contructor
      *
-     * @return \USync\AST\Node
+     * @param \USync\AST\NodeInterface $graph
      */
-    public function getGraph()
+    public function __construct(NodeInterface $graph)
     {
-        return $this->graph;
+        // @todo Fetch internals from graph
     }
 
     /**

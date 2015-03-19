@@ -4,17 +4,18 @@
  * Drush integration.
  */
 
+use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
+use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
-use USync\Runner;
 use USync\Parsing\ArrayParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
-use USync\AST\Drupal\DrupalNodeInterface;
+use USync\AST\USync\AST;
 
 /**
  * Implements hook_drush_command().
@@ -186,9 +187,21 @@ function drush_usync_run() {
   try {
     $tx = db_transaction();
 
-    $graph = _drush_usync_list();
-    $runner = new Runner();
-    $runner->run(new Context($graph));
+    $graph   = _drush_usync_list();
+    $helpers = usync_helper_list();
+    $context = new Context($graph);
+
+    $statProcessor = new StatProcessor();
+    $visitor = new Visitor();
+    $visitor->addProcessor(new InheritProcessor());
+    $visitor->addProcessor($statProcessor);
+    $visitor->execute($graph, $context);
+
+    $visitor = new Visitor();
+    $visitor->addProcessor(new DrupalProcessor($helpers));
+    $visitor->execute($graph, $context);
+
+    menu_rebuild(); // Sorry.
 
     unset($tx); // Explicit commit.
 
