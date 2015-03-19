@@ -4,7 +4,7 @@ article:
     text: default
     # Remove default fields from standard profile
     body: ~
-    field_tags: ~
+    # field_tags: ~
     field_image: ~
 
 news:

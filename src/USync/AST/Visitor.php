@@ -42,15 +42,14 @@ class Visitor
      */
     public function execute(Node $node, Context $context)
     {
-        foreach ($node->getChildren() as $child) {
-            if (!$child->isTerminal()) {
-
+        if (!$node->isTerminal()) {
+            foreach ($node->getChildren() as $child) {
                 $this->execute($child, $context);
-
-                foreach ($this->processors as $processor) {
-                    $processor->execute($node, $context);
-                }
             }
+        }
+
+        foreach ($this->processors as $processor) {
+            $processor->execute($node, $context);
         }
     }
 }

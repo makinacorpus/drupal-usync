@@ -45,9 +45,6 @@ class DrupalProcessor implements ProcessorInterface
             } else {
                 $mode = 'delete';
             }
-        } else if ($node instanceof ValueNode) {
-            $context->logError(sprintf("%s: invalid value type, ignoring", $node->getPath()));
-            return;
         } else {
             $mode = 'sync';
         }
