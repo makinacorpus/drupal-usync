@@ -7,6 +7,7 @@
 use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
+use USync\AST\Processing\DirtyProcessor;
 use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
@@ -125,6 +126,7 @@ function drush_usync_stat() {
 
   $statProcessor = new StatProcessor();
   $visitor = new Visitor();
+  $visitor->addProcessor(new DirtyProcessor());
   $visitor->addProcessor(new InheritProcessor());
   $visitor->addProcessor($statProcessor);
 
@@ -202,6 +204,7 @@ function drush_usync_run() {
 
     $statProcessor = new StatProcessor();
     $visitor = new Visitor();
+    $visitor->addProcessor(new DirtyProcessor());
     $visitor->addProcessor(new InheritProcessor());
     $visitor->addProcessor($statProcessor);
     $visitor->execute($graph, $context);

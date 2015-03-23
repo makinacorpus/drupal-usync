@@ -5,6 +5,9 @@ namespace USync\AST\Processing;
 use USync\AST\Node;
 use USync\Context;
 
+/**
+ * Validates and process inherit information on nodes. 
+ */
 class InheritProcessor implements ProcessorInterface
 {
     public function execute(Node $node, Context $context)
