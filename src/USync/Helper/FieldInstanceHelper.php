@@ -36,7 +36,7 @@ class FieldInstanceHelper extends AbstractHelper
         return $existing;
     }
 
-    public function deleteExistingObject(NodeInterface $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         /* @var $node FieldInstanceNode */
         $existing = field_info_instance($node->getEntityType(), $node->getName(), $node->getBundle());
@@ -49,7 +49,7 @@ class FieldInstanceHelper extends AbstractHelper
         field_delete_instance($existing);
     }
 
-    public function synchronize(NodeInterface $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         /* @var $node FieldInstanceNode */
         $entityType = $node->getEntityType();
@@ -78,7 +78,7 @@ class FieldInstanceHelper extends AbstractHelper
         );
 
         // Even thought this is not mandatory few modules such as the 'image'
-        // module will attempt to access this property, without carying about
+        // module will attempt to access this attribute, without carying about
         // the field_update_instance() method documentation
         if (empty($instance['settings'])) {
             $instance['settings'] = array();

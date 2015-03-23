@@ -13,7 +13,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         parent::__construct('node');
     }
 
-    public function deleteExistingObject(NodeInterface $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $bundle = $node->getName();
         $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle));
@@ -34,7 +34,7 @@ class NodeEntityHelper extends AbstractEntityHelper
         return (array)node_type_load($node->getName());
     }
 
-    public function synchronize(NodeInterface $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $bundle = $node->getName();
 

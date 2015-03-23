@@ -32,7 +32,12 @@ abstract class AbstractHelper implements HelperInterface
         drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $node);
     }
 
-    public function rename(NodeInterface $node, $newpath, $force = false, Context $context)
+    public function canDoDirtyThings()
+    {
+        return false;
+    }
+
+    public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false)
     {
         throw new \Exception("Not implemented");
 

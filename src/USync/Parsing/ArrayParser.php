@@ -30,10 +30,10 @@ class ArrayParser
 
         foreach (self::$pathMap as $pattern => $class) {
             if (class_exists($class)) {
-                $properties = Path::match($path, $pattern);
-                if ($properties !== false) {
+                $attributes = Path::match($path, $pattern);
+                if ($attributes !== false) {
                     $node = new $class($name, $value);
-                    $node->setProperties($properties);
+                    $node->setAttributes($attributes);
                     break;
                 }
             }

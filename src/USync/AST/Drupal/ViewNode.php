@@ -13,11 +13,11 @@ class ViewNode extends Node implements DrupalNodeInterface
 
     public function getEntityType()
     {
-        return $this->getProperty('type');
+        return $this->getAttribute('type');
     }
 
     public function getBundle()
     {
-        return $this->getProperty('bundle');
+        return $this->getAttribute('bundle');
     }
 }

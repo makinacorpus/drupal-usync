@@ -65,7 +65,7 @@ class ViewModeHelper extends AbstractHelper
         return $default;
     }
 
-    public function deleteExistingObject(NodeInterface $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         // @todo Can we really delete a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -83,7 +83,7 @@ class ViewModeHelper extends AbstractHelper
         return $info['view modes'][$name];
     }
 
-    public function rename(NodeInterface $node, $newpath, $force = false, Context $context)
+    public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false)
     {
         // @todo Can we really rename a view mode?
         // @todo Ensure we are the source or override it, at the very least
@@ -91,7 +91,7 @@ class ViewModeHelper extends AbstractHelper
         throw new \Exception("Not implemented");
     }
 
-    public function synchronize(NodeInterface $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();

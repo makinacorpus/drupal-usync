@@ -30,6 +30,6 @@ class RefNode extends Node
 
     public function referenceExists()
     {
-        return null === $this->ref || $this->ref instanceof StubNode;
+        return null === $this->ref;
     }
 }

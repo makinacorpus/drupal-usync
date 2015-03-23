@@ -78,7 +78,7 @@ class FieldHelper extends AbstractHelper
         $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
-    public function deleteExistingObject(NodeInterface $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $name = $node->getName();
         $field = $this->getExistingObject($node, $context);
@@ -101,7 +101,7 @@ class FieldHelper extends AbstractHelper
         field_delete_field($name);
     }
 
-    public function synchronize(NodeInterface $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $object = $node->getValue();
         if (!is_array($object)) {

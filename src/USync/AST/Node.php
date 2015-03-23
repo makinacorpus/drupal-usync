@@ -34,7 +34,7 @@ class Node implements NodeInterface
     /**
      * @var mixed[]
      */
-    protected $properties = [];
+    protected $attributes = [];
 
     /**
      * Default constructor
@@ -69,28 +69,28 @@ class Node implements NodeInterface
         return $this->path;
     }
 
-    public function setProperty($name, $value)
+    public function setAttribute($name, $value)
     {
-        $this->properties[$name] = $value;
+        $this->attributes[$name] = $value;
     }
 
-    public function getProperty($name)
+    public function getAttribute($name)
     {
-        if (array_key_exists($name, $this->properties)) {
-            return $this->properties[$name];
+        if (array_key_exists($name, $this->attributes)) {
+            return $this->attributes[$name];
         }
 
-        throw new \InvalidArgumentException(sprintf("%s property does not exists", $name));
+        throw new \InvalidArgumentException(sprintf("'%s' attribute does not exists", $name));
     }
 
-    public function setProperties($properties)
+    public function setAttributes($attributes)
     {
-        return $this->properties = $properties;
+        return $this->attributes = $attributes;
     }
 
-    public function getProperties()
+    public function getAttributes()
     {
-        return $this->properties;
+        return $this->attributes;
     }
 
     public function setBaseNode(NodeInterface $node)

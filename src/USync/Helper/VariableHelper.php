@@ -23,12 +23,12 @@ class VariableHelper extends AbstractHelper
         return variable_get($node->getName());
     }
 
-    public function deleteExistingObject(NodeInterface $node, Context $context)
+    public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         variable_del($node->getName());
     }
 
-    public function synchronize(NodeInterface $node, Context $context)
+    public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         variable_set($node->getName(), $node->getValue());
     }

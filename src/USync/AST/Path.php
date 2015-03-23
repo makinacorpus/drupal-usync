@@ -15,7 +15,7 @@ class Path
     const WILDCARD = '%';
 
     /**
-     * Property name wildcard
+     * Attribute name wildcard
      */
     const MATCH = '?';
 
@@ -27,12 +27,12 @@ class Path
      * @param boolean $partial
      *
      * @return string[]
-     *   Matched properties. Warning the entry might be an empty array, if
+     *   Matched attributes. Warning the entry might be an empty array, if
      *   path does not match at all, strict false will be returned instead
      */
     static public function match($path, $pattern, $partial = false)
     {
-        $properties = array();
+        $attributes = array();
 
         $parts = explode(self::SEP, $path);
         $segments = explode(self::SEP, $pattern);
@@ -46,16 +46,16 @@ class Path
         for ($i = 0; $i < $length; ++$i) {
             if (self::MATCH === $segments[$i][0]) {
                 if (!isset($segments[$i][0])) {
-                    throw new \InvalidArgumentException("Empty property name");
+                    throw new \InvalidArgumentException("Empty attribute name");
                 }
                 $name = substr($segments[$i], 1);
-                $properties[$name] = $parts[$i];
+                $attributes[$name] = $parts[$i];
             } else if (self::WILDCARD !== $segments[$i] && $parts[$i] !== $segments[$i]) {
                 return false; // Shortcut
             }
         }
 
-        return $properties;
+        return $attributes;
     }
 
     /**

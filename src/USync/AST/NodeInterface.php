@@ -33,33 +33,33 @@ interface NodeInterface
     public function getPath();
 
     /**
-     * Set arbitrary property
+     * Set attribute
      *
      * @param string $name
      * @param mixed $value
      */
-    public function setProperty($name, $value);
+    public function setAttribute($name, $value);
 
     /**
-     * Get arbitrary property
+     * Get attribute
      *
      * @param string $name
      */
-    public function getProperty($name);
+    public function getAttribute($name);
 
     /**
-     * Set all properties at once
+     * Set all attributes, removing the existing
      *
-     * @param mixed[] $properties
+     * @param mixed[] $attributes
      */
-    public function setProperties($properties);
+    public function setAttributes($attributes);
 
     /**
-     * Get arbitrary set properties
+     * Get all attributes
      *
      * @return mixed[]
      */
-    public function getProperties();
+    public function getAttributes();
 
     /**
      * Sets the node which this node inherits from

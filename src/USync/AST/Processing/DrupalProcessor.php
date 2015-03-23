@@ -84,7 +84,7 @@ class DrupalProcessor implements ProcessorInterface
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'keep' property, must be 'all' or an array of string property names", $node->getPath()));
+                            $context->logError(sprintf("%s: malformed 'keep' attribute, must be 'all' or an array of string attribute names", $node->getPath()));
                         }
                     }
                     if (!empty($object['drop'])) {
@@ -95,7 +95,7 @@ class DrupalProcessor implements ProcessorInterface
                                 }
                             }
                         } else {
-                            $context->logError(sprintf("%s: malformed 'drop' property, must be an array of string property names", $node->getPath()));
+                            $context->logError(sprintf("%s: malformed 'drop' attribute, must be an array of string attribute names", $node->getPath()));
                         }
                     }
                      */
