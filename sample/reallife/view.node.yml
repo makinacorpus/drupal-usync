@@ -1,12 +1,14 @@
 article:
 
   teaser:
+    dirty: true
     image_cover:
       type: image
       settings:
         image_style: cover_teaser
 
   full:
+    dirty: true
     image_cover:
       type: image
       settings:
@@ -16,6 +18,7 @@ article:
 news:
 
   teaser:
+    dirty: true
     image_cover:
       type: image
       settings:
@@ -23,6 +26,7 @@ news:
     abstract: true
 
   full:
+    dirty: true
     image_cover:
       type: image
       settings:

@@ -3,8 +3,9 @@
 namespace USync\AST\Processing;
 
 use USync\AST\Node;
-use USync\AST\BooleanNode;
+use USync\AST\BooleanValueNode;
 use USync\AST\DefaultNode;
+use USync\AST\NullValueNode;
 use USync\AST\ValueNode;
 use USync\Context;
 use USync\Helper\HelperInterface;
@@ -35,11 +36,11 @@ class DrupalProcessor implements ProcessorInterface
      */
     public function _execute(Node $node, Context $context, HelperInterface $helper)
     {
-        if ($node instanceof DeleteNode || $node instanceof NullNode) {
+        if ($node instanceof DeleteNode || $node instanceof NullValueNode) {
             $mode = 'delete';
         } else if ($node instanceof DefaultNode) {
             $mode = 'sync';
-        } else if ($node instanceof BooleanNode) {
+        } else if ($node instanceof BooleanValueNode) {
             if ($node->getValue()) {
                 $mode = 'sync';
             } else {

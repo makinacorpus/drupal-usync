@@ -2,7 +2,7 @@
 
 namespace USync\AST;
 
-class NullNode extends ValueNode
+class NullValueNode extends ValueNode
 {
     public function getValue()
     {

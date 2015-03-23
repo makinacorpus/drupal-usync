@@ -2,7 +2,7 @@
 
 namespace USync\AST;
 
-class BooleanNode extends ValueNode
+class BooleanValueNode extends ValueNode
 {
     public function __construct($name, $value = null)
     {

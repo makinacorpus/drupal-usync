@@ -2,9 +2,9 @@
 
 namespace USync\Parsing;
 
-use USync\AST\BooleanNode;
+use USync\AST\BooleanValueNode;
 use USync\AST\Node;
-use USync\AST\NullNode;
+use USync\AST\NullValueNode;
 use USync\AST\ValueNode;
 use USync\AST\Path;
 
@@ -48,11 +48,11 @@ class ArrayParser
                     break;
 
                 case "boolean":
-                    $node = new BooleanNode($name, $value);
+                    $node = new BooleanValueNode($name, $value);
                     break;
 
                 case "NULL":
-                    $node = new NullNode($name, $value);
+                    $node = new NullValueNode($name, $value);
                     break;
 
                 case "integer":
