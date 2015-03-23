@@ -50,12 +50,15 @@ class DrupalProcessor implements ProcessorInterface
             $mode = 'sync';
         }
 
+        $dirtyAllowed = $node->hasAttribute('dirty') && $node->getAttribute('dirty');
+        $dirtyPrefix = $dirtyAllowed ? '! ' : '';
+
         switch ($mode) {
 
             case 'delete':
-                $context->log(sprintf(" - %s", $node->getPath()));
+                $context->log(sprintf(" - %s%s", $dirtyPrefix, $node->getPath()));
                 if ($helper->exists($node, $context)) {
-                    $helper->deleteExistingObject($node, $context);
+                    $helper->deleteExistingObject($node, $context, $dirtyAllowed);
                 }
                 return;
 
@@ -69,7 +72,7 @@ class DrupalProcessor implements ProcessorInterface
                  */
 
                 if ($helper->exists($node, $context)) {
-                    $context->log(sprintf(" ~ %s", $node->getPath()));
+                    $context->log(sprintf(" ~ %s%s", $dirtyPrefix, $node->getPath()));
 
                     /*
                     $existing = $helper->getExistingObject($node, $context);
@@ -101,12 +104,12 @@ class DrupalProcessor implements ProcessorInterface
                     }
                      */
                 } else {
-                    $context->log(sprintf(" + %s", $node->getPath()));
+                    $context->log(sprintf(" + %s%s", $dirtyPrefix, $node->getPath()));
                 }
 
                 // unset($object['keep'], $object['drop']);
 
-                $helper->synchronize($node, $context);
+                $helper->synchronize($node, $context, $dirtyAllowed);
                 break;
         }
     }

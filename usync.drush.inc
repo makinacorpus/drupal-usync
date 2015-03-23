@@ -167,8 +167,11 @@ function drush_usync_stat() {
      */
     $output[] = " +";
     $output[] = $node->getPath();
+    if ($node->hasAttribute('dirty') && $node->getAttribute('dirty')) {
+      $output[] = "DIRTY";
+    }
     if ($parent = $node->getBaseNode()) {
-      $output[] = "extends " . $parent->getPath();
+      $output[] = "(" . $parent->getPath() . ")";
     }
     drush_print(implode(" ", $output));
   }
@@ -226,7 +229,9 @@ function drush_usync_run() {
 
     $visitor->execute($graph, $context);
 
-    menu_rebuild(); // Sorry.
+    // This seems, at some point, mandatory.
+    field_cache_clear();
+    menu_rebuild();
 
     unset($tx); // Explicit commit.
 

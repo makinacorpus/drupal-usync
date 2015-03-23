@@ -33,6 +33,13 @@ interface NodeInterface
     public function getPath();
 
     /**
+     * Does the given attribute exists
+     *
+     * @param string $name
+     */
+    public function hasAttribute($name);
+
+    /**
      * Set attribute
      *
      * @param string $name

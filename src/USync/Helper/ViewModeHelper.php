@@ -177,7 +177,23 @@ class ViewModeHelper extends AbstractHelper
             if (!isset($displayField[$fieldName])) {
                 $instance['display'][$name] = array('type' => 'hidden');
             }
-            field_update_instance($instance);
+            if ($dirtyAllowed) {
+                $data = $instance;
+                unset( // From _field_write_instance()
+                    $data['id'],
+                    $data['field_id'],
+                    $data['field_name'],
+                    $data['entity_type'],
+                    $data['bundle'],
+                    $data['deleted']
+                );
+                db_update('field_config_instance')
+                    ->condition('id', $instance['id'])
+                    ->fields(array('data' => serialize($data)))
+                    ->execute();
+            } else {
+              field_update_instance($instance);
+            }
         }
         foreach (array_keys($extra) as $propertyName) {
             if (isset($displayExtra[$propertyName])) {
@@ -189,10 +205,23 @@ class ViewModeHelper extends AbstractHelper
 
         $bundleSettings['view_modes'][$name] = array('label' => $name, 'custom_settings' => true);
         $bundleSettings['extra_fields']['display'] = $displayExtra;
-        field_bundle_settings($entityType, $bundle, $bundleSettings);
+        if ($dirtyAllowed) {
+            // Hopefully nothing about display is really cached into the
+            // internal field cache class, except the raw display array
+            // into each instance, but nothing will use that except this
+            // specific view mode implementation, we are going to delay
+            // a few cache clear calls at the very end of the processing.
+            // From field_bundle_settings().
+          variable_set('field_bundle_settings_' . $entityType . '__' . $bundle, $bundleSettings);
+        } else {
+            field_bundle_settings($entityType, $bundle, $bundleSettings);
+        }
 
-        // So our custom view modes will appear
-        entity_info_cache_clear();
+        if ($dirtyAllowed) {
+            // From field_info_cache_clear().
+            drupal_static_reset('field_view_mode_settings');
+            entity_info_cache_clear();
+        }
     }
 
     public function canProcess(NodeInterface $node)

@@ -69,6 +69,11 @@ class Node implements NodeInterface
         return $this->path;
     }
 
+    public function hasAttribute($name)
+    {
+        return array_key_exists($name, $this->attributes);
+    }
+
     public function setAttribute($name, $value)
     {
         $this->attributes[$name] = $value;
