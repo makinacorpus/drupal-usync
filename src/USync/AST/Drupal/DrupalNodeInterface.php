@@ -6,5 +6,14 @@ use USync\AST\NodeInterface;
 
 interface DrupalNodeInterface extends NodeInterface
 {
-    public function exists();
+    /**
+     * Is dirty injection allowed
+     *
+     * Dirty mode will allow the helper to proceed to fast but potential
+     * unsafe import operations, for example allowing not to run module
+     * hooks and disallow some cache reset operations.
+     *
+     * @return boolean
+     */
+    public function isDirty();
 }

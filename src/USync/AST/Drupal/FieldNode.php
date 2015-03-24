@@ -6,6 +6,8 @@ use USync\AST\Node;
 
 class FieldNode extends Node implements DrupalNodeInterface
 {
+    use DrupalNodeTrait;
+
     /**
      * Get field name
      *
@@ -16,10 +18,5 @@ class FieldNode extends Node implements DrupalNodeInterface
     public function getFieldName()
     {
         return $this->name;
-    }
-
-    public function exists()
-    {
-        throw new \Exception("Not implemented yet");
     }
 }

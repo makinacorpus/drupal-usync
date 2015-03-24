@@ -33,9 +33,9 @@ function usync_drush_command() {
       ),
       'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
-    'usync-stat' => array(
+    'usync-tree' => array(
       'description' => "List all components in the given source",
-      'aliases'     => array("uss"),
+      'aliases'     => array("ust"),
       'options'     => array(
         'source'    => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
@@ -110,7 +110,7 @@ function drush_usync_list() {
 /**
  * List what's in the source.
  */
-function drush_usync_stat() {
+function drush_usync_tree() {
 
   $pathes  = drush_get_option('match');
   $partial = (bool)drush_get_option('partial');
@@ -167,7 +167,7 @@ function drush_usync_stat() {
      */
     $output[] = " +";
     $output[] = $node->getPath();
-    if ($node->hasAttribute('dirty') && $node->getAttribute('dirty')) {
+    if ($node instanceof DrupalNodeInterface && $node->isDirty()) {
       $output[] = "DIRTY";
     }
     if ($parent = $node->getBaseNode()) {

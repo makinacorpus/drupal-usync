@@ -10,8 +10,9 @@ field_image:
 
 image_cover:
   name: "Cover image"
-  cardinality: 1
+  dirty: true
   type: image
+  cardinality: 1
   instance_settings:
     alt_field: 1
     title_field: 1

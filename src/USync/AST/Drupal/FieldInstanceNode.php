@@ -6,6 +6,8 @@ use USync\AST\Node;
 
 class FieldInstanceNode extends Node implements DrupalNodeInterface
 {
+    use DrupalNodeTrait;
+
     /**
      * Get associated field
      *
@@ -36,10 +38,5 @@ class FieldInstanceNode extends Node implements DrupalNodeInterface
     public function getBundle()
     {
         return $this->getAttribute('bundle');
-    }
-
-    public function exists()
-    {
-        throw new \Exception("Not implemented");
     }
 }
