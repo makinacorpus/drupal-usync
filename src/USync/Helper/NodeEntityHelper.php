@@ -36,6 +36,7 @@ class NodeEntityHelper extends AbstractEntityHelper
 
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
+        /* @var $node EntityNode */
         $bundle = $node->getName();
 
         $object = $node->getValue();
@@ -43,19 +44,23 @@ class NodeEntityHelper extends AbstractEntityHelper
             $object = array();
         }
 
-        $info = array(
-            'type'        => $bundle,
-            'base'        => 'node_content',
-            'custom'      => false,
-            'modified'    => false,
-            //'locked'     => true,
-        ) + $object + array(
-            'has_title'   => true,
-            'title_label' => t("Title"), // Fallback to default language
-            'module'      => 'node',
-            'orig_type'   => null,
-            'locked'      => false,
-        );
+        if ($node->isMerge() && ($existing = $this->getExistingObject($node, $context))) {
+            $info = $object + $existing;
+        } else {
+            $info = array(
+                'type'        => $bundle,
+                'base'        => 'node_content',
+                'custom'      => false,
+                'modified'    => false,
+                //'locked'     => true,
+            ) + $object + array(
+                'has_title'   => true,
+                'title_label' => t("Title"), // Fallback to default language
+                'module'      => 'node',
+                'orig_type'   => null,
+                'locked'      => false,
+            );
+        }
 
         if (empty($info['name'])) {
             $context->logWarning(sprintf('%s: has no name', $node->getPath()));
