@@ -7,7 +7,7 @@
 use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
-use USync\AST\Processing\DirtyProcessor;
+use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
@@ -126,7 +126,7 @@ function drush_usync_tree() {
 
   $statProcessor = new StatProcessor();
   $visitor = new Visitor();
-  $visitor->addProcessor(new DirtyProcessor());
+  $visitor->addProcessor(new DrupalAttributesProcessor());
   $visitor->addProcessor(new InheritProcessor());
   $visitor->addProcessor($statProcessor);
 
@@ -170,6 +170,9 @@ function drush_usync_tree() {
     if ($node instanceof DrupalNodeInterface && $node->isDirty()) {
       $output[] = "DIRTY";
     }
+    if ($node instanceof DrupalNodeInterface && $node->isMerge()) {
+      $output[] = "MERGE";
+    }
     if ($parent = $node->getBaseNode()) {
       $output[] = "(" . $parent->getPath() . ")";
     }
@@ -207,7 +210,7 @@ function drush_usync_run() {
 
     $statProcessor = new StatProcessor();
     $visitor = new Visitor();
-    $visitor->addProcessor(new DirtyProcessor());
+    $visitor->addProcessor(new DrupalAttributesProcessor());
     $visitor->addProcessor(new InheritProcessor());
     $visitor->addProcessor($statProcessor);
     $visitor->execute($graph, $context);

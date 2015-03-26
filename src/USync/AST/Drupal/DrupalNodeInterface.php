@@ -16,4 +16,13 @@ interface DrupalNodeInterface extends NodeInterface
      * @return boolean
      */
     public function isDirty();
+
+    /**
+     * Tell if this node should do a proper merge
+     *
+     * Default behavior is to erase everything that is not specified.
+     *
+     * @return boolean
+     */
+    public function isMerge();
 }
