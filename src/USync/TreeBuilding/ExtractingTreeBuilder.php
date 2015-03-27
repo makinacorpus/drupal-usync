@@ -111,7 +111,7 @@ class ExtractingTreeBuilder
                                     $map[] = new Path($dpath);
                                 }
                             } else {
-                                $context->logWarning(sprintf('%s: does not exist'));
+                                $context->logWarning(sprintf('%s: does not exist', $spath));
                             }
                         }
                     }

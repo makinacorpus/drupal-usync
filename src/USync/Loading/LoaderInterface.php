@@ -59,6 +59,8 @@ interface LoaderInterface
     /**
      * Get node dependencies as an array of paths
      *
+     * Please note that dependencies are ordered
+     *
      * @todo This is path dependent, while it should not, find a better way
      *
      * @param NodeInterface $node

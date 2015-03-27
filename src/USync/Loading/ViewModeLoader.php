@@ -6,6 +6,7 @@ use USync\AST\Drupal\ViewNode;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
+use USync\TreeBuilding\ArrayTreeBuilder;
 
 class ViewModeLoader extends AbstractLoader
 {
@@ -21,7 +22,7 @@ class ViewModeLoader extends AbstractLoader
         $name       = $node->getName();
         $info       = entity_get_info($entityType);
 
-        return isset($info['view modes'][$name]);
+        return isset($info) && ('default' === $name || isset($info['view modes'][$name]));
     }
 
     protected function getFieldDefault(NodeInterface $node, $entityType, $bundle, $fieldName, Context $context)
@@ -67,16 +68,48 @@ class ViewModeLoader extends AbstractLoader
 
     public function getDependencies(NodeInterface $node, Context $context)
     {
+        /* @var $node ViewNode */
         return [];
     }
 
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
-        throw new \Exception("Not implemented");
+        /* @var $node ViewNode */
+        $entityType = $node->getEntityType();
+        $bundle     = $node->getBundle();
+        $name       = $node->getName();
+
+        // First grab a list of everything that can be displayed in view
+        // modes with both extra fields and real fields
+        $instances = field_info_instances($entityType, $bundle);
+        $extra = field_info_extra_fields($entityType, $bundle, 'display');
+
+        $order = [];
+        $data  = [];
+
+        foreach ($instances as $fieldName => $instance) {
+            if (!empty($instance['display'][$name]) && 'hidden' !== $instance['display'][$name]['type']) {
+                $data[$fieldName] = $instance['display'][$name];
+                unset($data['weight'], $data['module']);
+                $order[] = $instance['display'][$name]['weight'];
+            }
+        }
+        foreach ($extra as $data) {
+            // @todo
+        }
+
+        array_multisort($order, $data);
+
+        $builder = new ArrayTreeBuilder();
+
+        foreach ($builder->parseWithoutRoot($data) as $child) {
+            $node->addChild($child);
+        }
     }
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
+        /* @var $node ViewNode */
         // @todo Can we really delete a view mode?
         // @todo Ensure we are the source or override it, at the very least
         // @todo Does it really makes sense?
@@ -95,6 +128,7 @@ class ViewModeLoader extends AbstractLoader
 
     public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false)
     {
+        /* @var $node ViewNode */
         // @todo Can we really rename a view mode?
         // @todo Ensure we are the source or override it, at the very least
         // @todo Does it really makes sense?

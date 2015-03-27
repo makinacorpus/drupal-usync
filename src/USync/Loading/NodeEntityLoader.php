@@ -14,7 +14,7 @@ class NodeEntityLoader extends AbstractEntityLoader
         'base'        => 'node_content',
         'modified'    => 0,
         'has_title'   => true,
-        'title_label' => "Title", // Fallback to default language
+        'title_label' => "Title", // Fallback to default language (en)
         'locked'      => false,
     ];
 
@@ -55,15 +55,29 @@ class NodeEntityLoader extends AbstractEntityLoader
     public function getDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node EntityNode */
-        $ret = [];
+        $order = [];
 
         $bundle = $node->getBundle();
 
+        // First, fields
+        $field = [];
         foreach (field_info_instances('node', $bundle) as $instance) {
-            $ret[] = 'entity.node.' . $bundle . '.field.' . $instance['field_name'];
+            $field[] = 'entity.node.' . $bundle . '.field.' . $instance['field_name'];
+            $order[] = isset($instance['weight']) ? $instance['weight'] : 0;
         }
 
-        return $ret;
+        array_multisort($order, $field);
+
+        // Let's go for view modes too
+        $view = [];
+        $view[] = 'view.node.' . $bundle . '.default';
+        foreach (entity_get_info('node')['view modes'] as $viewMode => $settings) {
+            if ($settings['custom settings']) {
+                $view[] = 'view.node.' . $bundle . '.' . $viewMode;
+            }
+        }
+
+        return array_merge($field, $view);
     }
 
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
