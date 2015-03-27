@@ -1,14 +1,14 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\NodeInterface;
 use USync\Context;
 
 /**
- * What a helper needs to do.
+ * What a loader needs to do.
  */
-interface HelperInterface
+interface LoaderInterface
 {
     /**
      * Get internal component type, used for hooks mostly
@@ -16,22 +16,6 @@ interface HelperInterface
      * @return string
      */
     public function getType();
-
-    /**
-     * Does this instance is able to proceed to quick and dirty operations
-     *
-     * Dirty operations allow the helper to go faster by bypassing the Drupal
-     * API, disabling hooks, cache operations etc... By proceeding this way
-     * to may gain several minutes on synchronization time on complex sites
-     * but also may risk to end up with inconsistent data (especially if hooks
-     * are bypassed).
-     *
-     * Implementation of what is dirty or not is up to the implementor and
-     * cannot be known in advance. The usefulness of knowing that an helper
-     * can do dirty things or not gives the ability to the caller to force
-     * caches to be deleted only once bulk nodes have been processed.
-     */
-    public function canDoDirtyThings();
 
     /**
      * Does the object exists in site
@@ -42,6 +26,59 @@ interface HelperInterface
     public function exists(NodeInterface $node, Context $context);
 
     /**
+     * Get existing object
+     *
+     * @param \USync\AST\NodeInterface $node
+     * @param \USync\Context $context
+     */
+    public function getExistingObject(NodeInterface $node, Context $context);
+
+    /**
+     * Can this loader process the given node
+     *
+     * @param \USync\AST\NodeInterface $node
+     */
+    public function canProcess(NodeInterface $node);
+
+    /**
+     * Does this instance is able to proceed to quick and dirty operations
+     *
+     * Dirty operations allow the loader to go faster by bypassing the Drupal
+     * API, disabling hooks, cache operations etc... By proceeding this way
+     * to may gain several minutes on synchronization time on complex sites
+     * but also may risk to end up with inconsistent data (especially if hooks
+     * are bypassed).
+     *
+     * Implementation of what is dirty or not is up to the implementor and
+     * cannot be known in advance. The usefulness of knowing that an loader
+     * can do dirty things or not gives the ability to the caller to force
+     * caches to be deleted only once bulk nodes have been processed.
+     */
+    public function canDoDirtyThings();
+
+    /**
+     * Get node dependencies as an array of paths
+     *
+     * @todo This is path dependent, while it should not, find a better way
+     *
+     * @param NodeInterface $node
+     * @param Context $context
+     *
+     * @return string[]
+     *   Array of paths
+     */
+    public function getDependencies(NodeInterface $node, Context $context);
+
+    /**
+     * Populate the given node attributes, children and values from the
+     * existing object
+     *
+     * @param NodeInterface $node
+     * @param Context $context
+     */
+    public function updateNodeFromExisting(NodeInterface $node, Context $context);
+
+    /**
      * Delete existing object from site
      *
      * @param \USync\AST\NodeInterface $node
@@ -49,14 +86,6 @@ interface HelperInterface
      * @param boolean $dirtyAllowed
      */
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false);
-
-    /**
-     * Get existing object
-     *
-     * @param \USync\AST\NodeInterface $node
-     * @param \USync\Context $context
-     */
-    public function getExistingObject(NodeInterface $node, Context $context);
 
     /**
      * Rename an existing object
@@ -77,11 +106,4 @@ interface HelperInterface
      * @param boolean $dirtyAllowed
      */
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false);
-
-    /**
-     * Can this helper process the given node
-     *
-     * @param \USync\AST\NodeInterface $node
-     */
-    public function canProcess(NodeInterface $node);
 }

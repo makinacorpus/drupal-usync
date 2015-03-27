@@ -80,6 +80,36 @@ class Path
     }
 
     /**
+     * Get path as string
+     *
+     * @return \USync\AST\string
+     */
+    public function getPathAsString()
+    {
+        return $this->path;
+    }
+
+    /**
+     * Get last path segment (node name)
+     *
+     * @return string
+     */
+    public function getLastSegment()
+    {
+        return $this->segments[count($this->segments) - 1];
+    }
+
+    /**
+     * Get path segments
+     *
+     * @return string[]
+     */
+    public function getSegments()
+    {
+        return $this->segments;
+    }
+
+    /**
      * Internal recursion for find()
      *
      * @param Node $node
@@ -106,6 +136,21 @@ class Path
         }
 
         return $ret;
+    }
+
+    /**
+     * Does the given path matches the given pattern
+     *
+     * @param string $pattern
+     * @param boolean $partial
+     *
+     * @return string[]
+     *   Matched attributes. Warning the entry might be an empty array, if
+     *   path does not match at all, strict false will be returned instead
+     */
+    public function matches($pattern, $partial = false)
+    {
+        return self::match($this->path, $pattern, $partial = false);
     }
 
     /**

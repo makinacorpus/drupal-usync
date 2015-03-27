@@ -153,6 +153,11 @@ class Node implements NodeInterface
         } else {
             $this->path = $parent->path . Path::SEP . $this->name;
         }
+
+        // Re-parent children accordingly (update their own path)
+        foreach ($this->children as $child) {
+            $child->setParent($this);
+        }
     }
 
     public function getParent()

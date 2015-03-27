@@ -8,23 +8,23 @@ use USync\AST\DefaultNode;
 use USync\AST\NullValueNode;
 use USync\AST\ValueNode;
 use USync\Context;
-use USync\Helper\HelperInterface;
+use USync\Loading\LoaderInterface;
 
 class DrupalProcessor implements ProcessorInterface
 {
     /**
-     * @var \USync\Helper\HelperInterface[]
+     * @var \USync\Loading\LoaderInterface[]
      */
-    protected $helpers;
+    protected $loaders;
 
     /**
      * Default constructor
      *
-     * @param \USync\Helper\HelperInterface[] $helpers
+     * @param \USync\Loading\LoaderInterface[] $loaders
      */
-    public function __construct($helpers)
+    public function __construct($loaders)
     {
-        $this->helpers = $helpers;
+        $this->loaders = $loaders;
     }
 
     /**
@@ -32,9 +32,9 @@ class DrupalProcessor implements ProcessorInterface
      *
      * @param Node $node
      * @param Context $context
-     * @param \USync\Helper\HelperInterface $helper
+     * @param \USync\Loading\LoaderInterface $loader
      */
-    public function _execute(Node $node, Context $context, HelperInterface $helper)
+    public function _execute(Node $node, Context $context, LoaderInterface $loader)
     {
         if ($node instanceof DeleteNode || $node instanceof NullValueNode) {
             $mode = 'delete';
@@ -57,8 +57,8 @@ class DrupalProcessor implements ProcessorInterface
 
             case 'delete':
                 $context->log(sprintf(" - %s%s", $dirtyPrefix, $node->getPath()));
-                if ($helper->exists($node, $context)) {
-                    $helper->deleteExistingObject($node, $context, $dirtyAllowed);
+                if ($loader->exists($node, $context)) {
+                    $loader->deleteExistingObject($node, $context, $dirtyAllowed);
                 }
                 return;
 
@@ -71,11 +71,11 @@ class DrupalProcessor implements ProcessorInterface
                 }
                  */
 
-                if ($helper->exists($node, $context)) {
+                if ($loader->exists($node, $context)) {
                     $context->log(sprintf(" ~ %s%s", $dirtyPrefix, $node->getPath()));
 
                     /*
-                    $existing = $helper->getExistingObject($node, $context);
+                    $existing = $loader->getExistingObject($node, $context);
 
                     // Proceed to merge accordingly to 'keep' and 'drop' keys.
                     if (!empty($object['keep'])) {
@@ -109,16 +109,16 @@ class DrupalProcessor implements ProcessorInterface
 
                 // unset($object['keep'], $object['drop']);
 
-                $helper->synchronize($node, $context, $dirtyAllowed);
+                $loader->synchronize($node, $context, $dirtyAllowed);
                 break;
         }
     }
 
     public function execute(Node $node, Context $context)
     {
-        foreach ($this->helpers as $helper) {
-            if ($helper->canProcess($node)) {
-                return $this->_execute($node, $context, $helper);
+        foreach ($this->loaders as $loader) {
+            if ($loader->canProcess($node)) {
+                return $this->_execute($node, $context, $loader);
             }
         }
     }

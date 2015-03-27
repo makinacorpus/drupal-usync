@@ -1,13 +1,13 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\ViewNode;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
-class ViewModeHelper extends AbstractHelper
+class ViewModeLoader extends AbstractLoader
 {
     public function getType()
     {
@@ -63,6 +63,16 @@ class ViewModeHelper extends AbstractHelper
         }
 
         return $default;
+    }
+
+    public function getDependencies(NodeInterface $node, Context $context)
+    {
+        return [];
+    }
+
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        throw new \Exception("Not implemented");
     }
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)

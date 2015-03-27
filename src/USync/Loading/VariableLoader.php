@@ -1,12 +1,13 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\VariableNode;
 use USync\AST\NodeInterface;
 use USync\Context;
+use USync\Parsing\ArrayParser;
 
-class VariableHelper extends AbstractHelper
+class VariableLoader extends AbstractLoader
 {
     public function getType()
     {
@@ -23,9 +24,23 @@ class VariableHelper extends AbstractHelper
         return variable_get($node->getName());
     }
 
+    public function getDependencies(NodeInterface $node, Context $context)
+    {
+        return [];
+    }
+
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         variable_del($node->getName());
+    }
+
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        $parser = new ArrayParser();
+
+        foreach ($parser->parseWithoutRoot(variable_get($node->getName())) as $child) {
+            $node->addChild($child);
+        }
     }
 
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)

@@ -1,12 +1,12 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
-abstract class AbstractHelper implements HelperInterface
+abstract class AbstractLoader implements LoaderInterface
 {
     /**
      * Update

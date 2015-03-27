@@ -68,26 +68,26 @@ function usync_module_list() {
 }
 
 /**
- * Fetch all known helper instances.
+ * Fetch all known loader instances.
  *
- * @return \USync\Helper\HelperInterface[]
+ * @return \USync\Loading\LoaderInterface[]
  */
-function usync_helper_list() {
+function usync_loader_list() {
 
-  // Core helpers
-  $instanceHelper = new \USync\Helper\FieldInstanceHelper();
-  $helpers = [
-     new \USync\Helper\FieldHelper($instanceHelper),
-     new \USync\Helper\NodeEntityHelper(),
-     $instanceHelper,
-     new \USync\Helper\ViewModeHelper(),
-     new \USync\Helper\VariableHelper(),
+  // Core loaders
+  $instanceLoader = new \USync\Loading\FieldInstanceLoader();
+  $loaders = [
+     new \USync\Loading\FieldLoader($instanceLoader),
+     new \USync\Loading\NodeEntityLoader(),
+     $instanceLoader,
+     new \USync\Loading\ViewModeLoader(),
+     new \USync\Loading\VariableLoader(),
   ];
 
   // @todo make this better.
-  drupal_alter(__FUNCTION__, $helpers);
+  drupal_alter(__FUNCTION__, $loaders);
 
-  return $helpers;
+  return $loaders;
 }
 
 /**

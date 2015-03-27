@@ -1,36 +1,36 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\FieldNode;
 use USync\AST\NodeInterface;
 use USync\Context;
 
-class FieldHelper extends AbstractHelper
+class FieldLoader extends AbstractLoader
 {
     /**
-     * @var \USync\Helper\FieldInstanceHelper
+     * @var \USync\Loading\FieldInstanceLoader
      */
-    protected $instanceHelper;
+    protected $instanceLoader;
 
     /**
      * Default constructor
      *
-     * @param \USync\Helper\FieldInstanceHelper $instanceHelper
+     * @param \USync\Loading\FieldInstanceLoader $instanceLoader
      */
-    public function __construct(FieldInstanceHelper $instanceHelper)
+    public function __construct(FieldInstanceLoader $instanceLoader)
     {
-        $this->instanceHelper = $instanceHelper;
+        $this->instanceLoader = $instanceLoader;
     }
 
     /**
-     * Get instance helper
+     * Get instance loader
      *
-     * @return \USync\Helper\FieldInstanceHelper
+     * @return \USync\Loading\FieldInstanceLoader
      */
-    public function getInstanceHelper()
+    public function getInstanceLoader()
     {
-        return $this->instanceHelper;
+        return $this->instanceLoader;
     }
 
     /**
@@ -60,6 +60,7 @@ class FieldHelper extends AbstractHelper
 
     public function exists(NodeInterface $node, Context $context)
     {
+        /* @var $node FieldNode */
         $name = $node->getName();
 
         if (field_info_field($name)) {
@@ -71,6 +72,7 @@ class FieldHelper extends AbstractHelper
 
     public function getExistingObject(NodeInterface $node, Context $context)
     {
+        /* @var $node FieldNode */
         $name = $node->getName();
         if ($info = field_info_field($name)) {
             return $info;
@@ -78,8 +80,21 @@ class FieldHelper extends AbstractHelper
         $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
+    public function getDependencies(NodeInterface $node, Context $context)
+    {
+        /* @var $node FieldNode */
+        return [];
+    }
+
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        /* @var $node FieldNode */
+        // throw new \Exception("Not implemented");
+    }
+
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
+        /* @var $node FieldNode */
         $name = $node->getName();
         $field = $this->getExistingObject($node, $context);
 
@@ -90,11 +105,11 @@ class FieldHelper extends AbstractHelper
 
         $nameList = array();
         foreach ($this->getInstances($name) as $instance) {
-            $nameList[] = $this->instanceHelper->getInstanceIdFromNode($instance['entity_type'], $instance['bundle'], $name);
+            $nameList[] = $this->instanceLoader->getInstanceIdFromNode($instance['entity_type'], $instance['bundle'], $name);
         }
         if (!empty($nameList)) {
             foreach ($nameList as $name) {
-                $this->instanceHelper->deleteExistingObject($name, $context);
+                $this->instanceLoader->deleteExistingObject($name, $context);
             }
         }
 
@@ -103,6 +118,7 @@ class FieldHelper extends AbstractHelper
 
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
+        /* @var $node FieldNode */
         $object = $node->getValue();
         if (!is_array($object)) {
             $object = array();

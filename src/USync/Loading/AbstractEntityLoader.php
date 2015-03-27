@@ -1,12 +1,12 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\EntityNode;
 use USync\AST\NodeInterface;
 use USync\Context;
 
-abstract class AbstractEntityHelper extends AbstractHelper
+abstract class AbstractEntityLoader extends AbstractLoader
 {
     /**
      * @var string

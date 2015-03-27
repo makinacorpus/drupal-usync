@@ -14,6 +14,7 @@ use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
 use USync\Parsing\ArrayParser;
+use USync\Parsing\ExtractingParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
 
@@ -48,6 +49,14 @@ function usync_drush_command() {
       'description' => "List sources modules",
       'aliases'     => array("usl"),
       'options'     => array(),
+      'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
+    ),
+    'usync-extract' => array(
+      'description' => "Export a file from the given components",
+      'aliases'     => array("usx"),
+      'options'     => array(
+        'match'     => "Filters only components that matches the given path",
+      ),
       'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
   );
@@ -186,6 +195,26 @@ function drush_usync_tree() {
 }
 
 /**
+ * Run export.
+ */
+function drush_usync_extract() {
+
+  $pathes = drush_get_option('match');
+
+  if (empty($pathes)) {
+    drush_print(dt("--match=PATH option is mandatory"));
+    drush_die();
+  } else {
+    $pathes = explode(',', $pathes);
+  }
+
+  $loaders = usync_loader_list();
+  $parser  = new ExtractingParser();
+  $context = new Context();
+  print_r($parser->parse($pathes, $loaders, $context));
+}
+
+/**
  * Run sync.
  */
 function drush_usync_run() {
@@ -205,7 +234,7 @@ function drush_usync_run() {
     $tx = db_transaction();
 
     $graph   = _drush_usync_list();
-    $helpers = usync_helper_list();
+    $loaders = usync_loader_list();
     $context = new Context($graph);
 
     $statProcessor = new StatProcessor();
@@ -216,7 +245,7 @@ function drush_usync_run() {
     $visitor->execute($graph, $context);
 
     $visitor = new Visitor();
-    $drupalProcessor = new DrupalProcessor($helpers);
+    $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $pathes) {
       $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $pathes, $partial) {

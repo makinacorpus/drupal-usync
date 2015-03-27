@@ -38,9 +38,11 @@ class Context
      *
      * @param \USync\AST\NodeInterface $graph
      */
-    public function __construct(NodeInterface $graph)
+    public function __construct(NodeInterface $graph = null)
     {
-        // @todo Fetch internals from graph
+        if (null !== $graph) {
+            // @todo Fetch internals from graph
+        }
     }
 
     /**

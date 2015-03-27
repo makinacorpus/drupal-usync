@@ -1,13 +1,13 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\FieldInstanceNode;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\Context;
 
-class FieldInstanceHelper extends AbstractHelper
+class FieldInstanceLoader extends AbstractLoader
 {
     public function getType()
     {
@@ -34,6 +34,18 @@ class FieldInstanceHelper extends AbstractHelper
         }
 
         return $existing;
+    }
+
+    public function getDependencies(NodeInterface $node, Context $context)
+    {
+        /* @var $node FieldInstanceNode */
+        return ['field.' . $node->getFieldName()];
+    }
+
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        /* @var $node FieldInstanceNode */
+        // throw new \Exception("Not implemented");
     }
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)

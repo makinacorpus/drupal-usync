@@ -1,13 +1,23 @@
 <?php
 
-namespace USync\Helper;
+namespace USync\Loading;
 
 use USync\AST\Drupal\EntityNode;
 use USync\AST\NodeInterface;
 use USync\Context;
+use USync\Parsing\ArrayParser;
 
-class NodeEntityHelper extends AbstractEntityHelper
+class NodeEntityLoader extends AbstractEntityLoader
 {
+    static private $defaults = [
+        'name'        => '',
+        'base'        => 'node_content',
+        'modified'    => 0,
+        'has_title'   => true,
+        'title_label' => "Title", // Fallback to default language
+        'locked'      => false,
+    ];
+
     public function __construct()
     {
         parent::__construct('node');
@@ -15,6 +25,7 @@ class NodeEntityHelper extends AbstractEntityHelper
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
+        /* @var $node EntityNode */
         $bundle = $node->getName();
         $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle));
 
@@ -27,11 +38,44 @@ class NodeEntityHelper extends AbstractEntityHelper
 
     public function getExistingObject(NodeInterface $node, Context $context)
     {
+        /* @var $node EntityNode */
         if (!$this->exists($node, $context)) {
             $context->logCritical(sprintf("%s: node type does not exist", $node->getPath()));
         }
 
-        return (array)node_type_load($node->getName());
+        return array_diff(
+            array_intersect_key(
+                (array)node_type_load($node->getName()),
+                self::$defaults
+            ),
+            self::$defaults
+        );
+    }
+
+    public function getDependencies(NodeInterface $node, Context $context)
+    {
+        /* @var $node EntityNode */
+        $ret = [];
+
+        $bundle = $node->getBundle();
+
+        foreach (field_info_instances('node', $bundle) as $instance) {
+            $ret[] = 'entity.node.' . $bundle . '.field.' . $instance['field_name'];
+        }
+
+        return $ret;
+    }
+
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        /* @var $node EntityNode */
+        $object = $this->getExistingObject($node, $context);
+
+        $parser = new ArrayParser();
+
+        foreach ($parser->parseWithoutRoot($object) as $child) {
+            $node->addChild($child);
+        }
     }
 
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)

@@ -10,12 +10,13 @@ use USync\AST\Path;
 
 class ArrayParser
 {
-    static $pathMap = [
-        'field.%'                      => '\USync\AST\Drupal\FieldNode',
-        'entity.?type.?bundle'         => '\USync\AST\Drupal\EntityNode',
-        'entity.?type.?bundle.field.%' => '\USync\AST\Drupal\FieldInstanceNode',
-        'view.?type.?bundle.%'         => '\USync\AST\Drupal\ViewNode',
-        'variable.%'                   => '\USync\AST\Drupal\VariableNode',
+    // @todo Extract this into some hook ?
+    static public $pathMap = [
+        'field.?name'                      => '\USync\AST\Drupal\FieldNode',
+        'entity.?type.?bundle'             => '\USync\AST\Drupal\EntityNode',
+        'entity.?type.?bundle.field.?name' => '\USync\AST\Drupal\FieldInstanceNode',
+        'view.?type.?bundle.?name'         => '\USync\AST\Drupal\ViewNode',
+        'variable.?name'                   => '\USync\AST\Drupal\VariableNode',
     ];
 
     protected function _parse(Node $parent, $name, $value = null)
@@ -72,6 +73,21 @@ class ArrayParser
                 $this->_parse($node, $key, $sValue);
             }
         }
+    }
+
+    /**
+     * Same as parse, but do not add a root
+     *
+     * @param array $array
+     *
+     * @return \USync\AST\Node[]
+     *   Fully built child nodes
+     */
+    public function parseWithoutRoot(array $array)
+    {
+        $ast = $this->parse($array);
+
+        return $ast->getChildren();
     }
 
     /**
