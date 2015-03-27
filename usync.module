@@ -5,9 +5,9 @@
  */
 
 use USync\AST\NodeInterface;
-use USync\Parsing\ArrayParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
+use USync\TreeBuilding\ArrayTreeBuilder;
 
 /**
  * View mode variable nae.
@@ -123,7 +123,7 @@ function usync_graph_create($sources, $type = 'yaml') {
     } else {
       $reader = new YamlReader();
     }
-  
+
     if (is_file($source)) {
       $data = $reader->read($source);
     } else if (is_dir($source)) {
@@ -139,9 +139,7 @@ function usync_graph_create($sources, $type = 'yaml') {
     $full = drupal_array_merge_deep($full, $data);
   }
 
-  $parser = new ArrayParser();
-
-  return $parser->parse($full);
+  return (new ArrayTreeBuilder())->parse($full);
 }
 
 /**

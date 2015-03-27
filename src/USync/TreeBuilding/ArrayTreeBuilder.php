@@ -1,6 +1,6 @@
 <?php
 
-namespace USync\Parsing;
+namespace USync\TreeBuilding;
 
 use USync\AST\BooleanValueNode;
 use USync\AST\Node;
@@ -8,7 +8,7 @@ use USync\AST\NullValueNode;
 use USync\AST\ValueNode;
 use USync\AST\Path;
 
-class ArrayParser
+class ArrayTreeBuilder
 {
     // @todo Extract this into some hook ?
     static public $pathMap = [

@@ -5,7 +5,7 @@ namespace USync\Loading;
 use USync\AST\Drupal\EntityNode;
 use USync\AST\NodeInterface;
 use USync\Context;
-use USync\Parsing\ArrayParser;
+use USync\TreeBuilding\ArrayTreeBuilder;
 
 class NodeEntityLoader extends AbstractEntityLoader
 {
@@ -71,9 +71,9 @@ class NodeEntityLoader extends AbstractEntityLoader
         /* @var $node EntityNode */
         $object = $this->getExistingObject($node, $context);
 
-        $parser = new ArrayParser();
+        $builder = new ArrayTreeBuilder();
 
-        foreach ($parser->parseWithoutRoot($object) as $child) {
+        foreach ($builder->parseWithoutRoot($object) as $child) {
             $node->addChild($child);
         }
     }

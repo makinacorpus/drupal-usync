@@ -5,7 +5,7 @@ namespace USync\Loading;
 use USync\AST\Drupal\VariableNode;
 use USync\AST\NodeInterface;
 use USync\Context;
-use USync\Parsing\ArrayParser;
+use USync\TreeBuilding\ArrayTreeBuilder;
 
 class VariableLoader extends AbstractLoader
 {
@@ -36,9 +36,9 @@ class VariableLoader extends AbstractLoader
 
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
-        $parser = new ArrayParser();
+        $builder = new ArrayTreeBuilder();
 
-        foreach ($parser->parseWithoutRoot(variable_get($node->getName())) as $child) {
+        foreach ($builder->parseWithoutRoot(variable_get($node->getName())) as $child) {
             $node->addChild($child);
         }
     }

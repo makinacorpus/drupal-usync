@@ -13,10 +13,11 @@ use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
-use USync\Parsing\ArrayParser;
-use USync\Parsing\ExtractingParser;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
+use USync\Serializing\YamlSerializer;
+use USync\TreeBuilding\ArrayTreeBuilder;
+use USync\TreeBuilding\ExtractingTreeBuilder;
 
 /**
  * Implements hook_drush_command().
@@ -55,7 +56,9 @@ function usync_drush_command() {
       'description' => "Export a file from the given components",
       'aliases'     => array("usx"),
       'options'     => array(
+        'dest'      => "Target file",
         'match'     => "Filters only components that matches the given path",
+        'type'      => "File type to match (default is 'yaml'); this is used only when destination is a folder",
       ),
       'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
@@ -200,6 +203,8 @@ function drush_usync_tree() {
 function drush_usync_extract() {
 
   $pathes = drush_get_option('match');
+  // $dest   = drush_get_option('dest');
+  $type   = drush_get_option('type');
 
   if (empty($pathes)) {
     drush_print(dt("--match=PATH option is mandatory"));
@@ -208,10 +213,23 @@ function drush_usync_extract() {
     $pathes = explode(',', $pathes);
   }
 
+  if (!empty($type)) {
+    $serializerClass = '\\USync\\Serializing\\' . ucfirst($type) . 'Serializer';
+    if (!class_exists($serializerClass)) {
+      trigger_error(sprintf("'%s': type is not supported", $type));
+      return false;
+    }
+    $serializer = new $serializerClass();
+  } else {
+    $serializer = new YamlSerializer();
+  }
+
   $loaders = usync_loader_list();
-  $parser  = new ExtractingParser();
+  $builder = new ExtractingTreeBuilder();
   $context = new Context();
-  print_r($parser->parse($pathes, $loaders, $context));
+  $graph   = $builder->parse($pathes, $loaders, $context);
+
+  echo $serializer->serialize($graph);
 }
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace USync\Parsing;
+namespace USync\TreeBuilding;
 
 use USync\AST\Node;
 use USync\AST\NodeInterface;
@@ -10,7 +10,7 @@ use USync\Context;
 /**
  * Create an AST from the given extractors and path
  */
-class ExtractingParser
+class ExtractingTreeBuilder
 {
     /**
      * Build the missing items in AST ommiting the last segment
@@ -82,7 +82,7 @@ class ExtractingParser
             // Path map should come from a dynamic source to let the system
             // being extensible rather than hardcoded, this is the whole
             // long term goal
-            foreach (ArrayParser::$pathMap as $pattern => $class) {
+            foreach (ArrayTreeBuilder::$pathMap as $pattern => $class) {
 
                 $attributes = $path->matches($pattern);
 
