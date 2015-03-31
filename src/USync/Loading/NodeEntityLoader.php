@@ -43,11 +43,13 @@ class NodeEntityLoader extends AbstractEntityLoader
             $context->logCritical(sprintf("%s: node type does not exist", $node->getPath()));
         }
 
+        $existing = array_intersect_key(
+            (array)node_type_load($node->getName()),
+            self::$defaults
+        );
+
         return array_diff(
-            array_intersect_key(
-                (array)node_type_load($node->getName()),
-                self::$defaults
-            ),
+            $existing,
             self::$defaults
         );
     }
@@ -103,20 +105,17 @@ class NodeEntityLoader extends AbstractEntityLoader
         }
 
         if ($node->isMerge() && ($existing = $this->getExistingObject($node, $context))) {
-            $info = $object + $existing;
+            $info = array(
+                'type'      => $bundle,
+                'custom'    => false,
+            ) + $object + $existing;
         } else {
             $info = array(
-                'type'        => $bundle,
-                'base'        => 'node_content',
-                'custom'      => false,
-                'modified'    => false,
-                //'locked'     => true,
-            ) + $object + array(
-                'has_title'   => true,
-                'title_label' => t("Title"), // Fallback to default language
-                'module'      => 'node',
-                'orig_type'   => null,
-                'locked'      => false,
+                'type'      => $bundle,
+                'custom'    => false,
+            ) + $object + self::$defaults + array(
+                'module'    => 'node',
+                'orig_type' => null,
             );
         }
 

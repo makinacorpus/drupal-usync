@@ -291,6 +291,7 @@ function drush_usync_run() {
         $tx->rollback();
       } catch (Exception $e2) {}
     }
+    print $e->getTraceAsString();
     drupal_set_message($e->getMessage(), 'error');
   }
 }

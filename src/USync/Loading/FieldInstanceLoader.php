@@ -61,6 +61,24 @@ class FieldInstanceLoader extends AbstractLoader
         field_delete_instance($existing);
     }
 
+    /**
+     * Find a label for the given field
+     */
+    protected function findFieldLabel($fieldName)
+    {
+        $map = field_info_field_map();
+        if (!empty($map[$fieldName]['bundles'])) {
+            foreach ($map[$fieldName]['bundles'] as $type => $bundles) {
+                foreach ($bundles as $bundle) {
+                    $instance = field_info_instance($type, $fieldName, $bundle);
+                    if (!empty($instance['label']) && $instance['label'] !== $fieldName) {
+                        return $instance['label'];
+                    }
+                }
+            }
+        }
+    }
+
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         /* @var $node FieldInstanceNode */
@@ -76,8 +94,17 @@ class FieldInstanceLoader extends AbstractLoader
             'bundle'      => $bundle,
             'field_name'  => $fieldName,
         );
-        if (!empty($field['label'])) {
-            $default['label'] = $field['label'];
+        if (empty($default['label'])) {
+            // Field data 'label' key is not part of the Drupal signature
+            // but this module will inject it anyway and should be persisted
+            // along the field 'data' key in database
+            if (empty($field['label'])) {
+                if ($label = $this->findFieldLabel($fieldName)) {
+                    $default['label'] = $label;
+                }
+            } else {
+                $default['label'] = $field['label'];
+            }
         }
 
         $object = $node->getValue();
@@ -85,15 +112,21 @@ class FieldInstanceLoader extends AbstractLoader
             $object = array();
         }
 
+        // This is a forced default from this module: never display new
+        // fields without being explicitely told to
         $instance = $default + $object + array(
-            'display'     => array('default' => array('type' => 'hidden')),
+            'display' => array('default' => array('type' => 'hidden')),
         );
 
         // Even thought this is not mandatory few modules such as the 'image'
         // module will attempt to access this attribute, without carying about
         // the field_update_instance() method documentation
-        if (empty($instance['settings'])) {
-            $instance['settings'] = array();
+        if (!isset($instance['settings'])) {
+            if (isset($field['instance_settings'])) {
+                $instance['settings'] = $field['instance_settings'];
+            } else {
+                $instance['settings'] = array();
+            }
         }
 
         if ($existing) {

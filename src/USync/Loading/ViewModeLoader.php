@@ -256,15 +256,21 @@ class ViewModeLoader extends AbstractLoader
             // specific view mode implementation, we are going to delay
             // a few cache clear calls at the very end of the processing.
             // From field_bundle_settings().
-          variable_set('field_bundle_settings_' . $entityType . '__' . $bundle, $bundleSettings);
+            variable_set('field_bundle_settings_' . $entityType . '__' . $bundle, $bundleSettings);
         } else {
             field_bundle_settings($entityType, $bundle, $bundleSettings);
         }
 
         if ($dirtyAllowed) {
-            // From field_info_cache_clear().
+            // From field_update_instance()
+            cache_clear_all('*', 'cache_field', true);
+            // From field_info_cache_clear()
             drupal_static_reset('field_view_mode_settings');
+            // We need to clear cache in order for later view modes to
+            // load the right instance and prevent them for overriding
+            // what we actually did here
             entity_info_cache_clear();
+            _field_info_field_cache()->flush();
         }
     }
 
