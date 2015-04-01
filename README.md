@@ -4,27 +4,8 @@ Minimal yet powerfull config file based features-like toolkit for Drupal 7.
 
 ## How does it work
 
-Whatever is the data source (per default a set of YAML files) this module
-will create an AST which reprensents the Drupal object tree. This AST is
-organized using a strict structure, which can be highlighted by the YAML
-file structure. The tree builder objects are responsible from building the
-AST from the data source they can understand.
-
-Once the AST created, an object call the visitor will browse the full tree
-in a bottom-top fashion (children first) and run a series of processors over
-each node, which allows us to modify the tree. For example, the 'inherit'
-keyword will be used during this phase to expand nodes using their explicited
-parent. Every language specific directives will processed this way.
-
-Once built, the AST can be browsed using another visitor, which will be
-driven by a path matching algorithm, allowing us to work on specific path
-in the tree.
-
-Real features of this modules are implemented using a specific visitor which
-browses the tree using the path matching algorithm, and execute its processors
-only on matching nodes in the tree. For example loaders, which are objects
-that use typed tree nodes to import Drupal data, will be executed only on
-matching paths, which allows us to proceed very easily to partial imports.
+It works by building a fully featured AST composed of typed nodes representing
+your configuration file, then browsing the tree and executing code over it.
 
 ## Getting started
 
@@ -37,7 +18,7 @@ Let's assume you are working on a custom blog module:
         myblog.info
         myblog.yml
 
-Contest of the myblog.info file:
+Contents of the myblog.info file:
 
     name = My blog feature
     description = Very simple blog feature for my site.
