@@ -75,33 +75,9 @@ class ViewModeLoader extends AbstractLoader
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
-        $entityType = $node->getEntityType();
-        $bundle     = $node->getBundle();
-        $name       = $node->getName();
-
-        // First grab a list of everything that can be displayed in view
-        // modes with both extra fields and real fields
-        $instances = field_info_instances($entityType, $bundle);
-        $extra = field_info_extra_fields($entityType, $bundle, 'display');
-
-        $order = [];
-        $data  = [];
-
-        foreach ($instances as $fieldName => $instance) {
-            if (!empty($instance['display'][$name]) && 'hidden' !== $instance['display'][$name]['type']) {
-                $data[$fieldName] = $instance['display'][$name];
-                unset($data['weight'], $data['module']);
-                $order[] = $instance['display'][$name]['weight'];
-            }
-        }
-        foreach ($extra as $data) {
-            // @todo
-        }
-
-        array_multisort($order, $data);
+        $data = $this->getExistingObject($node, $context);
 
         $builder = new ArrayTreeBuilder();
-
         foreach ($builder->parseWithoutRoot($data) as $child) {
             $node->addChild($child);
         }
@@ -120,10 +96,40 @@ class ViewModeLoader extends AbstractLoader
     {
         /* @var $node ViewNode */
         $entityType = $node->getEntityType();
+        $bundle     = $node->getBundle();
         $name       = $node->getName();
-        $info       = entity_get_info($entityType);
 
-        return $info['view modes'][$name];
+        $instances = field_info_instances($entityType, $bundle);
+        $extra = field_info_extra_fields($entityType, $bundle, 'display');
+
+        $data = [];
+        $order = [];
+
+        // This one is not easy
+        foreach ($instances as $fieldName => $instance) {
+            if (isset($instance['display'][$name]) && 'hidden' !== $instance['display'][$name]['type']) {
+                $item = $instance['display'][$name];
+                unset($item['weight'], $item['module']);
+                if ('hidden' === $item['label']) {
+                    unset($item['label']);
+                }
+                if (empty($item['settings'])) {
+                    unset($item['settings']);
+                }
+                $data[$fieldName] = $item;
+                $order[] = $instance['display'][$name]['weight'];
+            }
+        }
+        foreach ($extra as $extraName => $displays) {
+            if (isset($displays['display'][$name]) && $displays['display'][$name]['visible']) {
+                $data[$extraName] = true;
+                $order[] = $displays['display'][$name]['weight'];
+            }
+        }
+
+        array_multisort($order, $data);
+
+        return $data;
     }
 
     public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false)
@@ -155,8 +161,8 @@ class ViewModeLoader extends AbstractLoader
         $extra = field_info_extra_fields($entityType, $bundle, 'display');
 
         $weight = 0;
-        $displayExtra = array();
-        $displayField = array();
+        $displayExtra = [];
+        $displayField = [];
 
         // Then deal with fields and such
         foreach ($node->getValue() as $propertyName => $formatter) {
@@ -202,7 +208,7 @@ class ViewModeLoader extends AbstractLoader
                 }
 
                 // Merge default and save
-                $displayExtra[$propertyName] = array('visible' => true, 'weight' => $weight++);
+                $displayExtra[$propertyName] = ['visible' => true, 'weight' => $weight++];
 
             } else {
                 $context->logError(sprintf("%s: %s property is nor a field nor an extra field", $node->getPath(), $propertyName));
@@ -233,7 +239,7 @@ class ViewModeLoader extends AbstractLoader
                 );
                 db_update('field_config_instance')
                     ->condition('id', $instance['id'])
-                    ->fields(array('data' => serialize($data)))
+                    ->fields(['data' => serialize($data)])
                     ->execute();
             } else {
               field_update_instance($instance);
@@ -243,11 +249,11 @@ class ViewModeLoader extends AbstractLoader
             if (isset($displayExtra[$propertyName])) {
                 $bundleSettings['extra_fields'][$propertyName] = $displayExtra[$propertyName];
             } else {
-                $bundleSettings['extra_fields'][$propertyName] = array('visible' => false, 'weight' => $weight++);
+                $bundleSettings['extra_fields'][$propertyName] = ['visible' => false, 'weight' => $weight++];
             }
         }
 
-        $bundleSettings['view_modes'][$name] = array('label' => $name, 'custom_settings' => true);
+        $bundleSettings['view_modes'][$name] = ['label' => $name, 'custom_settings' => true];
         $bundleSettings['extra_fields']['display'] = $displayExtra;
         if ($dirtyAllowed) {
             // Hopefully nothing about display is really cached into the

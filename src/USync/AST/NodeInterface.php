@@ -113,6 +113,20 @@ interface NodeInterface
     public function getChild($key);
 
     /**
+     * Get the nth child
+     *
+     * @param int $index
+     */
+    public function getChildAt($index);
+
+    /**
+     * Get child ordered position
+     *
+     * @param string $key
+     */
+    public function getChildPosition($key);
+
+    /**
      * Set parent and update internals accordingly
      *
      * @param NodeInterface $parent
@@ -151,6 +165,8 @@ interface NodeInterface
 
     /**
      * Get all children
+     *
+     * Please note that per spec children are ordered
      *
      * @return \USync\AST\Node
      */

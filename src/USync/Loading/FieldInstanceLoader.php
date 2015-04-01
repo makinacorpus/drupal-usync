@@ -118,15 +118,25 @@ class FieldInstanceLoader extends AbstractLoader
             'display' => array('default' => array('type' => 'hidden')),
         );
 
+        // Dynamically determine weight using position relative to parent node
+        // @todo Find a quicker way
+        if ($node->hasParent()) {
+            $instance['weight'] = $node->getParent()->getChildPosition($node->getName());
+        }
+
+        // Propagate defaults set at the field level
+        if (!empty($field['instance'])) {
+            foreach ($field['instance'] as $key => $value) {
+                if (!isset($instance[$key])) {
+                    $instance[$key] = $value;
+                }
+            }
+        }
         // Even thought this is not mandatory few modules such as the 'image'
         // module will attempt to access this attribute, without carying about
         // the field_update_instance() method documentation
         if (!isset($instance['settings'])) {
-            if (isset($field['instance_settings'])) {
-                $instance['settings'] = $field['instance_settings'];
-            } else {
-                $instance['settings'] = array();
-            }
+            $instance['settings'] = array();
         }
 
         if ($existing) {
@@ -143,4 +153,3 @@ class FieldInstanceLoader extends AbstractLoader
         return $node instanceof FieldInstanceNode;
     }
 }
- 

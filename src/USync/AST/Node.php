@@ -142,6 +142,32 @@ class Node implements NodeInterface
         return $this->children[$key];
     }
 
+    public function getChildAt($index)
+    {
+        if (count($this->children) < $index) {
+            throw new \OutOfBoundsException("%sth child is out of bounds", $index);
+        }
+
+        $count = 0;
+        foreach ($this->children as $child) {
+            if ($count === $index) {
+                return $child;
+            }
+            ++$count;
+        }
+    }
+
+    public function getChildPosition($key)
+    {
+        $count = 0;
+        foreach ($this->children as $lkey => $child) {
+            if ($lkey === $child) {
+                return $count;
+            }
+            ++$count;
+        }
+    }
+
     public function setParent(NodeInterface $parent)
     {
         $this->parent = $parent;

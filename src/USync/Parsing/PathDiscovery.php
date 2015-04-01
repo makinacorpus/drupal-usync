@@ -35,7 +35,7 @@ class PathDiscovery
                 $current = &$current[$part];
             }
 
-            $current = $additions;
+            $current = drupal_array_merge_deep($additions, $current);
         }
 
         return $data;
