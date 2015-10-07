@@ -25,4 +25,11 @@ interface DrupalNodeInterface extends NodeInterface
      * @return boolean
      */
     public function isMerge();
+
+    /**
+     * Should this node be deleted.
+     *
+     * @return boolean
+     */
+    public function shouldDelete();
 }

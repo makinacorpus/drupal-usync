@@ -33,11 +33,16 @@ class ArrayTreeBuilder
             if (class_exists($class)) {
                 $attributes = Path::match($path, $pattern);
                 if ($attributes !== false) {
+                    /* @var $node \USync\AST\Drupal\DrupalNodeInterface */
                     $node = new $class($name, $value);
                     $node->setAttributes($attributes);
                     break;
                 }
             }
+        }
+
+        if (null === $value || 'delete' === $value) {
+            $node->setAttribute('delete', true);
         }
 
         if (null === $node) {

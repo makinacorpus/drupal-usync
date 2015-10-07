@@ -173,19 +173,18 @@ function drush_usync_tree() {
 
   foreach ($found as $node) {
     $output = [];
-    /*
+
     if ($node instanceof DrupalNodeInterface) {
-      if ($node->exists()) {
+      if (false && $node->exists()) {
         $output[] = " ~";
-      } else if (false) { // @todo Handle delete
+      } else if ($node->shouldDelete()) { // @todo Handle delete
         $output[] = " -";
       } else {
         $output[] = " +";
       }
       // @todo Handle modified?
     }
-     */
-    $output[] = " +";
+
     $output[] = $node->getPath();
     if ($node instanceof DrupalNodeInterface && $node->isDirty()) {
       $output[] = "DIRTY";

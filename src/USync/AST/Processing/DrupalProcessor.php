@@ -5,10 +5,11 @@ namespace USync\AST\Processing;
 use USync\AST\Node;
 use USync\AST\BooleanValueNode;
 use USync\AST\DefaultNode;
+use USync\AST\DeleteNode;
 use USync\AST\NullValueNode;
-use USync\AST\ValueNode;
 use USync\Context;
 use USync\Loading\LoaderInterface;
+use USync\AST\Drupal\DrupalNodeInterface;
 
 class DrupalProcessor implements ProcessorInterface
 {
@@ -47,7 +48,11 @@ class DrupalProcessor implements ProcessorInterface
                 $mode = 'delete';
             }
         } else {
-            $mode = 'sync';
+            if ($node instanceof DrupalNodeInterface && $node->shouldDelete()) {
+                $mode = 'delete';
+            } else {
+                $mode = 'sync';
+            }
         }
 
         $dirtyAllowed = $node->hasAttribute('dirty') && $node->getAttribute('dirty');

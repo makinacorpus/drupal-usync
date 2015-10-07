@@ -13,4 +13,9 @@ trait DrupalNodeTrait
     {
         return $this->hasAttribute('merge') && $this->getAttribute('merge');
     }
+
+    public function shouldDelete()
+    {
+        return $this->hasAttribute('delete') && $this->getAttribute('delete');
+    }
 }
