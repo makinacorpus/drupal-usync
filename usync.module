@@ -82,11 +82,12 @@ function usync_loader_list() {
   // Core loaders
   $instanceLoader = new \USync\Loading\FieldInstanceLoader();
   $loaders = [
-     new \USync\Loading\FieldLoader($instanceLoader),
-     new \USync\Loading\NodeEntityLoader(),
-     $instanceLoader,
-     new \USync\Loading\ViewModeLoader(),
-     new \USync\Loading\VariableLoader(),
+    new \USync\Loading\FieldLoader($instanceLoader),
+    new \USync\Loading\NodeEntityLoader(),
+    $instanceLoader,
+    new \USync\Loading\ViewModeLoader(),
+    new \USync\Loading\VariableLoader(),
+    new \USync\Loading\VocabularyEntityLoader(),
   ];
 
   // @todo make this better.

@@ -129,6 +129,6 @@ class NodeEntityLoader extends AbstractEntityLoader
 
     public function canProcess(NodeInterface $node)
     {
-        return $node instanceof EntityNode /* && 'node' === $node->getEntityType() */;
+        return $node instanceof EntityNode && 'node' === $node->getEntityType();
     }
 }
