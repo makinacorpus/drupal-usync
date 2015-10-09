@@ -18,6 +18,12 @@ class NodeEntityLoader extends AbstractEntityLoader
         'locked'      => false,
     ];
 
+    static private $settings = [
+        'submitted' => 0,
+        'preview'   => 0,
+        'options'   => ['status', 'promote']
+    ];
+
     public function __construct()
     {
         parent::__construct('node');
@@ -48,10 +54,24 @@ class NodeEntityLoader extends AbstractEntityLoader
             self::$defaults
         );
 
-        return array_diff(
-            $existing,
-            self::$defaults
-        );
+        $existing = array_diff($existing, self::$defaults);
+
+        $settings = [];
+        foreach (self::$settings as $key => $defaultValue) {
+            $variable = 'node_' . $key . '_' . $node->getBundle();
+
+            $value = variable_get($variable);
+
+            if ($value != $defaultValue) {
+                $settings[$key] = $value;
+            }
+        }
+
+        if (!empty($settings)) {
+            $existing['settings'] = $settings;
+        }
+
+        return $existing;
     }
 
     public function getDependencies(NodeInterface $node, Context $context)
@@ -125,6 +145,22 @@ class NodeEntityLoader extends AbstractEntityLoader
         }
 
         node_type_save((object)$info);
+
+        if ($node->hasChild('settings')) {
+            $settings = $node->getChild('settings')->getValue();
+            if (!is_array($settings)) {
+                $context->logWarning(sprintf('%s: invalid settings structure, should be an array', $node->getPath()));
+            }
+        }
+
+        foreach (self::$settings as $key => $defaultValue) {
+            $variable = 'node_' . $key . '_' . $node->getBundle();
+            if (isset($settings[$key])) {
+                variable_set($variable, $settings[$key]);
+            } else {
+                variable_set($variable, $defaultValue);
+            }
+        }
     }
 
     public function canProcess(NodeInterface $node)
