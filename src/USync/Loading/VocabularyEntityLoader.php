@@ -20,6 +20,18 @@ class VocabularyEntityLoader extends AbstractEntityLoader
         parent::__construct('vocabulary');
     }
 
+    public function exists(NodeInterface $node, Context $context)
+    {
+        /* @var $node EntityNode */
+
+        // Sorry but vocabulary machine name does not reflect a bundle
+        if (taxonomy_vocabulary_machine_name_load($node->getBundle())) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         /* @var $node EntityNode */
@@ -97,6 +109,16 @@ class VocabularyEntityLoader extends AbstractEntityLoader
                 'machine_name'  => $machineName,
                 'description'   => $description,
             ] + $object + self::$defaults;
+
+            if ($vocabulary = taxonomy_vocabulary_machine_name_load($machineName)) {
+                // So an existing object is here, but the vid parameter is
+                // actually never loaded (we don't want to export it when we
+                // are building a yml file) - therefore we need to load it
+                // once again. In case we didn't set the vid, the taxonomy
+                // save method will attempt an SQL INSERT and cause bad SQL
+                // STATE errors (constraint violation)
+                $info['vid'] = $vocabulary->vid;
+            }
         }
 
         if (empty($info['name'])) {
