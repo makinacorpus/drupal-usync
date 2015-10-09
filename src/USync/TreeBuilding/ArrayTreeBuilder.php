@@ -15,6 +15,7 @@ class ArrayTreeBuilder
         'field.?name'                      => '\USync\AST\Drupal\FieldNode',
         'entity.?type.?bundle'             => '\USync\AST\Drupal\EntityNode',
         'entity.?type.?bundle.field.?name' => '\USync\AST\Drupal\FieldInstanceNode',
+        'security.role.?name'              => '\USync\AST\Drupal\RoleNode',
         'view.?type.?bundle.?name'         => '\USync\AST\Drupal\ViewNode',
         'variable.?name'                   => '\USync\AST\Drupal\VariableNode',
     ];

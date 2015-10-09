@@ -85,6 +85,7 @@ function usync_loader_list() {
     new \USync\Loading\FieldLoader($instanceLoader),
     new \USync\Loading\NodeEntityLoader(),
     $instanceLoader,
+    new \USync\Loading\RoleLoader(),
     new \USync\Loading\ViewModeLoader(),
     new \USync\Loading\VariableLoader(),
     new \USync\Loading\VocabularyEntityLoader(),
