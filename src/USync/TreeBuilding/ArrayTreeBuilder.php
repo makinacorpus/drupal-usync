@@ -20,6 +20,18 @@ class ArrayTreeBuilder
         'variable.?name'                   => '\USync\AST\Drupal\VariableNode',
     ];
 
+    public function __construct()
+    {
+        // Allow other modules to add stuff in there
+        $moduleMap = module_invoke_all('usync_path_map');
+
+        if (!empty($moduleMap)) {
+            self::$pathMap = array_merge($moduleMap, self::$pathMap);
+        }
+
+        drupal_alter('usync_path_map', self::$pathMap);
+    }
+
     protected function _parse(Node $parent, $name, $value = null)
     {
         if (empty($parent->getPath())) {

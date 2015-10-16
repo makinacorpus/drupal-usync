@@ -91,7 +91,9 @@ function usync_loader_list() {
     new \USync\Loading\VocabularyEntityLoader(),
   ];
 
-  // @todo make this better.
+  if ($moduleLoaders = module_invoke_all(__FUNCTION__)) {
+    $loaders = array_merge($moduleLoaders, $loaders);
+  }
   drupal_alter(__FUNCTION__, $loaders);
 
   return $loaders;
