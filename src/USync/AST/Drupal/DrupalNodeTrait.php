@@ -4,16 +4,25 @@ namespace USync\AST\Drupal;
 
 trait DrupalNodeTrait
 {
+    /**
+     * {inheritdoc}
+     */
     public function isDirty()
     {
         return $this->hasAttribute('dirty') && $this->getAttribute('dirty');
     }
 
+    /**
+     * {inheritdoc}
+     */
     public function isMerge()
     {
         return $this->hasAttribute('merge') && $this->getAttribute('merge');
     }
 
+    /**
+     * {inheritdoc}
+     */
     public function shouldDelete()
     {
         // This is probably a bit ugly, but it works fine.
@@ -32,5 +41,27 @@ trait DrupalNodeTrait
         }
 
         return $self->hasChild('delete') && $self->getChild('delete')->getValue();
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function setDrupalIdentifier($identifier)
+    {
+        /** @var $self \USync\AST\NodeInterface */
+        $self = $this;
+        $self->setAttribute('drupal_identifier', $identifier);
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getDrupalIdentifier()
+    {
+        /** @var $self \USync\AST\NodeInterface */
+        $self = $this;
+        if ($self->hasAttribute('drupal_identifier')) {
+            return $self->getAttribute('drupal_identifier');
+        }
     }
 }

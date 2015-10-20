@@ -121,7 +121,7 @@ class FieldInstanceLoader extends AbstractLoader
         // Dynamically determine weight using position relative to parent node
         // @todo Find a quicker way
         if ($node->hasParent()) {
-            $instance['weight'] = $node->getParent()->getChildPosition($node->getName());
+            $instance['weight'] = $node->getParent()->getChildPosition($node);
         }
 
         // Propagate defaults set at the field level

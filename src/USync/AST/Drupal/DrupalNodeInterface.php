@@ -32,4 +32,18 @@ interface DrupalNodeInterface extends NodeInterface
      * @return boolean
      */
     public function shouldDelete();
+
+    /**
+     * Set Drupal identifier
+     *
+     * @param mixed $identifier
+     */
+    public function setDrupalIdentifier($identifier);
+
+    /**
+     * Get Drupal identifier
+     *
+     * @return mixed
+     */
+    public function getDrupalIdentifier();
 }

@@ -106,6 +106,9 @@ interface LoaderInterface
      * @param \USync\AST\NodeInterface $node
      * @param \USync\Context $context
      * @param boolean $dirtyAllowed
+     *
+     * @return mixed
+     *   Drupal identifier if possible
      */
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false);
 }

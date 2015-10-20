@@ -83,6 +83,8 @@ function usync_loader_list() {
   $instanceLoader = new \USync\Loading\FieldInstanceLoader();
   $loaders = [
     new \USync\Loading\FieldLoader($instanceLoader),
+    new \USync\Loading\MenuItemLoader(),
+    new \USync\Loading\MenuLoader(),
     new \USync\Loading\NodeEntityLoader(),
     $instanceLoader,
     new \USync\Loading\RoleLoader(),

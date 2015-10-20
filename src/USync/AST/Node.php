@@ -145,7 +145,7 @@ class Node implements NodeInterface
     public function getChildAt($index)
     {
         if (count($this->children) < $index) {
-            throw new \OutOfBoundsException("%sth child is out of bounds", $index);
+            throw new \OutOfBoundsException(sprintf("%sth child is out of bounds", $index));
         }
 
         $count = 0;
@@ -157,15 +157,26 @@ class Node implements NodeInterface
         }
     }
 
-    public function getChildPosition($key)
+    public function getChildPosition(NodeInterface $node)
     {
         $count = 0;
-        foreach ($this->children as $lkey => $child) {
-            if ($lkey === $child) {
+        foreach ($this->children as $child) {
+            if ($node === $child) {
                 return $count;
             }
             ++$count;
         }
+
+        throw new \InvalidArgumentException(sprintf("Not a child"));
+    }
+
+    public function getPosition()
+    {
+        if (!$this->parent) {
+            return 0;
+        }
+
+        return $this->parent->getChildPosition($this);
     }
 
     public function setParent(NodeInterface $parent)

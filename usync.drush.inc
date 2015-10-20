@@ -141,15 +141,19 @@ function drush_usync_tree() {
     $pathes = explode(',', $pathes);
   }
 
-  $graph = _drush_usync_list();
-  $found = [];
+  $graph    = _drush_usync_list();
+  $found    = [];
+  $context  = new Context($graph);
 
   $statProcessor = new StatProcessor();
+
   $visitor = new Visitor();
   $visitor->addProcessor(new DrupalAttributesProcessor());
   $visitor->addProcessor(new InheritProcessor());
   $visitor->addProcessor($statProcessor);
+  $visitor->execute($graph, $context);
 
+  $visitor = new Visitor(Visitor::TOP_BOTTOM);
   $visitor->addProcessor(function (NodeInterface $node, Context $context) use (&$found, $pathes, $partial) {
     // This visitor has the only purpose to find Drupal revelant entries in the
     // graph, that would trigger a Drupal update. Any other info isn't revelant
@@ -169,7 +173,7 @@ function drush_usync_tree() {
     }
   });
 
-  $visitor->execute($graph, new Context($graph));
+  $visitor->execute($graph, $context);
 
   foreach ($found as $node) {
     $output = [];
@@ -263,13 +267,14 @@ function drush_usync_run() {
     $context = new Context($graph);
 
     $statProcessor = new StatProcessor();
+
     $visitor = new Visitor();
     $visitor->addProcessor(new DrupalAttributesProcessor());
     $visitor->addProcessor(new InheritProcessor());
-    $visitor->addProcessor($statProcessor);
     $visitor->execute($graph, $context);
 
-    $visitor = new Visitor();
+    $visitor = new Visitor(Visitor::TOP_BOTTOM);
+    $visitor->addProcessor($statProcessor);
     $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $pathes) {
@@ -288,6 +293,11 @@ function drush_usync_run() {
 
     // This seems, at some point, mandatory.
     field_cache_clear();
+    // DO NOT EVER call menu_rebuild() manually, if you do this, Drupal will
+    // mix-up the menu links you manually saved using menu_link_save() and
+    // those still in cache at some point, and loose menu items parenting.
+    // This wrong behavior cost me a few hours to debug.
+    variable_set('menu_rebuild_needed', 1);
     menu_rebuild();
 
     unset($tx); // Explicit commit.

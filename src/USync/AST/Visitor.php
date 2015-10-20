@@ -9,15 +9,40 @@ use USync\Context;
 /**
  * Visitor role is to proceed to a full graph traversal of the AST and
  * execute configured processors over it. Note that the processing will
- * always be bottom-top in order to ensure that each execute node is
+ * by default be bottom-top in order to ensure that each execute node is
  * fully populated. 
  */
 class Visitor
 {
     /**
+     * Top bottom traversal
+     */
+    const TOP_BOTTOM = 1;
+
+    /**
+     * Bottom top traversal
+     */
+    const BOTTOM_TOP = 2;
+
+    /**
      * @var 
      */
     protected $processors;
+
+    /**
+     * @var int
+     */
+    protected $way = self::BOTTOM_TOP;
+
+    /**
+     * Default constructor
+     *
+     * @param int $way
+     */
+    public function __construct($way = self::BOTTOM_TOP)
+    {
+        $this->way = (int)$way;
+    }
 
     /**
      * Add processor for the traversal
@@ -42,9 +67,45 @@ class Visitor
      */
     public function execute(Node $node, Context $context)
     {
+        switch ($this->way) {
+
+            case self::TOP_BOTTOM:
+                return $this->executeTopBottom($node, $context);
+
+            case self::BOTTOM_TOP:
+            default:
+                return $this->executeBottomTop($node, $context);
+        }
+    }
+
+    /**
+     * Execute traversal of the graph using the given processors
+     *
+     * @param \USync\AST\Node $node
+     */
+    protected function executeTopBottom(Node $node, Context $context)
+    {
+        foreach ($this->processors as $processor) {
+            $processor->execute($node, $context);
+        }
+
         if (!$node->isTerminal()) {
             foreach ($node->getChildren() as $child) {
-                $this->execute($child, $context);
+                $this->executeTopBottom($child, $context);
+            }
+        }
+    }
+
+    /**
+     * Execute traversal of the graph using the given processors
+     *
+     * @param \USync\AST\Node $node
+     */
+    protected function executeBottomTop(Node $node, Context $context)
+    {
+        if (!$node->isTerminal()) {
+            foreach ($node->getChildren() as $child) {
+                $this->executeBottomTop($child, $context);
             }
         }
 

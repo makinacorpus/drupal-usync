@@ -122,9 +122,18 @@ interface NodeInterface
     /**
      * Get child ordered position
      *
-     * @param string $key
+     * @param NodeInterface $node
+     *
+     * @return int
      */
-    public function getChildPosition($key);
+    public function getChildPosition(NodeInterface $node);
+
+    /**
+     * Get current node position relative to parent
+     *
+     * @return int
+     */
+    public function getPosition();
 
     /**
      * Set parent and update internals accordingly

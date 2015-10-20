@@ -114,7 +114,11 @@ class DrupalProcessor implements ProcessorInterface
 
                 // unset($object['keep'], $object['drop']);
 
-                $loader->synchronize($node, $context, $dirtyAllowed);
+                $identifier = $loader->synchronize($node, $context, $dirtyAllowed);
+
+                if ($identifier && $node instanceof DrupalNodeInterface) {
+                    $node->setDrupalIdentifier($identifier);
+                }
                 break;
         }
     }
