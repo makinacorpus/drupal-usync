@@ -159,12 +159,19 @@ class MenuItemLoader extends AbstractLoader
                 $object['plid'] = $plid;
             }
         }
+        if (!$object['plid']) {
+            $object['plid'] = 0;
+        }
 
         // Phoque zate.
         $object['hidden'] = (int)(bool)$object['hidden'];
         $object['expanded'] = (int)(bool)$object['expanded'];
 
-        return menu_link_save($object);
+        $id = menu_link_save($object);
+        // It seems that, sometime, this doesn't get called...
+        _menu_update_parental_status($object);
+
+        return $id;
     }
 
     /**

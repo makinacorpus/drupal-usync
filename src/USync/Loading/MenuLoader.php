@@ -11,7 +11,7 @@ class MenuLoader extends AbstractLoader
     static private $defaults = [
         'menu_name'   => '',
         'title'       => 'node_content',
-        'description' => 0,
+        'description' => null,
     ];
 
     /**
@@ -93,6 +93,7 @@ class MenuLoader extends AbstractLoader
         $object += self::$defaults;
 
         if ($node->shouldDropOnUpdate()) {
+            $context->log(sprintf("%s: deleting menu and children", $node->getPath()));
             menu_delete($object);
         }
 

@@ -298,7 +298,6 @@ function drush_usync_run() {
     // those still in cache at some point, and loose menu items parenting.
     // This wrong behavior cost me a few hours to debug.
     variable_set('menu_rebuild_needed', 1);
-    menu_rebuild();
 
     unset($tx); // Explicit commit.
 
