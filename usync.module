@@ -5,6 +5,13 @@
  */
 
 use USync\AST\NodeInterface;
+use USync\AST\Visitor;
+use USync\AST\Processing\DrupalAttributesProcessor;
+use USync\AST\Processing\DrupalProcessor;
+use USync\AST\Processing\InheritProcessor;
+use USync\AST\Processing\StatProcessor;
+use USync\AST\Path;
+use USync\Context;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
 use USync\TreeBuilding\ArrayTreeBuilder;
@@ -159,7 +166,7 @@ function usync_graph_create($sources, $type = 'yaml') {
  * @param string $module
  *   The module for which to get the graph.
  * @param string[] $sources
- *   List of declared source names you want to join into this graph.
+ *   List of module declared source names you want to join into this graph.
  *
  * @return \USync\AST\NodeInterface
  *   The graph.
@@ -192,4 +199,85 @@ function usync_module_graph_get($module, array $sources = null) {
   }
 
   return usync_graph_create($sources);
+}
+
+/**
+ * Run sync.
+ *
+ * You may call this during your updates, it does work.
+ *
+ * Synchronization is embeded into a transaction but please be aware that any
+ * DDL operations (table alteration mostly) won't be rollbacked.
+ *
+ * @param string $module
+ *   The module for which to get the graph.
+ * @param string[] $sources
+ *   List of module declared source names you want to join into this graph.
+ * @param string|string[] $pathes
+ *   Can be null, a single pattern or an array of patterns to match
+ * @param string $partial
+ *   Please ignore this parameter for now.
+ */
+function usync_run($module, $sources = null, $patterns = null, $partial = false) {
+
+  if ($sources && !is_array($sources)) {
+    $sources = [$sources];
+  }
+  if ($patterns && !is_array($patterns)) {
+    $patterns = [$patterns];
+  }
+
+  $tx = null;
+
+  try {
+    $tx = db_transaction();
+
+    $graph = usync_module_graph_get($module, $sources);
+    if (!$graph) {
+      throw new \InvalidArgumentException("Invalid sources provided");
+    }
+
+    $loaders = usync_loader_list();
+    $context = new Context($graph);
+
+    $visitor = new Visitor();
+    $visitor->addProcessor(new DrupalAttributesProcessor());
+    $visitor->addProcessor(new InheritProcessor());
+    $visitor->execute($graph, $context);
+
+    $visitor = new Visitor(Visitor::TOP_BOTTOM);
+    $drupalProcessor = new DrupalProcessor($loaders);
+
+    if (null !== $patterns) {
+      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $patterns, $partial) {
+        foreach ($patterns as $pattern) {
+          if (false !== Path::match($node->getPath(), $pattern, $partial)) {
+            $drupalProcessor->execute($node, $context);
+          }
+        }
+      });
+    } else {
+      $visitor->addProcessor($drupalProcessor);
+    }
+
+    $visitor->execute($graph, $context);
+
+    // This seems, at some point, mandatory.
+    field_cache_clear();
+    // DO NOT EVER call menu_rebuild() manually, if you do this, Drupal will
+    // mix-up the menu links you manually saved using menu_link_save() and
+    // those still in cache at some point, and loose menu items parenting.
+    // This wrong behavior cost me a few hours to debug.
+    variable_set('menu_rebuild_needed', 1);
+
+    unset($tx); // Explicit commit.
+
+  } catch (\Exception $e) {
+    if ($tx) {
+      try {
+        $tx->rollback();
+      } catch (Exception $e2) {}
+    }
+    throw $e;
+  }
 }
