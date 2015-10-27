@@ -8,8 +8,8 @@ use USync\AST\NodeInterface;
 use USync\AST\Visitor;
 use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\DrupalProcessor;
+use USync\AST\Processing\ExpressionProcessor;
 use USync\AST\Processing\InheritProcessor;
-use USync\AST\Processing\StatProcessor;
 use USync\AST\Path;
 use USync\Context;
 use USync\Parsing\PathDiscovery;
@@ -241,6 +241,7 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
     $context = new Context($graph);
 
     $visitor = new Visitor();
+    $visitor->addProcessor(new ExpressionProcessor());
     $visitor->addProcessor(new DrupalAttributesProcessor());
     $visitor->addProcessor(new InheritProcessor());
     $visitor->execute($graph, $context);

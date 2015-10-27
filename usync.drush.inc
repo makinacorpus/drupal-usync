@@ -9,14 +9,12 @@ use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\DrupalProcessor;
+use USync\AST\Processing\ExpressionProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
-use USync\Parsing\PathDiscovery;
-use USync\Parsing\YamlReader;
 use USync\Serializing\YamlSerializer;
-use USync\TreeBuilding\ArrayTreeBuilder;
 use USync\TreeBuilding\ExtractingTreeBuilder;
 
 /**
@@ -269,6 +267,7 @@ function drush_usync_run() {
     $statProcessor = new StatProcessor();
 
     $visitor = new Visitor();
+    $visitor->addProcessor(new ExpressionProcessor());
     $visitor->addProcessor(new DrupalAttributesProcessor());
     $visitor->addProcessor(new InheritProcessor());
     $visitor->execute($graph, $context);

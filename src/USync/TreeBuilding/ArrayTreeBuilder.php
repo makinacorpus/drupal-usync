@@ -3,10 +3,12 @@
 namespace USync\TreeBuilding;
 
 use USync\AST\BooleanValueNode;
+use USync\AST\ExpressionNode;
 use USync\AST\Node;
 use USync\AST\NullValueNode;
-use USync\AST\ValueNode;
 use USync\AST\Path;
+use USync\AST\StringNode;
+use USync\AST\ValueNode;
 
 class ArrayTreeBuilder
 {
@@ -78,9 +80,16 @@ class ArrayTreeBuilder
                     $node = new NullValueNode($name, $value);
                     break;
 
+                case "string":
+                    if ('@=' === substr($value, 0, 2)) {
+                        $node = new ExpressionNode($name, $value);
+                    } else {
+                        $node = new StringNode($name, $value);
+                    }
+                    break;
+
                 case "integer":
                 case "double":
-                case "string":
                 case "resource":
                 default:
                     $node = new ValueNode($name, $value);
