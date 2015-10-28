@@ -139,6 +139,13 @@ class FieldInstanceLoader extends AbstractLoader
             $instance['settings'] = array();
         }
 
+        // Deal with widget
+        if (!isset($instance['widget'])) {
+            if (isset($field['widget'])) {
+                $instance['widget'] = $field['widget'];
+            }
+        }
+
         if ($existing) {
             $this->alter(self::HOOK_UPDATE, $node, $instance);
             field_update_instance($instance);
