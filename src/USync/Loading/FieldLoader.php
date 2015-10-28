@@ -109,7 +109,7 @@ class FieldLoader extends AbstractLoader
         }
         if (!empty($nameList)) {
             foreach ($nameList as $name) {
-                $this->instanceLoader->deleteExistingObject($name, $context);
+                $this->instanceLoader->deleteExistingObject($node, $context);
             }
         }
 
@@ -194,7 +194,7 @@ class FieldLoader extends AbstractLoader
             }
 
             if ($doDelete) {
-                $this->deleteExistingObject($name, $context);
+                $this->deleteExistingObject($node, $context);
                 field_create_field($object);
                 // @todo Recreate instances
             } else {

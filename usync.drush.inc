@@ -103,6 +103,7 @@ function _drush_usync_list() {
   }
 
   if (empty($graph)) {
+    drush_print(dt("Graph is empty", array('@module' => $module)));
     drush_die();
   }
 
