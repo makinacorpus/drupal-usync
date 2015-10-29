@@ -24,7 +24,7 @@ class VariableLoader extends AbstractLoader
         return variable_get($node->getName());
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         return [];
     }

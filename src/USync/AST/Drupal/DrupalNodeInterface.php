@@ -27,6 +27,16 @@ interface DrupalNodeInterface extends NodeInterface
     public function isMerge();
 
     /**
+     * Should this node be ignore during sync.
+     *
+     * Use this when a node is a default Drupal object or provided by some
+     * other module, but you need to define the node in the object hierarchy.
+     *
+     * @return boolean
+     */
+    public function shouldIgnore();
+
+    /**
      * Should this node be deleted.
      *
      * @return boolean

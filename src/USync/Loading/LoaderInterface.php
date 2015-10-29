@@ -69,7 +69,7 @@ interface LoaderInterface
      * @return string[]
      *   Array of paths
      */
-    public function getDependencies(NodeInterface $node, Context $context);
+    public function getExtractDependencies(NodeInterface $node, Context $context);
 
     /**
      * Populate the given node attributes, children and values from the

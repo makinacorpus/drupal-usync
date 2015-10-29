@@ -65,7 +65,7 @@ class VocabularyEntityLoader extends AbstractEntityLoader
         );
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         // @todo Anything at all we could do here?
         return [];

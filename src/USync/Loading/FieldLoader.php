@@ -80,7 +80,7 @@ class FieldLoader extends AbstractLoader
         $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node FieldNode */
         return [];

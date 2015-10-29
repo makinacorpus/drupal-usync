@@ -74,7 +74,7 @@ class NodeEntityLoader extends AbstractEntityLoader
         return $existing;
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node EntityNode */
         $order = [];
@@ -94,9 +94,7 @@ class NodeEntityLoader extends AbstractEntityLoader
         $view = [];
         $view[] = 'view.node.' . $bundle . '.default';
         foreach (entity_get_info('node')['view modes'] as $viewMode => $settings) {
-            if ($settings['custom settings']) {
-                $view[] = 'view.node.' . $bundle . '.' . $viewMode;
-            }
+            $view[] = 'view.node.' . $bundle . '.' . $viewMode;
         }
 
         return array_merge($field, $view);

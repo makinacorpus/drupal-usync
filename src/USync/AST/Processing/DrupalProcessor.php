@@ -47,6 +47,8 @@ class DrupalProcessor implements ProcessorInterface
             } else {
                 $mode = 'delete';
             }
+        } else if ($node instanceof DrupalNodeInterface && $node->shouldIgnore()) {
+            $mode = 'ignore';
         } else {
             if ($node instanceof DrupalNodeInterface && $node->shouldDelete()) {
                 $mode = 'delete';
@@ -59,6 +61,10 @@ class DrupalProcessor implements ProcessorInterface
         $dirtyPrefix = $dirtyAllowed ? '! ' : '';
 
         switch ($mode) {
+
+            case 'ignore':
+                $context->log(sprintf(" ? %s%s", $dirtyPrefix, $node->getPath()));
+                return;
 
             case 'delete':
                 $context->log(sprintf(" - %s%s", $dirtyPrefix, $node->getPath()));

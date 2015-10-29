@@ -66,7 +66,7 @@ class ViewModeLoader extends AbstractLoader
         return $default;
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
         return [];

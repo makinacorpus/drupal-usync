@@ -23,6 +23,29 @@ trait DrupalNodeTrait
     /**
      * {inheritdoc}
      */
+    public function shouldIgnore()
+    {
+        // This is probably a bit ugly, but it works fine.
+        // Note that $self only serves the purpose of letting Eclipse/PDT doing
+        // working autocomplete, type hinting on $this does not work.
+
+        /** @var $self \USync\AST\NodeInterface */
+        $self = $this;
+
+        if ($self->hasAttribute('ignore') && $self->getAttribute('ignore')) {
+            return true;
+        }
+
+        if ($self->isTerminal()) {
+            return !empty($self->getValue()['ignore']);
+        }
+
+        return $self->hasChild('ignore') && $self->getChild('ignore')->getValue();
+    }
+
+    /**
+     * {inheritdoc}
+     */
     public function shouldDelete()
     {
         // This is probably a bit ugly, but it works fine.

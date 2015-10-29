@@ -100,7 +100,7 @@ class ExtractingTreeBuilder
                                 $loader->updateNodeFromExisting($node, $context);
                                 $this->fixTree($ast, $path)->addChild($node);
 
-                                foreach ($loader->getDependencies($node, $context) as $dpath) {
+                                foreach ($loader->getExtractDependencies($node, $context) as $dpath) {
                                     // Even thought it's being done upper I'd
                                     // prefer to shortcut from there, node this
                                     // is not necessary

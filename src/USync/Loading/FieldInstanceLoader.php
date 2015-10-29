@@ -36,7 +36,7 @@ class FieldInstanceLoader extends AbstractLoader
         return $existing;
     }
 
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         return ['field.' . $node->getFieldName()];

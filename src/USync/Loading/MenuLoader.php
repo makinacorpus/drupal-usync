@@ -51,7 +51,7 @@ class MenuLoader extends AbstractLoader
     /**
      * {@inheritdoc}
      */
-    public function getDependencies(NodeInterface $node, Context $context)
+    public function getExtractDependencies(NodeInterface $node, Context $context)
     {
         return [];
     }
