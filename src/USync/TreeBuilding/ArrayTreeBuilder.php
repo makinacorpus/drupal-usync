@@ -36,6 +36,13 @@ class ArrayTreeBuilder
         }
 
         drupal_alter('usync_path_map', self::$pathMap);
+
+        foreach (self::$pathMap as $pattern => $class) {
+            if (!class_exists($class)) {
+                unset(self::$pathMap[$pattern]);
+                trigger_error(sprintf("Class '%s' does not exist", $class), E_USER_ERROR);
+            }
+        }
     }
 
     protected function _parse(Node $parent, $name, $value = null)
@@ -49,22 +56,17 @@ class ArrayTreeBuilder
         $node = null;
 
         foreach (self::$pathMap as $pattern => $class) {
-            if (class_exists($class)) {
-                $attributes = Path::match($path, $pattern);
-                if ($attributes !== false) {
-                    /* @var $node \USync\AST\Drupal\DrupalNodeInterface */
-                    $node = new $class($name, $value);
-                    $node->setAttributes($attributes);
-                    break;
-                }
+            $attributes = Path::match($path, $pattern);
+            if ($attributes !== false) {
+                /* @var $node \USync\AST\Drupal\DrupalNodeInterface */
+                $node = new $class($name, $value);
+                $node->setAttributes($attributes);
+                break;
             }
         }
 
-        if (null === $value || 'delete' === $value) {
-            $node->setAttribute('delete', true);
-        }
-
         if (null === $node) {
+
             switch (gettype($value)) {
 
                 case "array":

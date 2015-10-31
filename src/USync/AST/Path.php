@@ -32,12 +32,11 @@ class Path
      */
     static public function match($path, $pattern, $partial = false)
     {
-        $attributes = array();
+        $attributes = [];
 
-        $parts = explode(self::SEP, $path);
-        $segments = explode(self::SEP, $pattern);
-
-        $length = count($parts);
+        $parts      = explode(self::SEP, $path);
+        $segments   = explode(self::SEP, $pattern);
+        $length     = count($parts);
 
         if ($length !== count($segments)) {
             return false;
@@ -45,11 +44,14 @@ class Path
 
         for ($i = 0; $i < $length; ++$i) {
             if (self::MATCH === $segments[$i][0]) {
+
                 if (!isset($segments[$i][0])) {
                     throw new \InvalidArgumentException("Empty attribute name");
                 }
+
                 $name = substr($segments[$i], 1);
                 $attributes[$name] = $parts[$i];
+
             } else if (self::WILDCARD !== $segments[$i] && $parts[$i] !== $segments[$i]) {
                 return false; // Shortcut
             }
@@ -69,6 +71,11 @@ class Path
     protected $segments;
 
     /**
+     * @var int
+     */
+    protected $size = 0;
+
+    /**
      * Default constructor
      *
      * @param string $path
@@ -77,12 +84,13 @@ class Path
     {
         $this->path = $path;
         $this->segments = explode(self::SEP, $path);
+        $this->size = count($this->segments) - 1;
     }
 
     /**
      * Get path as string
      *
-     * @return \USync\AST\string
+     * @return string
      */
     public function getPathAsString()
     {
@@ -112,30 +120,25 @@ class Path
     /**
      * Internal recursion for find()
      *
-     * @param Node $node
+     * @param array $ret
+     * @param \USync\AST\NodeInterface[] $node
+     * @param int $depth
      *
-     * @param string[] $segments
-     *   Path as a set of ordered splitted segments
-     *
-     * @return \USync\AST\Node[]
+     * @return \USync\AST\NodeInterface[]
      */
-    protected function _find(Node $node, array $segments)
+    protected function _find(&$ret, Node $node, $depth = 0)
     {
-        $ret = array();
-
-        $current = array_shift($segments);
+        $current = $this->segments[$depth];
 
         if (self::MATCH === $current[0] || self::WILDCARD === $current || $node->getName() === $current) {
-            if (empty($segments)) {
+            if ($depth === $this->size) {
                 $ret[$node->getPath()] = $node;
             } else {
                 foreach ($node->getChildren() as $child) {
-                    $ret += $this->_find($child, $segments);
+                    $this->_find($ret, $child, $depth + 1);
                 }
             }
         }
-
-        return $ret;
     }
 
     /**
@@ -155,23 +158,23 @@ class Path
 
     /**
      * Find matching nodes among node children
-     * 
+     *
      * @param Node $node
      *
      * @param string $ignoreRoot
      *
-     * @return \USync\AST\Node[]
+     * @return \USync\AST\NodeInterface[]
      */
     public function find(Node $node, $ignoreRoot = true)
     {
-        $ret = array();
+        $ret = [];
 
         if ($ignoreRoot && $node->isRoot()) {
             foreach ($node->getChildren() as $child) {
-                $ret += $this->_find($child, $this->segments);
+                $this->_find($ret, $child);
             }
         } else {
-            $ret = $this->_find($node, $this->segments);
+            $this->_find($ret, $node);
         }
 
         return $ret;
