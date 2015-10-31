@@ -7,7 +7,7 @@ use USync\AST\NodeInterface;
 use USync\Context;
 use USync\TreeBuilding\ArrayTreeBuilder;
 
-class NodeEntityLoader extends AbstractEntityLoader
+class NodeEntityLoader extends AbstractEntityLoader implements VerboseLoaderInterface
 {
     static private $defaults = [
         'name'        => '',
@@ -164,5 +164,41 @@ class NodeEntityLoader extends AbstractEntityLoader
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof EntityNode && 'node' === $node->getEntityType();
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderName()
+    {
+        return t("Content type");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderDescription()
+    {
+        return t("Loads this node as content type.");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeName(NodeInterface $node)
+    {
+        $object = $node->getValue();
+
+        if (!empty($object['name'])) {
+            return (string)$object['name'];
+        }
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeInformation(NodeInterface $node)
+    {
+        return null; // Sorry, not implemented
     }
 }

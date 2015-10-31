@@ -99,6 +99,10 @@ class ArrayTreeBuilder
             }
         }
 
+        if (null === $value || 'delete' === $value) {
+            $node->setAttribute('delete', true);
+        }
+
         $parent->addChild($node);
 
         if (!$node->isTerminal() && is_array($value) || $value instanceof \Traversable) {

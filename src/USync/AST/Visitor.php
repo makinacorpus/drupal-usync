@@ -27,7 +27,7 @@ class Visitor
     /**
      * @var 
      */
-    protected $processors;
+    protected $processors = [];
 
     /**
      * @var int
@@ -79,15 +79,26 @@ class Visitor
     }
 
     /**
+     * Execute processors on current node
+     *
+     * @param Node $node
+     * @param Context $context
+     */
+    protected function executeProcessorsOnNode(Node $node, Context $context)
+    {
+        foreach ($this->processors as $processor) {
+            $processor->execute($node, $context);
+        }
+    }
+
+    /**
      * Execute traversal of the graph using the given processors
      *
      * @param \USync\AST\Node $node
      */
     protected function executeTopBottom(Node $node, Context $context)
     {
-        foreach ($this->processors as $processor) {
-            $processor->execute($node, $context);
-        }
+        $this->executeProcessorsOnNode($node, $context);
 
         if (!$node->isTerminal()) {
             foreach ($node->getChildren() as $child) {
@@ -109,8 +120,6 @@ class Visitor
             }
         }
 
-        foreach ($this->processors as $processor) {
-            $processor->execute($node, $context);
-        }
+        $this->executeProcessorsOnNode($node, $context);
     }
 }
