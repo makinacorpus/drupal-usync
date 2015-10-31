@@ -1,7 +1,9 @@
 field:
+  field_image: ~
   post_image:
     type: image
     label: Post image
+    dirty: true
   autre_image:
     inherit: post_image
 
