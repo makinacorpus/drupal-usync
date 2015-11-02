@@ -2,15 +2,19 @@
 
 namespace USync\Parsing;
 
-use USync\AST\Node;
-
 class PhpReader implements ReaderInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function getFileExtensions()
     {
         return array('php');
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function read($filename)
     {
         $ret = @include $filename;

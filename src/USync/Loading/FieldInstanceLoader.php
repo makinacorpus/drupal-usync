@@ -4,10 +4,9 @@ namespace USync\Loading;
 
 use USync\AST\Drupal\FieldInstanceNode;
 use USync\AST\NodeInterface;
-use USync\AST\Path;
 use USync\Context;
 
-class FieldInstanceLoader extends AbstractLoader
+class FieldInstanceLoader extends AbstractLoader implements VerboseLoaderInterface
 {
     public function getType()
     {
@@ -158,5 +157,47 @@ class FieldInstanceLoader extends AbstractLoader
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof FieldInstanceNode;
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderName()
+    {
+        return t("Field instance");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderDescription()
+    {
+        return t("Loads this node as a field instance.");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeName(NodeInterface $node)
+    {
+        /* @var $node FieldInstanceNode */
+        $object = $node->getValue();
+
+        if (!empty($object['label'])) {
+            return (string)$object['label'];
+        }
+
+        $field = field_info_field($node->getFieldName());
+        if (isset($field['label'])) {
+            return $field['label'];
+        }
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeInformation(NodeInterface $node)
+    {
+        return null; // Sorry, not implemented
     }
 }

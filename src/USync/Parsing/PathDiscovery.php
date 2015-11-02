@@ -2,8 +2,6 @@
 
 namespace USync\Parsing;
 
-use USync\AST\Node;
-
 class PathDiscovery
 {
     static public function discover($path, ReaderInterface $reader)

@@ -2,17 +2,21 @@
 
 namespace USync\Parsing;
 
-use USync\AST\Node;
-
 use Symfony\Component\Yaml\Yaml;
 
 class YamlReader implements ReaderInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function getFileExtensions()
     {
         return array('yml', 'yaml');
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function read($filename)
     {
         if (!class_exists('\Symfony\Yaml\Yaml')) {

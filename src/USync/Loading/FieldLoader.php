@@ -6,7 +6,7 @@ use USync\AST\Drupal\FieldNode;
 use USync\AST\NodeInterface;
 use USync\Context;
 
-class FieldLoader extends AbstractLoader
+class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
 {
     /**
      * @var \USync\Loading\FieldInstanceLoader
@@ -208,5 +208,41 @@ class FieldLoader extends AbstractLoader
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof FieldNode;
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderName()
+    {
+        return t("Field");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getLoaderDescription()
+    {
+        return t("Loads this node as a field.");
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeName(NodeInterface $node)
+    {
+        $object = $node->getValue();
+
+        if (!empty($object['label'])) {
+            return (string)$object['label'];
+        }
+    }
+
+    /**
+     * {inheritdoc}
+     */
+    public function getNodeInformation(NodeInterface $node)
+    {
+        return null; // Sorry, not implemented
     }
 }
