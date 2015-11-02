@@ -4,7 +4,6 @@ namespace USync\Loading;
 
 use USync\AST\Drupal\ViewNode;
 use USync\AST\NodeInterface;
-use USync\AST\Path;
 use USync\Context;
 use USync\TreeBuilding\ArrayTreeBuilder;
 
