@@ -12,39 +12,36 @@ use USync\AST\ValueNode;
 
 class ArrayTreeBuilder
 {
-    // @todo Extract this into some hook ?
-    static public $pathMap = [
-        'field.?name'                         => '\USync\AST\Drupal\FieldNode',
-        'entity.?type.?bundle'                => '\USync\AST\Drupal\EntityNode',
-        'entity.?type.?bundle.field.?name'    => '\USync\AST\Drupal\FieldInstanceNode',
-        'menu.?name'                          => '\USync\AST\Drupal\MenuNode',
-        'menu.?menu.item.%'                   => '\USync\AST\Drupal\MenuItemNode',
-        'menu.?menu.item.%.item.%'            => '\USync\AST\Drupal\MenuItemNode',
-        'menu.?menu.item.%.item.%.item.%'     => '\USync\AST\Drupal\MenuItemNode',
-        'security.role.?name'                 => '\USync\AST\Drupal\RoleNode',
-        'view.?type.?bundle.?name'            => '\USync\AST\Drupal\ViewNode',
-        'variable.?name'                      => '\USync\AST\Drupal\VariableNode',
-    ];
+    /**
+     * @var string[]
+     */
+    protected $pathMap;
 
+    /**
+     * Default constructor
+     */
     public function __construct()
     {
         // Allow other modules to add stuff in there
-        $moduleMap = module_invoke_all('usync_path_map');
+        $this->pathMap = module_invoke_all('usync_path_map');
 
-        if (!empty($moduleMap)) {
-            self::$pathMap = array_merge($moduleMap, self::$pathMap);
-        }
+        drupal_alter('usync_path_map', $this->pathMap);
 
-        drupal_alter('usync_path_map', self::$pathMap);
-
-        foreach (self::$pathMap as $pattern => $class) {
+        foreach ($this->pathMap as $pattern => $class) {
             if (!class_exists($class)) {
-                unset(self::$pathMap[$pattern]);
+                unset($this->pathMap[$pattern]);
                 trigger_error(sprintf("Class '%s' does not exist", $class), E_USER_ERROR);
             }
         }
     }
 
+    /**
+     * parse() method internal recursion
+     *
+     * @param Node $parent
+     * @param string $name
+     * @param mixed $value
+     */
     protected function _parse(Node $parent, $name, $value = null)
     {
         if (empty($parent->getPath())) {
@@ -55,7 +52,7 @@ class ArrayTreeBuilder
 
         $node = null;
 
-        foreach (self::$pathMap as $pattern => $class) {
+        foreach ($this->pathMap as $pattern => $class) {
             $attributes = Path::match($path, $pattern);
             if ($attributes !== false) {
                 /* @var $node \USync\AST\Drupal\DrupalNodeInterface */
