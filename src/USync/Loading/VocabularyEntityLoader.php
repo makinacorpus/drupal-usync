@@ -56,7 +56,7 @@ class VocabularyEntityLoader extends AbstractEntityLoader
 
         $existing = array_intersect_key(
             (array)taxonomy_vocabulary_machine_name_load($node->getBundle()),
-            self::$defaults
+            self::$defaults + ['vid' => null]
         );
 
         return array_diff(
