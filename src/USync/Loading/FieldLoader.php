@@ -159,7 +159,7 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
             // Ensure the cardinality change if any is safe to proceed with
             $cardinality = $object['cardinality'] - $existing['cardinality'];
             if (0 !== $cardinality) {
-                if (0 < $cardinality) {
+                if (0 < $cardinality || -1 == $object['cardinality']) {
                     $context->log(sprintf("%s: safe cardinality change", $node->getPath()));
                 } else {
                     // @todo Ensure there is data we can save in field
