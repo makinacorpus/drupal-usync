@@ -13,6 +13,29 @@ use USync\Context;
 class ExtractingTreeBuilder
 {
     /**
+     * @var string[]
+     */
+    protected $pathMap;
+
+    /**
+     * Default constructor
+     */
+    public function __construct()
+    {
+        // Allow other modules to add stuff in there
+        $this->pathMap = module_invoke_all('usync_path_map');
+
+        drupal_alter('usync_path_map', $this->pathMap);
+
+        foreach ($this->pathMap as $pattern => $class) {
+            if (!class_exists($class)) {
+                unset($this->pathMap[$pattern]);
+                trigger_error(sprintf("Class '%s' does not exist", $class), E_USER_ERROR);
+            }
+        }
+    }
+
+    /**
      * Build the missing items in AST ommiting the last segment
      *
      * @param \USync\AST\NodeInterface $ast
@@ -82,7 +105,7 @@ class ExtractingTreeBuilder
             // Path map should come from a dynamic source to let the system
             // being extensible rather than hardcoded, this is the whole
             // long term goal
-            foreach (ArrayTreeBuilder::$pathMap as $pattern => $class) {
+            foreach ($this->pathMap as $pattern => $class) {
 
                 $attributes = $path->matches($pattern);
 
@@ -97,8 +120,8 @@ class ExtractingTreeBuilder
                             if ($loader->exists($node, $context)) {
 
                                 // Build the node and update tree
-                                $loader->updateNodeFromExisting($node, $context);
                                 $this->fixTree($ast, $path)->addChild($node);
+                                $loader->updateNodeFromExisting($node, $context);
 
                                 foreach ($loader->getExtractDependencies($node, $context) as $dpath) {
                                     // Even thought it's being done upper I'd

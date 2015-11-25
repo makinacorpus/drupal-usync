@@ -86,10 +86,34 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
         return [];
     }
 
+    protected function fixDrupalExistingArray(array &$array)
+    {
+        unset(
+            $array['entity_types'],
+            $array['foreign keys'],
+            $array['indexes'],
+            $array['storage'], // @todo Should exclude only defaults
+            $array['id'],
+            $array['field_name'],
+            $array['active'],
+            $array['deleted'],
+            $array['translatable'],
+            $array['columns'],
+            $array['module'],
+            $array['bundles']
+        );
+
+        foreach (['translatable', 'locked'] as $property) {
+            if (empty($array[$property]) || !$array[$property]) {
+                unset($array[$property]);
+            }
+        }
+    }
+
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
         /* @var $node FieldNode */
-        // throw new \Exception("Not implemented");
+        return parent::updateNodeFromExisting($node, $context);
     }
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)

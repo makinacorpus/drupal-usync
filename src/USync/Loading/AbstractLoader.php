@@ -3,8 +3,10 @@
 namespace USync\Loading;
 
 use USync\AST\NodeInterface;
-use USync\AST\Path;
 use USync\Context;
+use Symfony\Component\Yaml\Yaml;
+use USync\TreeBuilding\ArrayTreeBuilder;
+use USync\AST\Path;
 
 abstract class AbstractLoader implements LoaderInterface
 {
@@ -32,11 +34,50 @@ abstract class AbstractLoader implements LoaderInterface
         drupal_alter('usync_' . $hook . '_' . $this->getType(), $object, $node);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function canDoDirtyThings()
     {
         return false;
     }
 
+    /**
+     * Optionnaly implement this in order to rely on the
+     * updateNodeFromExisting() default implementation
+     *
+     * @param array $array
+     */
+    protected function fixDrupalExistingArray(array &$array)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateNodeFromExisting(NodeInterface $node, Context $context)
+    {
+        // Dirty and very quick way of doing this.
+        $existing = $this->getExistingObject($node, $context);
+
+        if (!$existing) {
+            throw new \InvalidArgumentException(sprintf("There is no existing '%s'", $node->getPath()));
+        }
+
+        $array = Yaml::parse(Yaml::dump($existing));
+        $this->fixDrupalExistingArray($array);
+        foreach (array_reverse(explode(Path::SEP, $node->getPath())) as $key) {
+            $array = [$key => $array];
+        }
+        $tree = (new ArrayTreeBuilder())->parse($array);
+        if ($new = $tree->find($node->getPath())) {
+            $node->mergeWith(reset($new));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false)
     {
         throw new \Exception("Not implemented");

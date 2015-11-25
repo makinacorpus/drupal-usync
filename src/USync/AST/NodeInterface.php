@@ -199,4 +199,13 @@ interface NodeInterface
      * @return \USync\AST\Node[]
      */
     public function find($path);
+
+    /**
+     * Merge this node content using the other node content
+     *
+     * @param NodeInterface $node
+     * @param boolean $deep
+     *   If set to false, the current node will keep its childs when conflicting
+     */
+    public function mergeWith(NodeInterface $node, $deep = true);
 }

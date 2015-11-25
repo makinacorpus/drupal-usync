@@ -257,4 +257,17 @@ class Node implements NodeInterface
 
         return $path->find($this);
     }
+
+    public function mergeWith(NodeInterface $node, $deep = true)
+    {
+        foreach ($node->getChildren() as $key => $child) {
+            if (!$this->hasChild($key)) {
+                // @wrong, deep clone won't work and we will keep odd references
+                // to the $node children in the other tree...
+                $this->addChild(clone $child);
+            } else if ($deep) {
+                $this->getChild($key)->mergeWith($child, $deep);
+            }
+        }
+    }
 }
