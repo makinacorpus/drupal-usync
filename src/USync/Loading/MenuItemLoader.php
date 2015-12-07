@@ -159,7 +159,7 @@ class MenuItemLoader extends AbstractLoader
                 $object['plid'] = $plid;
             }
         }
-        if (!$object['plid']) {
+        if (empty($object['plid'])) {
             $object['plid'] = 0;
         }
 
