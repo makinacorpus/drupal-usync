@@ -1,7 +1,7 @@
 {
     "name": "makinacorpus/drupal-usync",
-    "type": "library",
-    "description": "Drupal features-like configuration file driven synchronization module.",
+    "type": "drupal-module",
+    "description": "Drupal features-like configuration file driven synchronization module",
     "keywords": [],
     "homepage": "http://github.com/makinacorpus/drupal-usync",
     "license": "GPL-2",
@@ -9,6 +9,10 @@
         {
             "name": "Pierre Rineau",
             "email": "pierre.rineau@makina-corpus.com"
+        },
+        {
+            "name": "Makina Corpus",
+            "homepage": "http://makina-corpus.com"
         }
     ],
     "autoload": {
