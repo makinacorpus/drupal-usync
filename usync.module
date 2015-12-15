@@ -22,7 +22,7 @@ use USync\TreeBuilding\ArrayTreeBuilder;
 const USYNC_VAR_VIEW_MODE = 'usync_view_mode';
 
 /**
- * We need this.
+ * Load the composer autoload, be flexible about it, it might be elsewhere.
  */
 @include_once __DIR__ . '/vendor/autoload.php';
 
