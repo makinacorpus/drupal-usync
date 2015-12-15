@@ -19,9 +19,9 @@ class YamlReader implements ReaderInterface
      */
     public function read($filename)
     {
-        if (!class_exists('\Symfony\Yaml\Yaml')) {
+        if (!class_exists('\Symfony\Component\Yaml\Yaml')) {
             if (!@include_once __DIR__ . '/../../../vendor/autoload.php') {
-                throw new \LogicException("Unable to find the \Symfony\Yaml class");
+                throw new \LogicException("Unable to find the \Symfony\Component\Yaml\Yaml class");
             }
         }
 

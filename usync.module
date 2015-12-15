@@ -24,7 +24,7 @@ const USYNC_VAR_VIEW_MODE = 'usync_view_mode';
 /**
  * We need this.
  */
-require_once __DIR__ . '/vendor/autoload.php';
+@include_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Load compatibility layer with other modules.
