@@ -1,10 +1,17 @@
 article:
   field:
-    image_cover: default
-    text: default
+    # Add fields and their instance settings
+    image_cover:
+      settings:
+        alt_field: 1
+        title_field: 1
+    text:
+      settings:
+        required_title: true
+        in_accordion: false
     # Remove default fields from standard profile
     body: ~
-    # field_tags: ~
+    field_tags: ~
     field_image: ~
 
 news:
@@ -12,4 +19,4 @@ news:
     image_cover: default
     image_gallery: default
     abstract: default
-    text: default
+    text: true
