@@ -1,1 +1,2 @@
-site_name: µSync is working!
+variable:
+  site_name: µSync is working!
