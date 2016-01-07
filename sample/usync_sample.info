@@ -6,7 +6,14 @@ excluded = true
 
 ; This folder will be used as a whole, filenames whithin are revelant and will
 ; become path prefix in the generated node graph.
+; This would be synchronized using:
+;   drush usr --source=usync_sample:usync/
 usync[] = usync/
 
 ; This single file is considered standalone.
+; This would be synchronized using:
+;   drush usr --source=usync_sample:usync-partial/blog.yml
 usync[] = usync-partial/blog.yml
+
+; The module as a whole can be synchronized at once using:
+;   drush usr --source=usync_sample:
