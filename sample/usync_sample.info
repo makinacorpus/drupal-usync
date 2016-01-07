@@ -1,0 +1,12 @@
+name = µSync sample
+description = µSync module sample
+
+; This module should never been shown to Drupal.
+excluded = true
+
+; This folder will be used as a whole, filenames whithin are revelant and will
+; become path prefix in the generated node graph.
+usync[] = usync/
+
+; This single file is considered standalone.
+usync[] = usync-partial/blog.yml
