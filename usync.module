@@ -167,7 +167,7 @@ function usync_graph_create($sources, $type = 'yaml') {
     }
 
     if (empty($data)) {
-      triggger_error(sprintf("%s: Could not parse file or folder", $source));
+      trigger_error(sprintf("%s: Could not parse file or folder", $source));
       return false;
     }
 
