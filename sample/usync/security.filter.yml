@@ -1,0 +1,10 @@
+full_html:
+  name: Full HTML
+  filters:
+    filter_html:
+      weight: 1
+      settings:
+        allowed_html: '<a> <em> <strong> <blockquote> <ul> <ol> <li> <h2> <h3> <h4> <h5> <h6> <del> <hr> <div>'
+        filter_html_help: 0
+    filter_htmlcorrector:
+      weight: 2

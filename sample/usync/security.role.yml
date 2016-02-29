@@ -1,0 +1,12 @@
+# Drupal special role: anonymous user
+anonymous:
+  name: Visitor
+  permission:
+    - access content
+
+# Drupal special role: authenticated user
+authenticated:
+  name: Authenticated user
+  permission:
+    - access content
+    - access administration pages

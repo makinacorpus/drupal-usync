@@ -106,6 +106,7 @@ function usync_loader_list() {
   // Core loaders
   $instanceLoader = new \USync\Loading\FieldInstanceLoader();
   $loaders = [
+    new \USync\Loading\InputFilterLoader(),
     new \USync\Loading\FieldLoader($instanceLoader),
     new \USync\Loading\MenuItemLoader(),
     new \USync\Loading\MenuLoader(),
