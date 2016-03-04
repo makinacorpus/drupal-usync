@@ -97,10 +97,11 @@ class InputFilterLoader extends AbstractLoader
             'name' => $this->getFormatName($node, $context),
         ];
 
-        if ($format) {
+        /*if ($format) {
             // Needs to fetch back the format machine name.
             $object['format'] = $format->format;
-        }
+        }*/
+        $object['format'] = $node->getName();
 
         // Handle permissions as well.
         $filters = [];
