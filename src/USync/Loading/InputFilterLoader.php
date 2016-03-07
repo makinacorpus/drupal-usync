@@ -91,16 +91,10 @@ class InputFilterLoader extends AbstractLoader
      */
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
-        $format = $this->loadExistingInputFilter($node, $context);
-
         $object = [
-            'name' => $this->getFormatName($node, $context),
+          'name'   => $this->getFormatName($node, $context),
+          'format' => $node->getName(),
         ];
-
-        if ($format) {
-            // Needs to fetch back the format machine name.
-            $object['format'] = $format->format;
-        }
 
         // Handle permissions as well.
         $filters = [];
