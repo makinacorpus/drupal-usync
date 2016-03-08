@@ -58,10 +58,14 @@ function usync_entity_info_alter(&$entity_info) {
     if (isset($entity_info[$entity_type])) {
       // @todo Add a "strict" mode that disables all other view modes.
       foreach ($view_modes as $name => $label) {
-        $entity_info[$entity_type]['view modes'][$name] = array(
-          'label' => $label,
-          'custom settings' => true
-        );
+        // If the view mode is not already created by another module
+        if (!isset($entity_info[$entity_type]['view modes'])) {
+          // Declare it but without being required by default
+          $entity_info[$entity_type]['view modes'][$name] = array(
+            'label' => $label,
+            'custom settings' => false
+          );
+        }
       }
     }
   }
