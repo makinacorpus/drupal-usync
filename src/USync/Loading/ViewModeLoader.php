@@ -84,11 +84,29 @@ class ViewModeLoader extends AbstractLoader
 
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
-        /* @var $node ViewNode */
-        // @todo Can we really delete a view mode?
-        // @todo Ensure we are the source or override it, at the very least
-        // @todo Does it really makes sense?
-        throw new \Exception("Not implemented");
+        $entityType = $node->getEntityType();
+        $bundle     = $node->getBundle();
+        $name       = $node->getName();
+
+        // Nothing to do really, except removing the custom setting from the
+        // field bundle settings variable, but just to be sure we are going to
+        // drop everything we can from the field config itself firs
+
+        $instances = field_info_instances($entityType, $bundle);
+        $bundleSettings = field_bundle_settings($entityType, $bundle);
+
+        foreach ($instances as $instance) {
+            if (isset($instance['display'][$name])) {
+                unset($instance['display'][$name]);
+                field_update_instance($instance);
+            }
+        }
+
+        $bundleSettings['view_modes'][$name] = ['label' => $name, 'custom_settings' => false];
+        foreach (array_keys($bundleSettings['extra_fields']['display']) as $extraField) {
+            unset($bundleSettings['extra_fields']['display'][$extraField][$name]);
+        }
+        field_bundle_settings($entityType, $bundle, $bundleSettings);
     }
 
     public function getExistingObject(NodeInterface $node, Context $context)
@@ -149,7 +167,7 @@ class ViewModeLoader extends AbstractLoader
 
         // First populate the variable that will be used during the
         // hook_entity_info_alter() call to populate the view modes
-        $viewModes = variable_get(USYNC_VAR_VIEW_MODE, array());
+        $viewModes = variable_get(USYNC_VAR_VIEW_MODE, []);
         $viewModes[$entityType][$name] = $name;
         variable_set(USYNC_VAR_VIEW_MODE, $viewModes);
 
