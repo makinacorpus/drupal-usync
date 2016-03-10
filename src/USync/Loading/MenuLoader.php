@@ -18,7 +18,8 @@ class MenuLoader extends AbstractLoader
     {
         parent::init();
 
-        if (!module_exists('menu')) {
+        // Also tests on function existence, someone might have the same idea
+        if (!module_exists('menu') && !function_exists('menu_load')) {
             require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'usync') . '/includes/polyfill-menu-module.php';
         }
     }
