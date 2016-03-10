@@ -2,9 +2,9 @@
 
 namespace USync\Loading;
 
+use USync\AST\Drupal\MenuNode;
 use USync\AST\NodeInterface;
 use USync\Context;
-use USync\AST\Drupal\MenuNode;
 
 class MenuLoader extends AbstractLoader
 {
@@ -13,6 +13,15 @@ class MenuLoader extends AbstractLoader
         'title'       => 'node_content',
         'description' => null,
     ];
+
+    public function init()
+    {
+        parent::init();
+
+        if (!module_exists('menu')) {
+            require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'usync') . '/includes/polyfill-menu-module.php';
+        }
+    }
 
     /**
      * {@inheritdoc}

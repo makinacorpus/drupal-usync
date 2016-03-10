@@ -9,7 +9,6 @@ use USync\Context;
 
 class InputFilterLoader extends AbstractLoader
 {
-
     /**
      * {@inheritDoc}
      */

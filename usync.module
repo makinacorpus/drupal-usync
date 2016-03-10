@@ -127,6 +127,12 @@ function usync_loader_list() {
   }
   drupal_alter(__FUNCTION__, $loaders);
 
+  // Allow loaders to set up the environment.
+  foreach ($loaders as $loader) {
+    /* @var $loader \USync\Loading\LoaderInterface */
+    $loader->init();
+  }
+
   return $loaders;
 }
 

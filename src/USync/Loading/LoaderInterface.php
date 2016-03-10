@@ -11,6 +11,11 @@ use USync\Context;
 interface LoaderInterface
 {
     /**
+     * Initialize the loader at environment init.
+     */
+    public function init();
+
+    /**
      * Get internal component type, used for hooks mostly
      *
      * @return string

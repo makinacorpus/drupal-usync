@@ -21,6 +21,13 @@ abstract class AbstractLoader implements LoaderInterface
     const HOOK_INSERT = 'insert';
 
     /**
+     * {@inheritDoc}
+     */
+    public function init()
+    {
+    }
+
+    /**
      * Invoke a hook to modules to allow them to alter data
      *
      * @param string $hook
