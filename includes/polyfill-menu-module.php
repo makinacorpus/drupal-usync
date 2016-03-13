@@ -2,7 +2,16 @@
 /**
  * @file
  * Those are some menu module functions we would need without the menu module.
+ *
+ * All those functions are pretty much a set of copy/pasted functions.
  */
+
+/**
+ * Failsafe.
+ */
+if (function_exists('menu_load') || module_exists('menu')) {
+  return;
+}
 
 /**
  * Load the data for a single custom menu.
