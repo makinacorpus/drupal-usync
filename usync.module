@@ -113,7 +113,6 @@ function usync_loader_list() {
     new \USync\Loading\InputFilterLoader(),
     new \USync\Loading\FieldLoader($instanceLoader),
     new \USync\Loading\MenuItemLoader(),
-    new \USync\Loading\MenuLoader(),
     new \USync\Loading\NodeEntityLoader(),
     $instanceLoader,
     new \USync\Loading\RoleLoader(),
@@ -121,6 +120,13 @@ function usync_loader_list() {
     new \USync\Loading\VariableLoader(),
     new \USync\Loading\VocabularyEntityLoader(),
   ];
+
+  if (module_exists('menu')) {
+    $loaders[] = new \USync\Loading\MenuLoader();
+  }
+  elseif(module_exists('umenu')) {
+    $loaders[] = new \USync\Loading\UMenuLoader(umenu_get_storage());
+  }
 
   if ($moduleLoaders = module_invoke_all(__FUNCTION__)) {
     $loaders = array_merge($moduleLoaders, $loaders);
