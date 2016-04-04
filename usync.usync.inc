@@ -13,6 +13,7 @@ function usync_usync_path_map() {
     'entity.?type.?bundle'                => '\USync\AST\Drupal\EntityNode',
     'entity.?type.?bundle.field.?name'    => '\USync\AST\Drupal\FieldInstanceNode',
     'security.filter.?name'               => '\USync\AST\Drupal\InputFilterNode',
+    'image.style.?name'                   => '\USync\AST\Drupal\ImageStyleNode',
     'menu.?name'                          => '\USync\AST\Drupal\MenuNode',
     'menu.?menu.item.%'                   => '\USync\AST\Drupal\MenuItemNode',
     'menu.?menu.item.%.item.%'            => '\USync\AST\Drupal\MenuItemNode',

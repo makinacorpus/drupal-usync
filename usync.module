@@ -111,6 +111,7 @@ function usync_loader_list() {
   $instanceLoader = new \USync\Loading\FieldInstanceLoader();
   $loaders = [
     new \USync\Loading\InputFilterLoader(),
+    new \USync\Loading\ImageStyleLoader(),
     new \USync\Loading\FieldLoader($instanceLoader),
     new \USync\Loading\MenuItemLoader(),
     new \USync\Loading\NodeEntityLoader(),

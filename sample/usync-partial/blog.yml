@@ -18,8 +18,13 @@ entity:
           label: Post text
 
 image:
-  post_thumbnail:
-    name: Post thumbnail
+  style:
+    thumbnail:
+      effects:
+        image_scale_and_crop:
+          width: 250
+          height: 250
+
 
 view:
   node:
