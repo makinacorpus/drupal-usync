@@ -27,8 +27,7 @@ class InputFilterLoader extends AbstractLoader
     protected function getFormatName(NodeInterface $node, Context $context)
     {
         if ($node->hasChild('name')) {
-            $value = $node->getChild('name')
-                          ->getValue();
+            $value = $node->getChild('name')->getValue();
 
             if (!is_string($value)) {
                 $context->logCritical(sprintf("%s: name attribute is not a string", $node->getPath()));
@@ -58,7 +57,24 @@ class InputFilterLoader extends AbstractLoader
      */
     protected function loadExistingInputFilter(NodeInterface $node, Context $context)
     {
-        return filter_format_load($node->getName());
+        $existing = filter_format_load($node->getName());
+
+        $filters = db_query("SELECT name, settings FROM {filter} WHERE format = ? AND status = 1 ORDER BY weight ASC", [$node->getName()])->fetchAllKeyed();
+
+        foreach ($filters as $name => $settings) {
+            if (is_string($settings)) {
+                $settings = unserialize($settings);
+            }
+            if (!$existing->filters) {
+                $existing->filters = [];
+            }
+            if (empty($settings)) {
+                $settings = true;
+            }
+            $existing->filters[$name] = $settings;
+        }
+
+        return $existing;
     }
 
     /**
@@ -98,12 +114,12 @@ class InputFilterLoader extends AbstractLoader
         // Handle permissions as well.
         $filters = [];
 
+        $weight = 0;
         if ($node->hasChild('filters')) {
 
             $valid = array_keys(module_invoke_all('filter_info'));
 
-            foreach ($node->getChild('filters')
-                          ->getChildren() as $filter) {
+            foreach ($node->getChild('filters')->getChildren() as $filter) {
                 $name = $filter->getName();
 
                 if (!in_array($name, $valid)) {
@@ -111,8 +127,18 @@ class InputFilterLoader extends AbstractLoader
                     continue;
                 }
 
-                $filters[$name] = $filter->getValue();
+                $filterValue = $filter->getValue();
+                if (true === $filterValue || empty($filterValue)) {
+                    $filterValue = [];
+                }
+                if (!isset($filterValue['weight'])) {
+                    $filterValue['weight'] = $weight;
+                }
+
+                $filters[$name] = $filterValue;
                 $filters[$name]['status'] = 1;
+
+                ++$weight;
             }
         }
         $object['filters'] = $filters;

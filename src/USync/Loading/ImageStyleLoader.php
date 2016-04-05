@@ -27,9 +27,7 @@ class ImageStyleLoader extends AbstractLoader
     protected function getStyleName(NodeInterface $node, Context $context)
     {
         if ($node->hasChild('name')) {
-            $value = $node->getChild('name')
-                          ->getValue()
-            ;
+            $value = $node->getChild('name')->getValue();
 
             if (!is_string($value)) {
                 $context->logCritical(sprintf("%s: name attribute is not a string", $node->getPath()));
@@ -105,8 +103,7 @@ class ImageStyleLoader extends AbstractLoader
             $valid = array_keys(image_effect_definitions());
             $index = 0;
 
-            foreach ($node->getChild('effects')
-                          ->getChildren() as $effectNode) {
+            foreach ($node->getChild('effects')->getChildren() as $effectNode) {
                 $name = $effectNode->getName();
 
                 if (!in_array($name, $valid)) {

@@ -3,10 +3,11 @@
 namespace USync\Loading;
 
 use USync\AST\NodeInterface;
-use USync\Context;
-use Symfony\Component\Yaml\Yaml;
-use USync\TreeBuilding\ArrayTreeBuilder;
 use USync\AST\Path;
+use USync\Context;
+use USync\TreeBuilding\ArrayTreeBuilder;
+
+use Symfony\Component\Yaml\Yaml;
 
 abstract class AbstractLoader implements LoaderInterface
 {
@@ -78,8 +79,13 @@ abstract class AbstractLoader implements LoaderInterface
         if (!$existing) {
             throw new \InvalidArgumentException(sprintf("There is no existing '%s'", $node->getPath()));
         }
+        if (is_object($existing)) {
+          $existing = (array)$existing;
+        }
 
         $array = Yaml::parse(Yaml::dump($existing));
+        $array = $existing;
+
         $this->fixDrupalExistingArray($array);
         foreach (array_reverse(explode(Path::SEP, $node->getPath())) as $key) {
             $array = [$key => $array];
