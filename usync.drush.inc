@@ -16,6 +16,7 @@ use USync\AST\Visitor;
 use USync\Context;
 use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Implements hook_drush_command().
@@ -67,6 +68,10 @@ function usync_drush_command() {
         'entity'    => "Coma separated list of entity types",
         'field'     => "Coma separated list of field types",
       ),
+    ),
+    'usync-strongarm-to-usync' => array(
+      'description' => "Console helper to convert feature strongarm exports to µSync files",
+      'aliases'     => array("usstus"),
     ),
   );
 }
@@ -309,6 +314,94 @@ function drush_usync_run() {
     }
     print $e->getTraceAsString();
     drupal_set_message($e->getMessage(), 'error');
+  }
+}
+
+/**
+ * Converts strongarm features files to usync yaml files.
+ */
+function drush_usync_strongarm_to_usync() {
+
+  foreach (module_list() as $module) {
+
+    $module_path  = drupal_get_path('module', $module);
+    $target_file  = $module_path . '/' . $module . '.strongarm.inc';
+    $variables    = [];
+
+    if (file_exists($target_file)) {
+      include_once $target_file;
+      drush_print($module . ": found file " . $target_file);
+    }
+
+    $function = $module . '_strongarm';
+    if (function_exists($function)) {
+      $values = $function();
+
+      if (!empty($values)) {
+        foreach ($values as $key => $value) {
+          $variables[$key] = $value->value;
+        }
+      }
+    }
+
+    if (!empty($variables)) {
+      $usync_path = $module_path . '/usync';
+      $usync_file = $module_path . '/usync/variable.yml';
+
+      // In case file could not be generated, we will need the content to
+      // dumped into the stdout, no matter what.
+      $content = Yaml::dump($variables, 32, 2);
+
+      // Attempt to create path.
+      if (!is_dir($usync_path)) {
+        if (!mkdir($usync_path)) {
+          drupal_set_message($module . ': cannot create directory ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          break;
+        }
+      }
+
+      $exists = false;
+
+      if (file_exists($usync_file)) {
+        // If file already exists, append what you can inside.
+        drush_print($module . ': using existing ' . $usync_file);
+        if (false === ($handle = fopen($usync_file, 'a+'))) {
+          drupal_set_message($module . ': cannot open existing file ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          break;
+        }
+        fwrite($handle, "\n\n# Generated from Strongarm\n");
+        $exists = true;
+      } else {
+        // Else just create a new file.
+        drush_print($module . ': generating ' . $usync_file);
+        if (false === ($handle = fopen($usync_file, 'w+'))) {
+          drupal_set_message($module . ': cannot create file ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          break;
+        }
+      }
+
+      if (!fwrite($handle, $content)) {
+        drupal_set_message($module . ': write fail in ' . $usync_path . ', dumping file in cli', 'error');
+        drush_print($content);
+      }
+      fclose($handle);
+
+      // Attempt to update the module info file.
+      if (!$exists) {
+        if (false === ($handle = fopen($module_path . '/' . $module . '.info', 'a+'))) {
+          drupal_set_message($module . ': error while opening info file', 'error');
+          break;
+        }
+        if (!fwrite($handle, 'usync[] = usync/')) {
+          drupal_set_message($module . ': error while writing info file', 'error');
+        }
+        fclose($handle);
+        drush_print($module . ': wrote info file');
+      }
+    }
   }
 }
 
