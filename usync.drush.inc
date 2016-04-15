@@ -73,6 +73,10 @@ function usync_drush_command() {
       'description' => "Console helper to convert feature strongarm exports to µSync files",
       'aliases'     => array("usstus"),
     ),
+    'usync-node-types-to-usync' => array(
+      'description' => "Console helper to convert all node types to µSync files",
+      'aliases'     => array("usnttus"),
+    ),
   );
 }
 
@@ -212,6 +216,27 @@ function drush_usync_tree() {
   )));
 }
 
+function _drush_usync_extract_path($path, $type) {
+
+  if (!empty($type)) {
+    $serializerClass = '\\USync\\Serializing\\' . ucfirst($type) . 'Serializer';
+    if (!class_exists($serializerClass)) {
+      trigger_error(sprintf("'%s': type is not supported", $type));
+      return false;
+    }
+    $serializer = new $serializerClass();
+  } else {
+    $serializer = new YamlSerializer();
+  }
+
+  $loaders = usync_loader_list();
+  $builder = new ExtractingTreeBuilder();
+  $context = new Context();
+  $graph   = $builder->parse($path, $loaders, $context);
+
+  return $serializer->serialize($graph);
+}
+
 /**
  * Run export.
  */
@@ -228,23 +253,7 @@ function drush_usync_extract() {
     $pathes = explode(',', $pathes);
   }
 
-  if (!empty($type)) {
-    $serializerClass = '\\USync\\Serializing\\' . ucfirst($type) . 'Serializer';
-    if (!class_exists($serializerClass)) {
-      trigger_error(sprintf("'%s': type is not supported", $type));
-      return false;
-    }
-    $serializer = new $serializerClass();
-  } else {
-    $serializer = new YamlSerializer();
-  }
-
-  $loaders = usync_loader_list();
-  $builder = new ExtractingTreeBuilder();
-  $context = new Context();
-  $graph   = $builder->parse($pathes, $loaders, $context);
-
-  echo $serializer->serialize($graph);
+  echo _drush_usync_extract_path($pathes, $type);
 }
 
 /**
@@ -314,6 +323,103 @@ function drush_usync_run() {
     }
     print $e->getTraceAsString();
     drupal_set_message($e->getMessage(), 'error');
+  }
+}
+
+/**
+ * Converts strongarm features files to usync yaml files.
+ */
+function drush_usync_node_types_to_usync() {
+
+  $dropExisting = true;
+
+  foreach (module_list() as $module) {
+
+    if (!module_implements('node_info')) {
+      continue;
+    }
+
+    $module_path  = drupal_get_path('module', $module);
+    $node_types   = module_invoke($module, 'node_info');
+
+    if (empty($node_types)) {
+      continue;
+    }
+
+    foreach (array_keys($node_types) as $type) {
+
+      drush_print(" * extracting node type '" . $type . "'");
+
+      $usync_path = $module_path . '/usync-partial';
+      $usync_file = $module_path . '/usync-partial/node-' . $type . '.yml';
+      $msg_prefix = $module . ': ' . $type . ': ';
+
+      $content = _drush_usync_extract_path('entity.node.' . $type, 'yaml');
+
+      if (!$content) {
+        drupal_set_message($msg_prefix . 'could not dump data');
+        continue;
+      }
+
+      // Attempt to create path.
+      if (!is_dir($usync_path)) {
+        if (!mkdir($usync_path)) {
+          drupal_set_message($msg_prefix . 'cannot create directory ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          continue;
+        }
+      }
+
+      $exists = false;
+
+      if ($dropExisting && file_exists($usync_file)) {
+        drush_print($msg_prefix . 'removing existing ' . $usync_file);
+        if (!unlink($usync_file)) {
+          drupal_set_message($msg_prefix . 'cannot delete existing file ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          continue;
+        }
+      }
+
+      if (file_exists($usync_file)) {
+        // If file already exists, append what you can inside.
+        drush_print($msg_prefix . 'using existing ' . $usync_file);
+        if (false === ($handle = fopen($usync_file, 'a+'))) {
+          drupal_set_message($msg_prefix . 'cannot open existing file ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          continue;
+        }
+        fwrite($handle, "\n\n# Generated\n");
+        $exists = true;
+      } else {
+        // Else just create a new file.
+        drush_print($msg_prefix . 'generating ' . $usync_file);
+        if (false === ($handle = fopen($usync_file, 'w+'))) {
+          drupal_set_message($msg_prefix . 'cannot create file ' . $usync_path . ', dumping file in cli', 'error');
+          drush_print($content);
+          continue;
+        }
+      }
+
+      if (!fwrite($handle, $content)) {
+        drupal_set_message($msg_prefix . 'write fail in ' . $usync_path . ', dumping file in cli', 'error');
+        drush_print($content);
+      }
+      fclose($handle);
+
+      // Attempt to update the module info file.
+      if (!$exists) {
+        if (false === ($handle = fopen($module_path . '/' . $module . '.info', 'a+'))) {
+          drupal_set_message($msg_prefix . 'error while opening info file', 'error');
+          continue;
+        }
+        if (!fwrite($handle, "usync[] = usync-partial/node-" . $type . ".yml\n")) {
+          drupal_set_message($msg_prefix . 'error while writing info file', 'error');
+        }
+        fclose($handle);
+        drush_print($msg_prefix . 'wrote info file');
+      }
+    }
   }
 }
 
@@ -395,7 +501,7 @@ function drush_usync_strongarm_to_usync() {
           drupal_set_message($module . ': error while opening info file', 'error');
           break;
         }
-        if (!fwrite($handle, 'usync[] = usync/')) {
+        if (!fwrite($handle, "usync[] = usync-partial/\n")) {
           drupal_set_message($module . ': error while writing info file', 'error');
         }
         fclose($handle);
