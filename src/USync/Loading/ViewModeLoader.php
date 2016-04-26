@@ -264,14 +264,14 @@ class ViewModeLoader extends AbstractLoader
         }
         foreach (array_keys($extra) as $propertyName) {
             if (isset($displayExtra[$propertyName])) {
-                $bundleSettings['extra_fields'][$propertyName] = $displayExtra[$propertyName];
+                $bundleSettings['extra_fields']['display'][$propertyName][$name] = $displayExtra[$propertyName];
             } else {
-                $bundleSettings['extra_fields'][$propertyName] = ['visible' => false, 'weight' => $weight++];
+                $bundleSettings['extra_fields']['display'][$propertyName][$name] = ['visible' => false, 'weight' => $weight++];
             }
         }
 
         $bundleSettings['view_modes'][$name] = ['label' => $name, 'custom_settings' => true];
-        $bundleSettings['extra_fields']['display'] = $displayExtra;
+
         if ($dirtyAllowed) {
             // Hopefully nothing about display is really cached into the
             // internal field cache class, except the raw display array
