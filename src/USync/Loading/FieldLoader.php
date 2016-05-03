@@ -176,6 +176,27 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
             $object['cardinality'] = 1;
         }
 
+        // Consistency check, priori to do anything, ensure the database tables
+        // are not already there, this happens, sometimes
+        if (!$existing) {
+            if (empty($object['storage']) || 'field_sql_storage' === $object['storage']['type']) {
+
+                $tables = [
+                    _field_sql_storage_tablename($object),
+                    _field_sql_storage_revision_tablename($object),
+                ];
+
+                foreach ($tables as $table) {
+                    if (db_table_exists($table)) {
+                        $context->logDataloss(sprintf("%s: %s: table already exists prior to creating field", $node->getPath(), $table));
+
+                        // If code has not broken here, then go for deletion
+                        db_drop_table($table);
+                    }
+                }
+            }
+        }
+
         if ($existing) {
             $doDelete = false;
             $eType = $existing['type'];

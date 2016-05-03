@@ -51,8 +51,14 @@ class Context
      * @param string $message
      * @param int $level
      */
-    final public function log($message, $level = E_USER_NOTICE)
+    final public function log($message, $level = E_USER_NOTICE, $willBreak = false)
     {
+        if ($willBreak) {
+            trigger_error($message, $level);
+
+            return;
+        }
+
         switch ($level) {
 
             case E_USER_NOTICE:
@@ -60,7 +66,8 @@ class Context
                 break;
 
             default:
-                trigger_error($message, $level);
+                //trigger_error($message, $level);
+                drupal_set_message($message, 'warning');
         }
     }
 
@@ -71,7 +78,7 @@ class Context
      */
     final public function logWarning($message)
     {
-        $this->log($message, E_USER_WARNING);
+        $this->log($message, E_USER_WARNING, $this->breakOn <= Context::BREAK_WARNING);
 
         if ($this->breakOn <= Context::BREAK_WARNING) {
             throw new \RuntimeException("Error level breakage");
@@ -85,7 +92,7 @@ class Context
      */
     final public function logDataloss($message)
     {
-        $this->log($message, E_USER_ERROR);
+        $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_DATALOSS);
 
         if ($this->breakOn <= Context::BREAK_DATALOSS) {
             throw new \RuntimeException("Error level breakage");
@@ -99,7 +106,7 @@ class Context
      */
     final public function logError($message)
     {
-        $this->log($message, E_USER_ERROR);
+        $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_ERROR);
 
         if ($this->breakOn <= Context::BREAK_ERROR) {
             throw new \RuntimeException("Error level breakage");

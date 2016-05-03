@@ -31,6 +31,7 @@ function usync_drush_command() {
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
         'match'     => "Filters only components that matches the given path",
         'partial'   => "Do partial match (by prefix) only",
+        'break'     => "Any of: 'warning', 'error', 'dataloss', 'force', indicates the minimal consistency level this run should respect",
       ),
       // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
@@ -278,6 +279,26 @@ function drush_usync_run() {
     $graph   = _drush_usync_list();
     $loaders = usync_loader_list();
     $context = new Context($graph);
+
+    switch (drush_get_option('break', 'error')) {
+
+      case 'warning':
+        $context->breakOn = Context::BREAK_WARNING;
+        break;
+
+      case 'dataloss':
+        $context->breakOn = Context::BREAK_DATALOSS;
+        break;
+
+      case 'force':
+        $context->breakOn = Context::BREAK_FORCE;
+        break;
+
+      default:
+      case 'error':
+        $context->breakOn = Context::BREAK_ERROR;
+        break;
+    }
 
     $statProcessor = new StatProcessor();
 
