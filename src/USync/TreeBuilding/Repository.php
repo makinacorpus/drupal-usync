@@ -109,7 +109,7 @@ class Repository
         foreach ($list as $module => $targets) {
             foreach ($targets as $target) {
 
-                $source = $module . '/' . $target;
+                $source = $module . ':' . $target;
 
                 // Ensure module is present in the repository
                 if (!isset($data[$source])) {
