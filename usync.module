@@ -150,7 +150,6 @@ function usync_loader_list() {
  *   Array of file or directory paths.
  * @param string $type
  *   Datatype to look for.
- *   @deprecated
  *   @todo Move the 'type' switch into each source
  *
  * @return \USync\AST\NodeInterface

@@ -26,8 +26,11 @@ function usync_drush_command() {
     'usync-run' => array(
       'description' => "Run synchronization",
       'aliases'     => array("usr"),
+      'arguments'   => array(
+        'sources'   => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+      ),
       'options'     => array(
-        'source'    => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+        'source'    => "Obsolete, kept for backward compatibility",
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
         'match'     => "Filters only components that matches the given path",
         'partial'   => "Do partial match (by prefix) only",
@@ -38,8 +41,11 @@ function usync_drush_command() {
     'usync-tree' => array(
       'description' => "List all components in the given source",
       'aliases'     => array("ust"),
+      'arguments'   => array(
+        'sources'   => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+      ),
       'options'     => array(
-        'source'    => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
+        'source'    => "Obsolete, kept for backward compatibility",
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
         'match'     => "Filters only components that matches the given path",
         'partial'   => "Do partial match (by prefix) only",
@@ -86,16 +92,24 @@ function usync_drush_command() {
  *
  * @return \USync\AST\NodeInterface
  */
-function _drush_usync_list() {
+function _drush_usync_list($sources) {
 
-  $source  = drush_get_option('source');
+  if (empty($sources)) {
+    $sources = [drush_get_option('source')];
+  }
+
   $type    = drush_get_option('type');
   $module  = null;
 
-  if (empty($source)) {
-    drush_print(dt("--source=PATH option is mandatory"));
+  if (empty($sources)) {
+    drush_print(dt("source argument is mandatory"));
     drush_die();
   }
+  if (1 < count($sources)) {
+    drush_print(dt("this only support one source at a time for now"));
+    drush_die();
+  }
+  $source = array_shift($sources);
 
   if (strpos($source, ':')) {
     list($module, $source) = explode(':', $source);
@@ -150,7 +164,7 @@ function drush_usync_tree() {
     $pathes = explode(',', $pathes);
   }
 
-  $graph    = _drush_usync_list();
+  $graph    = _drush_usync_list(func_get_args());
   $found    = [];
   $context  = new Context($graph);
 
@@ -276,7 +290,7 @@ function drush_usync_run() {
   try {
     $tx = db_transaction();
 
-    $graph   = _drush_usync_list();
+    $graph   = _drush_usync_list(func_get_args());
     $loaders = usync_loader_list();
     $context = new Context($graph);
 
