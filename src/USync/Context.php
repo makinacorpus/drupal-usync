@@ -33,6 +33,11 @@ class Context
      */
     public $breakOn = self::BREAK_DATALOSS;
 
+    /**
+     * Root.
+     *
+     * @var NodeInterface
+     */
     public $root;
 
     /**
