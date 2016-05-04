@@ -45,6 +45,11 @@ class Repository
     private $updated = false;
 
     /**
+     * @var string[][]
+     */
+    private $moduleList;
+
+    /**
      * Default constructor
      *
      * @param string $repositoryFile
@@ -68,9 +73,28 @@ class Repository
         $this->repositoryFile = $repositoryFile;
     }
 
-    private function getModuleList()
+    public function getModuleList()
     {
-        return usync_module_list();
+        if (null === $this->moduleList) {
+            $this->moduleList = [];
+
+            foreach (system_list('module_enabled') as $module => $data) {
+                if (!empty($data->info['usync'])) {
+
+                    $sources = $data->info['usync'];
+                    // For lazy people this module allows to declare only one source
+                    // not using the info array form ([]). Lazy people are lazy there
+                    // is no point in fighting against them.
+                    if (!is_array($sources)) {
+                        $sources = [$sources];
+                    }
+
+                    $this->moduleList[$module] = $sources;
+                }
+            }
+        }
+
+        return $this->moduleList;
     }
 
     private function readRespository()

@@ -13,6 +13,7 @@ use USync\AST\Visitor;
 use USync\Context;
 use USync\DrupalAdmin\AST\HtmlTreeBuilderVisitor;
 use USync\TreeBuilding\GraphBuilder;
+use USync\TreeBuilding\Repository;
 
 /**
  * Create the graph suitable for UI.
@@ -23,7 +24,7 @@ use USync\TreeBuilding\GraphBuilder;
  */
 function usync_ui_graph_get($module = null, $source = null) {
 
-  $sources = usync_module_list();
+  $sources = Repository::getInstance()->getModuleList();
   // @todo
   $sources = ['usync:sample/blog.yml'];
 

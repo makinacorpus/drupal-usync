@@ -13,6 +13,7 @@ use USync\AST\Processing\InheritProcessor;
 use USync\AST\Path;
 use USync\Context;
 use USync\TreeBuilding\GraphBuilder;
+use USync\TreeBuilding\Repository;
 
 /**
  * View mode variable nae.
@@ -67,35 +68,6 @@ function usync_entity_info_alter(&$entity_info) {
       }
     }
   }
-}
-
-/**
- * Find modules implementing our own hook.
- *
- * @return string[][]
- *   First dimension keys are module internal names, values are arrays
- *   of listed sources, a source is supposed to be a file or directory
- *   path relative to the module root.
- */
-function usync_module_list() {
-  $ret = [];
-
-  foreach (system_list('module_enabled') as $module => $data) {
-    if (!empty($data->info['usync'])) {
-
-      $sources = $data->info['usync'];
-      // For lazy people this module allows to declare only one source
-      // not using the info array form ([]). Lazy people are lazy there
-      // is no point in fighting against them.
-      if (!is_array($sources)) {
-        $sources = [$sources];
-      }
-
-      $ret[$module] = $sources;
-    }
-  }
-
-  return $ret;
 }
 
 /**

@@ -23,7 +23,7 @@ class GraphBuilder
 
     final protected function getModuleList()
     {
-        return usync_module_list();
+        return Repository::getInstance()->getModuleList();
     }
 
     /**
