@@ -18,6 +18,7 @@ use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
 use USync\TreeBuilding\GraphBuilder;
 use Symfony\Component\Yaml\Yaml;
+use USync\TreeBuilding\Repository;
 
 /**
  * Implements hook_drush_command().
@@ -51,6 +52,12 @@ function usync_drush_command() {
         'match'     => "Filters only components that matches the given path",
         'partial'   => "Do partial match (by prefix) only",
       ),
+      // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
+    ),
+    'usync-list' => array(
+      'description' => "List sources modules",
+      'aliases'     => array("usl"),
+      'options'     => array(),
       // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
     'usync-list' => array(
@@ -113,15 +120,27 @@ function _drush_usync_list($sources) {
  * List all modules declaring stuff to sync.
  */
 function drush_usync_list() {
-  $rows = [
-    [dt("Module"), dt("Source")]
-  ];
-  foreach (usync_module_list() as $module => $sources) {
-    foreach ($sources as $source) {
-      $rows[] = [$module, $source];
-      $module = ''; // Display module name once.
-    }
+
+  $rows = [[dt("Module"), dt("Source"), dt("Status")]];
+
+  $repository = Repository::getInstance();
+
+  $previous = null;
+  foreach ($repository->getResourcesAll() as $resource) {
+
+    $module = $resource->getModule();
+
+    $rows[] = [
+        $module === $previous ? '' : $module,
+        $resource->getTargetInModule(),
+        $resource->isFresh() ? dt("needs update") : dt("ok"),
+    ];
+
+    $previous = $module;
   }
+
+  $repository->commit();
+
   drush_print_table($rows, true);
 }
 
