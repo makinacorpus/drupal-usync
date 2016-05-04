@@ -102,6 +102,10 @@ class GraphBuilder
     {
         $type = null;
 
+        if (isset($loaded[$source])) {
+            return $ret;
+        }
+
         if (!is_dir($filename) && !is_file($filename)) {
             throw new \InvalidArgumentException(sprintf("%s: file does not exists", $filename));
         }
