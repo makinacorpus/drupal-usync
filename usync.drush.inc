@@ -21,6 +21,10 @@ use USync\TreeBuilding\Repository;
 
 use Symfony\Component\Yaml\Yaml;
 
+if (!function_exists('drush_create_progress')) {
+  require_once __DIR__ . '/progress.drush.inc';
+}
+
 /**
  * Implements hook_drush_command().
  */
@@ -315,10 +319,10 @@ function drush_usync_run() {
     $visitor->addProcessor(new ExpressionProcessor());
     $visitor->addProcessor(new DrupalAttributesProcessor());
     $visitor->addProcessor(new InheritProcessor());
+    $visitor->addProcessor($statProcessor);
     $visitor->execute($graph, $context);
 
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
-    $visitor->addProcessor($statProcessor);
     $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $pathes) {
@@ -333,7 +337,21 @@ function drush_usync_run() {
       $visitor->addProcessor($drupalProcessor);
     }
 
+    // Set up progress bar.
+    if ($useProgress) {
+      $progress = drush_create_progress();
+      $total = $statProcessor->count();
+      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($progress, $total) {
+        static $count = 0;
+        $progress->setProgress($total, ++$count);
+      });
+      $progress->start();
+    }
+
     $visitor->execute($graph, $context);
+    if ($useProgress) {
+      $progress->end();
+    }
 
     // This seems, at some point, mandatory.
     field_cache_clear();
