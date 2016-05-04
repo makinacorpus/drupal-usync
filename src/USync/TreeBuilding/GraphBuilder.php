@@ -36,7 +36,7 @@ class GraphBuilder
     final protected function expandSource($source)
     {
         if (false === strpos($source, ':')) {
-            return [$source];
+            return [$source => $source];
         }
 
         $ret = [];
@@ -60,7 +60,7 @@ class GraphBuilder
         // whole module will be imported
         if (empty($target)) {
             $targets = $list[$module];
-        } else if (!isset($list[$target])) {
+        } else if (!in_array($target, $list[$module])) {
             throw new \InvalidArgumentException(sprintf("'%s' module: '%s' source is not declared", $module, $target));
         } else {
             $targets = [$target];
@@ -68,7 +68,7 @@ class GraphBuilder
 
         $path = drupal_get_path('module', $module);
         foreach ($targets as $target) {
-            $ret[] = $path.'/'.$target;
+            $ret[$module . ':' . $target] = $path . '/' . $target;
         }
 
         return $ret;
@@ -85,12 +85,74 @@ class GraphBuilder
      */
     public function addSource($source)
     {
-        foreach ($this->expandSource($source) as $path) {
-            // Avoid duplicates
-            if (!in_array($path, $this->sources)) {
-                $this->sources[] = $path;
+        foreach ($this->expandSource($source) as $realsource => $path) {
+            $this->sources[$realsource] = $path;
+        }
+    }
+
+    /**
+     * Get all source files, keyed by source name
+     */
+    public function getFiles()
+    {
+        return $this->sources;
+    }
+
+    protected function parseFile($source, $filename, $ret, &$loaded = [])
+    {
+        $type = null;
+
+        if (!is_dir($filename) && !is_file($filename)) {
+            throw new \InvalidArgumentException(sprintf("%s: file does not exists", $filename));
+        }
+
+        if (!empty($type)) {
+            $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
+            if (!class_exists($readerClass)) {
+                throw new \InvalidArgumentException(sprintf("'%s': type is not supported", $type));
+            }
+            $reader = new $readerClass();
+        } else {
+            $reader = new YamlReader();
+        }
+
+        if (is_file($filename)) {
+            $data = $reader->read($filename);
+        } else if (is_dir($filename)) {
+            $discovery = new PathDiscovery();
+            $data = $discovery->discover($filename, $reader);
+        }
+
+        if (empty($data)) {
+            throw new \RuntimeException(sprintf("%s: Could not parse file or folder", $filename));
+        }
+
+        foreach ($this->findDependencies($filename, $data) as $depSource => $depFilename) {
+            if (!isset($loaded[$depSource])) {
+                $loaded[$depSource] = true;
+                $ret = $this->parseFile($depSource, $depFilename, $ret, $loaded);
             }
         }
+
+        return drupal_array_merge_deep($ret, $data);
+    }
+
+    protected function findDependencies($filename, $data)
+    {
+        $ret = [];
+
+        if (isset($data['depends'])) {
+
+            if (!is_array($data['depends'])) {
+                throw new \RuntimeException(sprintf("'%s': 'depends' must be a list", $filename));
+            }
+
+            foreach ($data['depends'] as $source) {
+                $ret += $this->expandSource($source);
+            }
+        }
+
+        return $ret;
     }
 
     /**
@@ -98,40 +160,13 @@ class GraphBuilder
      */
     public function buildRawArray()
     {
-        $type = null;
-        $full = [];
+        $ret = [];
 
-        foreach ($this->sources as $filename) {
-
-            if (!is_dir($filename) && !is_file($filename)) {
-                throw new \InvalidArgumentException(sprintf("%s: file does not exists", $filename));
-            }
-
-            if (!empty($type)) {
-                $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
-                if (!class_exists($readerClass)) {
-                    throw new \InvalidArgumentException(sprintf("'%s': type is not supported", $type));
-                }
-                $reader = new $readerClass();
-            } else {
-                $reader = new YamlReader();
-            }
-
-            if (is_file($filename)) {
-                $data = $reader->read($filename);
-            } else if (is_dir($filename)) {
-                $discovery = new PathDiscovery();
-                $data = $discovery->discover($filename, $reader);
-            }
-
-            if (empty($data)) {
-                throw new \RuntimeException(sprintf("%s: Could not parse file or folder", $filename));
-            }
-
-            $full = drupal_array_merge_deep($full, $data);
+        foreach ($this->sources as $source => $filename) {
+            $ret = $this->parseFile($source, $filename, $ret);
         }
 
-        return $full;
+        return $ret;
     }
 
     /**
