@@ -13,7 +13,6 @@ use USync\AST\Processing\InheritProcessor;
 use USync\AST\Path;
 use USync\Context;
 use USync\TreeBuilding\GraphBuilder;
-use USync\TreeBuilding\Repository;
 
 /**
  * View mode variable nae.

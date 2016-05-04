@@ -136,9 +136,9 @@ function drush_usync_list() {
     $module = $resource->getModule();
 
     $rows[] = [
-        $module === $previous ? '' : $module,
-        $resource->getTargetInModule(),
-        $resource->isFresh() ? dt("needs update") : dt("ok"),
+      $module === $previous ? '' : $module,
+      $resource->getTargetInModule(),
+      $resource->isFresh() ? dt("needs update") : dt("ok"),
     ];
 
     $previous = $module;
@@ -277,6 +277,7 @@ function drush_usync_run() {
 
   $pathes  = drush_get_option('match');
   $partial = (bool)drush_get_option('partial');
+  $useProgress = !drush_get_option('no-progress');
 
   if (empty($pathes)) {
     $pathes = null;
