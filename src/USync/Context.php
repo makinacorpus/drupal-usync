@@ -33,6 +33,8 @@ class Context
      */
     public $breakOn = self::BREAK_DATALOSS;
 
+    public $root;
+
     /**
      * Default contructor
      *
@@ -41,7 +43,7 @@ class Context
     public function __construct(NodeInterface $graph = null)
     {
         if (null !== $graph) {
-            // @todo Fetch internals from graph
+            $this->root = $graph;
         }
     }
 

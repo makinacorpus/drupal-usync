@@ -17,8 +17,9 @@ use USync\Context;
 use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
 use USync\TreeBuilding\GraphBuilder;
-use Symfony\Component\Yaml\Yaml;
 use USync\TreeBuilding\Repository;
+
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Implements hook_drush_command().

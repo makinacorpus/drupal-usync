@@ -124,6 +124,15 @@ class Node implements NodeInterface
         $this->children[$node->getName()] = $node;
     }
 
+    public function replaceChild($key, NodeInterface $node)
+    {
+        if (!isset($this->children[$key])) {
+            throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
+        }
+
+        $this->children[$key] = $node;
+    }
+
     public function removeChild($key)
     {
         if (!isset($this->children[$key])) {

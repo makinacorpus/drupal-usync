@@ -97,6 +97,14 @@ interface NodeInterface
     public function addChild(NodeInterface $node);
 
     /**
+     * Replace child with another
+     *
+     * @param string $key
+     * @param NodeInterface $node
+     */
+    public function replaceChild($key, NodeInterface $node);
+
+    /**
      * Remove child
      *
      * @param string $key
