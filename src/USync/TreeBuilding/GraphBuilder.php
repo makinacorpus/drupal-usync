@@ -102,10 +102,6 @@ class GraphBuilder
     {
         $type = null;
 
-        if (isset($loaded[$source])) {
-            return $ret;
-        }
-
         if (!is_dir($filename) && !is_file($filename)) {
             throw new \InvalidArgumentException(sprintf("%s: file does not exists", $filename));
         }
@@ -165,9 +161,13 @@ class GraphBuilder
     public function buildRawArray()
     {
         $ret = [];
+        $loaded = [];
 
         foreach ($this->sources as $source => $filename) {
-            $ret = $this->parseFile($source, $filename, $ret);
+            if (isset($loaded[$source])) {
+                continue;
+            }
+            $ret = $this->parseFile($source, $filename, $ret, $loaded);
         }
 
         return $ret;
