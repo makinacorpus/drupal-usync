@@ -37,6 +37,7 @@ function usync_drush_command() {
         'sources'   => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
       ),
       'options'     => array(
+        'all'       => "If no source specified, run all registered sources",
         'source'    => "Obsolete, kept for backward compatibility",
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
         'match'     => "Filters only components that matches the given path",
@@ -52,6 +53,7 @@ function usync_drush_command() {
         'sources'   => "Path to source file (folder or file) or a string in the form 'MODULE:SOURCE', use usync-list to list sources",
       ),
       'options'     => array(
+        'all'       => "If no source specified, run all registered sources",
         'source'    => "Obsolete, kept for backward compatibility",
         'type'      => "File type to match (default is 'yaml'); this is used only when source is a file or a folder",
         'match'     => "Filters only components that matches the given path",
@@ -107,14 +109,31 @@ function usync_drush_command() {
  */
 function _drush_usync_list($sources) {
 
+  $doAll = drush_get_option('all');
+
   if (empty($sources)) {
     $sources = [drush_get_option('source')];
   }
 
-  //$type    = drush_get_option('type');
+  // Absolutely no idea why, sometime we get an array containing null, I guess
+  // drush is guilty...
+  $sources = array_filter($sources);
 
-  if (empty($sources)) {
-    drush_print(dt("source argument is mandatory"));
+  if ($doAll && $sources) {
+    drush_print(dt("You can not specify sources with the --all switch"));
+    drush_die();
+  }
+
+  if ($doAll) {
+    $repository = Repository::getInstance();
+
+    $sources = [];
+    foreach ($repository->getResourcesAll() as $resource) {
+      $sources[] = $resource->getSource();
+    }
+
+  } else if (empty($sources)) {
+    drush_print(dt("you must add sources as arguments if not using the --all switch"));
     drush_die();
   }
 
