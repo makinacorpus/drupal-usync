@@ -5,13 +5,14 @@
  */
 
 use USync\AST\Drupal\DrupalNodeInterface;
+use USync\AST\Path;
 use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\ExpressionProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Visitor;
 use USync\Context;
 use USync\DrupalAdmin\AST\HtmlTreeBuilderVisitor;
-use USync\AST\Path;
+use USync\TreeBuilding\GraphBuilder;
 
 /**
  * Create the graph suitable for UI.
@@ -24,9 +25,9 @@ function usync_ui_graph_get($module = null, $source = null) {
 
   $sources = usync_module_list();
   // @todo
-  $sources = ['sample/blog.yml'];
+  $sources = ['usync:sample/blog.yml'];
 
-  $graph = usync_module_graph_get('usync', $sources);
+  $graph = (new GraphBuilder($sources))->build();
   if (!$graph) {
     throw new \InvalidArgumentException("Invalid sources provided");
   }

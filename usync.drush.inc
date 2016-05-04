@@ -16,6 +16,7 @@ use USync\AST\Visitor;
 use USync\Context;
 use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
+use USync\TreeBuilding\GraphBuilder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -98,40 +99,14 @@ function _drush_usync_list($sources) {
     $sources = [drush_get_option('source')];
   }
 
-  $type    = drush_get_option('type');
-  $module  = null;
+  //$type    = drush_get_option('type');
 
   if (empty($sources)) {
     drush_print(dt("source argument is mandatory"));
     drush_die();
   }
-  if (1 < count($sources)) {
-    drush_print(dt("this only support one source at a time for now"));
-    drush_die();
-  }
-  $source = array_shift($sources);
 
-  if (strpos($source, ':')) {
-    list($module, $source) = explode(':', $source);
-    if (!module_exists($module)) {
-      drush_print(dt("@module does not exist", array('@module' => $module)));
-      drush_die();
-    }
-    if (empty($source)) {
-      $graph = usync_module_graph_get($module);
-    } else {
-      $graph = usync_module_graph_get($module, [$source]);
-    }
-  } else {
-    $graph = usync_graph_create([$source], $type);
-  }
-
-  if (empty($graph)) {
-    drush_print(dt("Graph is empty", array('@module' => $module)));
-    drush_die();
-  }
-
-  return $graph;
+  return (new GraphBuilder($sources))->build();
 }
 
 /**

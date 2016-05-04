@@ -12,9 +12,7 @@ use USync\AST\Processing\ExpressionProcessor;
 use USync\AST\Processing\InheritProcessor;
 use USync\AST\Path;
 use USync\Context;
-use USync\Parsing\PathDiscovery;
-use USync\Parsing\YamlReader;
-use USync\TreeBuilding\ArrayTreeBuilder;
+use USync\TreeBuilding\GraphBuilder;
 
 /**
  * View mode variable nae.
@@ -144,95 +142,24 @@ function usync_loader_list() {
 }
 
 /**
- * Create a graph from the given sources.
- *
- * @param string[] $sources
- *   Array of file or directory paths.
- * @param string $type
- *   Datatype to look for.
- *   @todo Move the 'type' switch into each source
- *
- * @return \USync\AST\NodeInterface
- *   Merged graph of everything.
+ * @deprecated
  */
-function usync_graph_create($sources, $type = 'yaml') {
-  $full = array();
+function usync_run($module, $sources = null, $patterns = null, $partial = false) {
 
-  foreach ($sources as $source) {
+  $parsed = [];
 
-    if (!is_dir($source) && !is_file($source)) {
-      trigger_error(sprintf("%s: file does not exists", $source));
-      return false;
+  if ($sources) {
+    if (!is_array($sources)) {
+      $sources = [$sources];
     }
-
-    if (!empty($type)) {
-      $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
-      if (!class_exists($readerClass)) {
-        trigger_error(sprintf("'%s': type is not supported", $type));
-        return false;
-      }
-      $reader = new $readerClass();
-    } else {
-      $reader = new YamlReader();
+    foreach ($sources as $target) {
+      $parsed[] = $module . ':' . $target;
     }
-
-    if (is_file($source)) {
-      $data = $reader->read($source);
-    } else if (is_dir($source)) {
-      $discovery = new PathDiscovery();
-      $data = $discovery->discover($source, $reader);
-    }
-
-    if (empty($data)) {
-      trigger_error(sprintf("%s: Could not parse file or folder", $source));
-      return false;
-    }
-
-    $full = drupal_array_merge_deep($full, $data);
+  } else {
+    $parsed[] = $module . ':';
   }
 
-  return (new ArrayTreeBuilder())->parse($full);
-}
-
-/**
- * Get graph from the given module.
- *
- * @param string $module
- *   The module for which to get the graph.
- * @param string[] $sources
- *   List of module declared source names you want to join into this graph.
- *
- * @return \USync\AST\NodeInterface
- *   The graph.
- */
-function usync_module_graph_get($module, array $sources = null) {
-
-  $list = usync_module_list();
-
-  if (!module_exists($module)) {
-    trigger_error(sprintf("%s is not enable or does not exist", $module));
-    return false;
-  }
-  if (!isset($list[$module])) {
-    trigger_error(sprintf("%s does not declare any synchronization sources", $module));
-    return false;
-  }
-
-  if (null === $sources) {
-    $sources = $list[$module];
-  }
-
-  $path = drupal_get_path('module', $module);
-
-  foreach ($sources as $index => $source) {
-    if (!in_array($source, $list[$module])) {
-      trigger_error(sprintf("%s does not declare the '%s' source", $module, $source));
-      return false;
-    }
-    $sources[$index] = $path . '/' . $source;
-  }
-
-  return usync_graph_create($sources);
+  return usync_run_sources($parsed, $patterns, $partial);
 }
 
 /**
@@ -252,7 +179,7 @@ function usync_module_graph_get($module, array $sources = null) {
  * @param string $partial
  *   Please ignore this parameter for now.
  */
-function usync_run($module, $sources = null, $patterns = null, $partial = false) {
+function usync_run_sources($sources = null, $patterns = null, $partial = false) {
 
   if ($sources && !is_array($sources)) {
     $sources = [$sources];
@@ -266,7 +193,7 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
   try {
     $tx = db_transaction();
 
-    $graph = usync_module_graph_get($module, $sources);
+    $graph = (new GraphBuilder($sources))->build();
 
     if (!$graph) {
       throw new \InvalidArgumentException("Invalid sources provided");
