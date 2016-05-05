@@ -10,6 +10,7 @@ use USync\AST\Path;
 use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Visitor;
 use USync\Context;
+use USync\Logger\DrushLogger;
 use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
 use USync\TreeBuilding\GraphBuilder;
@@ -39,6 +40,7 @@ function usync_drush_command() {
         'match'     => "Filters only components that matches the given path",
         'partial'   => "Do partial match (by prefix) only",
         'break'     => "Any of: 'warning', 'error', 'dataloss', 'force', indicates the minimal consistency level this run should respect",
+        'progress'  => 'Show a progress bar',
       ),
       // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
@@ -133,7 +135,10 @@ function _drush_usync_list($sources) {
     drush_die();
   }
 
-  return (new GraphBuilder($sources))->build();
+  $context = (new GraphBuilder($sources))->build();
+  $context->setLogger(new DrushLogger());
+
+  return $context;
 }
 
 /**
@@ -279,6 +284,8 @@ function _drush_usync_timer_table(Context $context) {
     }
   }
 
+  drush_print("");
+
   return drush_print_table($rows, true);
 }
 
@@ -329,7 +336,7 @@ function drush_usync_run() {
 
   $pathes  = drush_get_option('match');
   $partial = (bool)drush_get_option('partial');
-  $useProgress = false;//!drush_get_option('no-progress');
+  $useProgress = (bool)drush_get_option('progress', false);
 
   if (empty($pathes)) {
     $pathes = null;

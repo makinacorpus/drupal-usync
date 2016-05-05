@@ -106,13 +106,20 @@ class GraphBuilder
         return $this->sources;
     }
 
-    protected function parseFile($source, $filename, $ret, &$loaded = [])
+    protected function parseFile($source, $filename, $ret, &$loaded = [], Context $context)
     {
         $type = null;
+
+        if (isset($loaded[$source])) {
+            return $ret;
+        }
+        $loaded[$source] = true;
 
         if (!is_dir($filename) && !is_file($filename)) {
             throw new \InvalidArgumentException(sprintf("%s: file does not exists", $filename));
         }
+
+        $timer = $context->time('parse:' . $source);
 
         if (!empty($type)) {
             $readerClass = '\\USync\\Parsing\\' . ucfirst($type) . 'Reader';
@@ -136,11 +143,10 @@ class GraphBuilder
         }
 
         foreach ($this->findDependencies($filename, $data) as $depSource => $depFilename) {
-            if (!isset($loaded[$depSource])) {
-                $loaded[$depSource] = true;
-                $ret = $this->parseFile($depSource, $depFilename, $ret, $loaded);
-            }
+            $ret = $this->parseFile($depSource, $depFilename, $ret, $loaded, $context);
         }
+
+        $timer->stop();
 
         return drupal_array_merge_deep($ret, $data);
     }
@@ -166,17 +172,18 @@ class GraphBuilder
     /**
      * Build graph from provided sources
      */
-    public function buildRawArray()
+    public function buildRawArray(Context $context)
     {
         $ret = [];
         $loaded = [];
 
+        $timer = $context->time('parse');
+
         foreach ($this->sources as $source => $filename) {
-            if (isset($loaded[$source])) {
-                continue;
-            }
-            $ret = $this->parseFile($source, $filename, $ret, $loaded);
+            $ret = $this->parseFile($source, $filename, $ret, $loaded, $context);
         }
+
+        $timer->stop();
 
         return $ret;
     }
@@ -191,7 +198,7 @@ class GraphBuilder
         $global = $context->time('compiler');
 
         $timer = $context->time('compiler:parse');
-        $ast = (new ArrayTreeBuilder())->parse($this->buildRawArray());
+        $ast = (new ArrayTreeBuilder())->parse($this->buildRawArray($context));
         $timer->stop();
 
         // We have a "naked" AST with no business meaning whatsover, now we
@@ -229,6 +236,7 @@ class GraphBuilder
         $visitor->addProcessor(new CountPass());
         $visitor->addProcessor(new ExpressionProcessor());
         $visitor->addProcessor(new DrupalAttributesProcessor());
+        $visitor->execute($ast, $context);
         $timer->stop();
 
         $global->stop();

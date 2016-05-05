@@ -3,6 +3,7 @@
 namespace USync;
 
 use USync\AST\NodeInterface;
+use USync\Logger\DefaultLogger;
 
 class Context
 {
@@ -25,6 +26,11 @@ class Context
      * Leave everything pass.
      */
     const BREAK_FORCE = 4;
+
+    /**
+     * @var DefaultLogger
+     */
+    private $logger;
 
     /**
      * @var callack[]
@@ -56,6 +62,32 @@ class Context
      * @var string
      */
     public $breakOn = self::BREAK_DATALOSS;
+
+    /**
+     * Get logger
+     *
+     * @return \USync\Logger\DefaultLogger
+     */
+    public function getLogger()
+    {
+        if (!$this->logger) {
+            $this->logger = new DefaultLogger();
+            $this->logger->breakOn($this->breakOn);
+        }
+
+        return $this->logger;
+    }
+
+    /**
+     * Set logger
+     *
+     * @param DefaultLogger $logger
+     */
+    public function setLogger(DefaultLogger $logger)
+    {
+        $this->logger = $logger;
+        $this->logger->breakOn($this->breakOn);
+    }
 
     /**
      * Set graph
@@ -173,78 +205,59 @@ class Context
      *
      * @param string $message
      * @param int $level
+     *
+     * @deprecated
      */
     final public function log($message, $level = E_USER_NOTICE, $willBreak = false)
     {
-        if ($willBreak) {
-            trigger_error($message, $level);
-
-            return;
-        }
-
-        switch ($level) {
-
-            case E_USER_NOTICE:
-                drupal_set_message($message);
-                break;
-
-            default:
-                //trigger_error($message, $level);
-                drupal_set_message($message, 'warning');
-        }
+        $this->getLogger()->log($message, $level, $willBreak);
     }
 
     /**
      * Log warning message
      *
      * @param string $message
+     *
+     * @deprecated
      */
     final public function logWarning($message)
     {
-        $this->log($message, E_USER_WARNING, $this->breakOn <= Context::BREAK_WARNING);
-
-        if ($this->breakOn <= Context::BREAK_WARNING) {
-            throw new \RuntimeException("Error level breakage");
-        }
+        $this->getLogger()->logWarning($message);
     }
 
     /**
      * Log data loss warning
      *
      * @param string $message
+     *
+     * @deprecated
      */
     final public function logDataloss($message)
     {
-        $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_DATALOSS);
-
-        if ($this->breakOn <= Context::BREAK_DATALOSS) {
-            throw new \RuntimeException("Error level breakage");
-        }
+        $this->getLogger()->logDataloss($message);
     }
 
     /**
      * Log error message
      *
      * @param string $message
+     *
+     * @deprecated
      */
     final public function logError($message)
     {
-        $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_ERROR);
-
-        if ($this->breakOn <= Context::BREAK_ERROR) {
-            throw new \RuntimeException("Error level breakage");
-        }
+        $this->getLogger()->logError($message);
     }
 
     /**
      * Log error message
      *
      * @param string $message
+     *
+     * @deprecated
      */
     final public function logCritical($message)
     {
-        $this->log($message, E_USER_ERROR);
-
-        throw new \RuntimeException("Critical error breakage");
+        $this->getLogger()->logCritical($message);
     }
 }
