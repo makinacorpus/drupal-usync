@@ -20,13 +20,6 @@ class Node implements NodeInterface
     protected $path = '';
 
     /**
-     * The node this one inherits from
-     *
-     * @var \USync\AST\Node
-     */
-    protected $baseNode;
-
-    /**
      * @var \USync\AST\Node[]
      */
     protected $children = [];
@@ -98,16 +91,6 @@ class Node implements NodeInterface
         return $this->attributes;
     }
 
-    public function setBaseNode(NodeInterface $node)
-    {
-        $this->baseNode = $node;
-    }
-
-    public function getBaseNode()
-    {
-        return $this->baseNode;
-    }
-
     public function hasChild($key)
     {
         return isset($this->children[$key]);
@@ -129,6 +112,8 @@ class Node implements NodeInterface
         if (!isset($this->children[$key])) {
             throw new \InvalidArgumentException(sprintf("%s child does not exist", $key));
         }
+
+        $node->setParent($this);
 
         $this->children[$key] = $node;
     }
@@ -248,13 +233,6 @@ class Node implements NodeInterface
             $ret[$key] = $node->getValue();
         }
 
-        // Ensure inheritance is propagated in result array
-        if ($this->baseNode) {
-            if ($base = $this->baseNode->getValue()) {
-                $ret = drupal_array_merge_deep($base, $ret);
-            }
-        }
-
         return $ret;
     }
 
@@ -269,14 +247,30 @@ class Node implements NodeInterface
 
     public function mergeWith(NodeInterface $node, $deep = true)
     {
+        // @todo ensure that this method work as expected
         foreach ($node->getChildren() as $key => $child) {
             if (!$this->hasChild($key)) {
-                // @wrong, deep clone won't work and we will keep odd references
-                // to the $node children in the other tree...
-                $this->addChild(clone $child);
+                $this->addChild($child->duplicate());
             } else if ($deep) {
                 $this->getChild($key)->mergeWith($child, $deep);
             }
         }
+    }
+
+    public function duplicate($newName = null)
+    {
+        $node = clone $this;
+
+        if ($newName) {
+            $node->name = $newName;
+        }
+
+        // Then replace all children, this will ensure children themselves
+        // will correctly replace all their children etc...
+        foreach ($this->children as $key => $child) {
+            $node->children[$key] = $child->duplicate();
+        }
+
+        return $node;
     }
 }

@@ -69,20 +69,6 @@ interface NodeInterface
     public function getAttributes();
 
     /**
-     * Sets the node which this node inherits from
-     * 
-     * @param \USync\AST\Node $node
-     */
-    public function setBaseNode(NodeInterface $node);
-
-    /**
-     * Get the node this node inherits from
-     *
-     * @return \USync\AST\Node
-     */
-    public function getBaseNode();
-
-    /**
      * Does the identifier children exist
      *
      * @param string $key
@@ -216,4 +202,14 @@ interface NodeInterface
      *   If set to false, the current node will keep its childs when conflicting
      */
     public function mergeWith(NodeInterface $node, $deep = true);
+
+    /**
+     * Clone the current node
+     *
+     * @param string $newName
+     *   Set this to change the duplicate name
+     *
+     * @return NodeInterface
+     */
+    public function duplicate($newName = null);
 }

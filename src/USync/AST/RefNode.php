@@ -16,7 +16,7 @@ class RefNode extends Node
 
     public function setReference(NodeInterface $node)
     {
-        $this->ref = new $node;
+        $this->ref = $node;
     }
 
     public function getReference()

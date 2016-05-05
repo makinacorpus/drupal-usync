@@ -6,10 +6,7 @@
 
 use USync\AST\NodeInterface;
 use USync\AST\Visitor;
-use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\DrupalProcessor;
-use USync\AST\Processing\ExpressionProcessor;
-use USync\AST\Processing\InheritProcessor;
 use USync\AST\Path;
 use USync\Context;
 use USync\TreeBuilding\GraphBuilder;
@@ -172,12 +169,6 @@ function usync_run_sources($sources = null, $patterns = null, $partial = false) 
 
     $loaders = usync_loader_list();
     $context = new Context($graph);
-
-    $visitor = new Visitor();
-    $visitor->addProcessor(new ExpressionProcessor());
-    $visitor->addProcessor(new DrupalAttributesProcessor());
-    $visitor->addProcessor(new InheritProcessor());
-    $visitor->execute($graph, $context);
 
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
     $drupalProcessor = new DrupalProcessor($loaders);

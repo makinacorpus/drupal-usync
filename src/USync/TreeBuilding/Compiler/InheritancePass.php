@@ -1,6 +1,6 @@
 <?php
 
-namespace USync\AST\Processing; 
+namespace USync\TreeBuilding\Compiler; 
 
 use USync\AST\Node;
 use USync\Context;
@@ -8,7 +8,7 @@ use USync\Context;
 /**
  * Validates and process inherit information on nodes. 
  */
-class InheritProcessor implements ProcessorInterface
+class InheritancePass implements PassInterface
 {
     public function execute(Node $node, Context $context)
     {
@@ -55,11 +55,7 @@ class InheritProcessor implements ProcessorInterface
 
         foreach (array_filter($sorted) as $parent => $children) {
             foreach ($children as $name) {
-                $node
-                  ->getChild($name)
-                  ->setBaseNode(
-                      $node->getChild($parent)
-                  );
+                $node->getChild($name)->setAttribute('inherits', $node->getChild($parent)->getPath());
             }
         }
     }

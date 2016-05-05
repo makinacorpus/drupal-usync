@@ -2,8 +2,15 @@
 
 namespace USync\TreeBuilding;
 
+use USync\AST\Processing\ExpressionProcessor;
+use USync\AST\Processing\DrupalAttributesProcessor;
+use USync\AST\Visitor;
+use USync\Context;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
+use USync\TreeBuilding\Compiler\BusinessConversionPass;
+use USync\TreeBuilding\Compiler\InheritancePass;
+use USync\TreeBuilding\Compiler\MacroPass;
 
 class GraphBuilder
 {
@@ -178,6 +185,33 @@ class GraphBuilder
      */
     public function build()
     {
-        return (new ArrayTreeBuilder())->parse($this->buildRawArray());
+        $ast = (new ArrayTreeBuilder())->parse($this->buildRawArray());
+
+        // We have a "naked" AST with no business meaning whatsover, now we
+        // need to process low level and meaningless transformations, such
+        // as macro processing
+
+        // First, macro processing, this will deeply change the graph, so it
+        // needs to happen first and alone, prior to anything else
+        $visitor = new Visitor();
+        $visitor->addProcessor(new MacroPass());
+        $visitor->execute($ast, new Context($ast));
+
+        // Same goes for inheritance, it is business-free and low level
+        $visitor = new Visitor();
+        $visitor->addProcessor(new InheritancePass());
+        $visitor->execute($ast, new Context($ast));
+
+        // Then, we need to have a business mean-something graph, so let's
+        // apply path map conversion, so let's go!
+        $visitor = new Visitor();
+        $visitor->addProcessor(new BusinessConversionPass());
+        $visitor->execute($ast, new Context($ast));
+
+        // @todo un-hardcode this
+        $visitor->addProcessor(new ExpressionProcessor());
+        $visitor->addProcessor(new DrupalAttributesProcessor());
+
+        return $ast;
     }
 }

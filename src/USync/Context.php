@@ -34,11 +34,11 @@ class Context
     public $breakOn = self::BREAK_DATALOSS;
 
     /**
-     * Root.
+     * Root node we are working on
      *
-     * @var NodeInterface
+     * @var unknown
      */
-    public $root;
+    public $graph;
 
     /**
      * Default contructor
@@ -47,9 +47,7 @@ class Context
      */
     public function __construct(NodeInterface $graph = null)
     {
-        if (null !== $graph) {
-            $this->root = $graph;
-        }
+        $this->graph = $graph;
     }
 
     /**

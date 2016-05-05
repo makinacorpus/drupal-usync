@@ -7,10 +7,7 @@
 use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
-use USync\AST\Processing\DrupalAttributesProcessor;
 use USync\AST\Processing\DrupalProcessor;
-use USync\AST\Processing\ExpressionProcessor;
-use USync\AST\Processing\InheritProcessor;
 use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
@@ -188,13 +185,8 @@ function drush_usync_tree() {
 
   $statProcessor = new StatProcessor();
 
-  $visitor = new Visitor();
-  $visitor->addProcessor(new DrupalAttributesProcessor());
-  $visitor->addProcessor(new InheritProcessor());
-  $visitor->addProcessor($statProcessor);
-  $visitor->execute($graph, $context);
-
   $visitor = new Visitor(Visitor::TOP_BOTTOM);
+  $visitor->addProcessor($statProcessor);
   $visitor->addProcessor(function (NodeInterface $node, Context $context) use (&$found, $pathes, $partial) {
     // This visitor has the only purpose to find Drupal revelant entries in the
     // graph, that would trigger a Drupal update. Any other info isn't revelant
@@ -236,9 +228,6 @@ function drush_usync_tree() {
     }
     if ($node instanceof DrupalNodeInterface && $node->isMerge()) {
       $output[] = "MERGE";
-    }
-    if ($parent = $node->getBaseNode()) {
-      $output[] = "(" . $parent->getPath() . ")";
     }
     drush_print(implode(" ", $output));
   }
@@ -296,7 +285,7 @@ function drush_usync_run() {
 
   $pathes  = drush_get_option('match');
   $partial = (bool)drush_get_option('partial');
-  $useProgress = !drush_get_option('no-progress');
+  $useProgress = false;//!drush_get_option('no-progress');
 
   if (empty($pathes)) {
     $pathes = null;
@@ -335,14 +324,8 @@ function drush_usync_run() {
 
     $statProcessor = new StatProcessor();
 
-    $visitor = new Visitor();
-    $visitor->addProcessor(new ExpressionProcessor());
-    $visitor->addProcessor(new DrupalAttributesProcessor());
-    $visitor->addProcessor(new InheritProcessor());
-    $visitor->addProcessor($statProcessor);
-    $visitor->execute($graph, $context);
-
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
+    $visitor->addProcessor($statProcessor);
     $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $pathes) {
