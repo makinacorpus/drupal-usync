@@ -258,7 +258,10 @@ function _drush_usync_timer_table(Context $context) {
   $rows = [];
   $rows[] = [dt("timer"), dt("cnt"), dt("min"), dt("max"), dt("avg"), dt("sum")];
 
-  foreach ($context->getTimers() as $name => $timers) {
+  $allTimers = $context->getTimers();
+  ksort($allTimers);
+
+  foreach ($allTimers as $name => $timers) {
 
     $values = [];
     $total  = 0;
