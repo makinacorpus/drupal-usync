@@ -1,4 +1,0 @@
-name = µSync developer UI
-description = Developer UI for µSync
-core = 7.x
-dependencies[] = usync
