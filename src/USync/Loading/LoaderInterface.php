@@ -74,6 +74,21 @@ interface LoaderInterface
      * @return string[]
      *   Array of paths
      */
+    public function getDependencies(NodeInterface $node, Context $context);
+
+    /**
+     * Get node dependencies for extraction
+     *
+     * Please note that dependencies are ordered
+     *
+     * @todo This is path dependent, while it should not, find a better way
+     *
+     * @param NodeInterface $node
+     * @param Context $context
+     *
+     * @return string[]
+     *   Array of paths
+     */
     public function getExtractDependencies(NodeInterface $node, Context $context);
 
     /**

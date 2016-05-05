@@ -35,7 +35,7 @@ class FieldInstanceLoader extends AbstractLoader implements VerboseLoaderInterfa
         return $existing;
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
+    public function getDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node FieldInstanceNode */
         return ['field.' . $node->getFieldName()];

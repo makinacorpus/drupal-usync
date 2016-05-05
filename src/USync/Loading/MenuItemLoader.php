@@ -81,7 +81,7 @@ class MenuItemLoader extends AbstractLoader
     /**
      * {@inheritdoc}
      */
-    public function getExtractDependencies(NodeInterface $node, Context $context)
+    public function getDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node \USync\AST\Drupal\MenuItemNode */
         $ret = [];

@@ -80,12 +80,6 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
         $context->logCritical(sprintf("%s: does not exist", $node->getPath()));
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
-    {
-        /* @var $node FieldNode */
-        return [];
-    }
-
     protected function fixDrupalExistingArray(array &$array)
     {
         unset(

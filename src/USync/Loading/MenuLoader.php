@@ -61,14 +61,6 @@ class MenuLoader extends AbstractLoader
     /**
      * {@inheritdoc}
      */
-    public function getExtractDependencies(NodeInterface $node, Context $context)
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         if ($menu = $this->getExistingObject($node, $context)) {

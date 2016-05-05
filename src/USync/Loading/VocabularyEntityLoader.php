@@ -65,12 +65,6 @@ class VocabularyEntityLoader extends AbstractEntityLoader
         );
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
-    {
-        // @todo Anything at all we could do here?
-        return [];
-    }
-
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
         /* @var $node EntityNode */

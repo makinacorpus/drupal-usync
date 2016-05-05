@@ -74,7 +74,7 @@ class NodeEntityLoader extends AbstractEntityLoader implements VerboseLoaderInte
         return $existing;
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
+    public function getDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node EntityNode */
         $order = [];
@@ -90,6 +90,15 @@ class NodeEntityLoader extends AbstractEntityLoader implements VerboseLoaderInte
 
         array_multisort($order, $field);
 
+        return $field;
+    }
+
+    public function getExtractDependencies(NodeInterface $node, Context $context)
+    {
+        $ret = $this->getDependencies($node, $context);
+
+        $bundle = $node->getBundle();
+
         // Let's go for view modes too
         $view = [];
         $view[] = 'view.node.' . $bundle . '.default';
@@ -97,7 +106,7 @@ class NodeEntityLoader extends AbstractEntityLoader implements VerboseLoaderInte
             $view[] = 'view.node.' . $bundle . '.' . $viewMode;
         }
 
-        return array_merge($field, $view);
+        return array_merge($ret, $view);
     }
 
     public function updateNodeFromExisting(NodeInterface $node, Context $context)

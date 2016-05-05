@@ -4,10 +4,7 @@
  * µSync module.
  */
 
-use USync\AST\NodeInterface;
 use USync\AST\Visitor;
-use USync\AST\Processing\DrupalProcessor;
-use USync\AST\Path;
 use USync\Context;
 use USync\TreeBuilding\GraphBuilder;
 
@@ -148,7 +145,7 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
  *   Please ignore this parameter for now.
  */
 function usync_run_sources($sources = null, $patterns = null, $partial = false) {
-
+throw new \Exception("Please fix me");
   if ($sources && !is_array($sources)) {
     $sources = [$sources];
   }
@@ -165,6 +162,7 @@ function usync_run_sources($sources = null, $patterns = null, $partial = false) 
     $loaders = usync_loader_list();
 
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
+    /*
     $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $patterns) {
@@ -178,6 +176,7 @@ function usync_run_sources($sources = null, $patterns = null, $partial = false) 
     } else {
       $visitor->addProcessor($drupalProcessor);
     }
+     */
 
     $visitor->execute($context->getGraph(), $context);
 

@@ -65,10 +65,12 @@ class ViewModeLoader extends AbstractLoader
         return $default;
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
+    public function getDependencies(NodeInterface $node, Context $context)
     {
         /* @var $node ViewNode */
         return [];
+
+        // @todo add entity and fields
     }
 
     public function updateNodeFromExisting(NodeInterface $node, Context $context)

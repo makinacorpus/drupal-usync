@@ -24,11 +24,6 @@ class VariableLoader extends AbstractLoader
         return variable_get($node->getName());
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
-    {
-        return [];
-    }
-
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         variable_del($node->getName());

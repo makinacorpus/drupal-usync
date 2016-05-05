@@ -63,9 +63,17 @@ abstract class AbstractLoader implements LoaderInterface
     /**
      * {@inheritdoc}
      */
-    public function getExtractDependencies(NodeInterface $node, Context $context)
+    public function getDependencies(NodeInterface $node, Context $context)
     {
         return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExtractDependencies(NodeInterface $node, Context $context)
+    {
+        return $this->getDependencies($node, $context);
     }
 
     /**

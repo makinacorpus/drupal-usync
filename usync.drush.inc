@@ -7,9 +7,9 @@
 use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
-use USync\AST\Processing\DrupalProcessor;
 use USync\AST\Visitor;
 use USync\Context;
+use USync\Loading\Loader;
 use USync\Logger\DrushLogger;
 use USync\Serializing\YamlSerializer;
 use USync\TreeBuilding\ExtractingTreeBuilder;
@@ -375,6 +375,9 @@ function drush_usync_run() {
         break;
     }
 
+    (new Loader())->loadAll($context, $pathes, $partial);
+
+    /*
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
     $drupalProcessor = new DrupalProcessor($loaders);
 
@@ -405,6 +408,7 @@ function drush_usync_run() {
     if ($useProgress) {
       $progress->end();
     }
+     */
 
     _drush_usync_timer_table($context);
 

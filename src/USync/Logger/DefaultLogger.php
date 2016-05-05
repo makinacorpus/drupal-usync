@@ -61,7 +61,7 @@ class DefaultLogger
     {
         $this->log($message, E_USER_WARNING, $this->breakOn <= Context::BREAK_WARNING);
 
-        if ($this->breakOn <= DefaultLogger::BREAK_WARNING) {
+        if ($this->breakOn <= Context::BREAK_WARNING) {
             throw new \RuntimeException("Error level breakage");
         }
     }
@@ -75,7 +75,7 @@ class DefaultLogger
     {
         $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_DATALOSS);
 
-        if ($this->breakOn <= DefaultLogger::BREAK_DATALOSS) {
+        if ($this->breakOn <= Context::BREAK_DATALOSS) {
             throw new \RuntimeException("Error level breakage");
         }
     }
@@ -89,7 +89,7 @@ class DefaultLogger
     {
         $this->log($message, E_USER_ERROR, $this->breakOn <= Context::BREAK_ERROR);
 
-        if ($this->breakOn <= DefaultLogger::BREAK_ERROR) {
+        if ($this->breakOn <= Context::BREAK_ERROR) {
             throw new \RuntimeException("Error level breakage");
         }
     }

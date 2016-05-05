@@ -38,7 +38,7 @@ class DrushLogger extends DefaultLogger
                 break;
         }
 
-        drush_log($message, $type);
+        // drush_log($message, $type);
         drush_print($prefix . $message);
     }
 }

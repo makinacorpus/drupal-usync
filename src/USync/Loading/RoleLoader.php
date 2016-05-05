@@ -83,11 +83,6 @@ class RoleLoader extends AbstractLoader
         return array_intersect_key($existing, ['name']);
     }
 
-    public function getExtractDependencies(NodeInterface $node, Context $context)
-    {
-        return [];
-    }
-
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         if ($role = $this->loadExistingRole($node, $context)) {
