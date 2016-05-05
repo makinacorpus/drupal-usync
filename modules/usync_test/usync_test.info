@@ -1,0 +1,5 @@
+name = µSync test
+description = Test features
+core = 7.x
+dependencies[] = usync
+usync[] = usync-partial/macro.yml

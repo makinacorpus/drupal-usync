@@ -1,0 +1,24 @@
+macro:
+
+  some_macro:
+    complex_stuff:
+      deep_stuff: true
+    some_list:
+      - one
+      - two
+
+some:
+  other:
+    external_macro:
+      - a
+      - b
+
+my_element:
+  # This element uses a macro in the 'macro' namespace
+  uses_a_macro: '@some_macro'
+
+and:
+  this:
+    other:
+      # This one uses a fully qualified macro name
+      too: '@some.other.external_macro'
