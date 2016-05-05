@@ -133,7 +133,9 @@ class DrupalProcessor implements ProcessorInterface
     {
         foreach ($this->loaders as $loader) {
             if ($loader->canProcess($node)) {
-                return $this->_execute($node, $context, $loader);
+                $timer = $context->time('load:' . $loader->getType());
+                $this->_execute($node, $context, $loader);
+                $timer->stop();
             }
         }
     }

@@ -9,6 +9,7 @@ use USync\Context;
 use USync\Parsing\PathDiscovery;
 use USync\Parsing\YamlReader;
 use USync\TreeBuilding\Compiler\BusinessConversionPass;
+use USync\TreeBuilding\Compiler\CountPass;
 use USync\TreeBuilding\Compiler\InheritancePass;
 use USync\TreeBuilding\Compiler\MacroPass;
 
@@ -185,33 +186,53 @@ class GraphBuilder
      */
     public function build()
     {
+        $context = new Context();
+
+        $global = $context->time('compiler');
+
+        $timer = $context->time('compiler:parse');
         $ast = (new ArrayTreeBuilder())->parse($this->buildRawArray());
+        $timer->stop();
 
         // We have a "naked" AST with no business meaning whatsover, now we
         // need to process low level and meaningless transformations, such
         // as macro processing
+        $context->setGraph($ast);
 
         // First, macro processing, this will deeply change the graph, so it
         // needs to happen first and alone, prior to anything else
+        $timer = $context->time('compiler:macro');
         $visitor = new Visitor();
         $visitor->addProcessor(new MacroPass());
-        $visitor->execute($ast, new Context($ast));
+        $visitor->execute($ast, $context);
+        $timer->stop();
 
         // Same goes for inheritance, it is business-free and low level
+        $timer = $context->time('compiler:inheritance');
         $visitor = new Visitor();
         $visitor->addProcessor(new InheritancePass());
-        $visitor->execute($ast, new Context($ast));
+        $visitor->execute($ast, $context);
+        $timer->stop();
 
         // Then, we need to have a business mean-something graph, so let's
         // apply path map conversion, so let's go!
+        $timer = $context->time('compiler:conversion');
         $visitor = new Visitor();
         $visitor->addProcessor(new BusinessConversionPass());
-        $visitor->execute($ast, new Context($ast));
+        $visitor->execute($ast, $context);
+        $timer->stop();
 
-        // @todo un-hardcode this
+        // From this point, graph should not be modified anymore, which means
+        // we can safely count nodes from this point
+        $timer = $context->time('compiler:attributes');
+        $visitor = new Visitor();
+        $visitor->addProcessor(new CountPass());
         $visitor->addProcessor(new ExpressionProcessor());
         $visitor->addProcessor(new DrupalAttributesProcessor());
+        $timer->stop();
 
-        return $ast;
+        $global->stop();
+
+        return $context;
     }
 }

@@ -44,10 +44,15 @@ class BusinessConversionPass implements PassInterface
                     $replacement = new $class($node->getName(), $node->getValue());
                 } else {
                     $replacement = new $class($node->getName());
-                    $replacement->mergeWith($node);
+                    // @todo fix this 2-step terminal check
+                    if ($replacement->isTerminal()) {
+                        $replacement = new $class($node->getName(), $node->getValue());
+                    } else {
+                        $replacement->mergeWith($node);
+                    }
                 }
 
-                $replacement->setAttributes($attributes);
+                $replacement->setAttributes($node->getAttributes() + $attributes);
 
                 $node->getParent()->replaceChild($node->getName(), $replacement);
                 break;

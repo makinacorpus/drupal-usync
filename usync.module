@@ -161,14 +161,8 @@ function usync_run_sources($sources = null, $patterns = null, $partial = false) 
   try {
     $tx = db_transaction();
 
-    $graph = (new GraphBuilder($sources))->build();
-
-    if (!$graph) {
-      throw new \InvalidArgumentException("Invalid sources provided");
-    }
-
+    $context = (new GraphBuilder($sources))->build();
     $loaders = usync_loader_list();
-    $context = new Context($graph);
 
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
     $drupalProcessor = new DrupalProcessor($loaders);
@@ -185,7 +179,7 @@ function usync_run_sources($sources = null, $patterns = null, $partial = false) 
       $visitor->addProcessor($drupalProcessor);
     }
 
-    $visitor->execute($graph, $context);
+    $visitor->execute($context->getGraph(), $context);
 
     // This seems, at some point, mandatory.
     field_cache_clear();

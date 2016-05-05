@@ -8,7 +8,6 @@ use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
 use USync\AST\Processing\DrupalProcessor;
-use USync\AST\Processing\StatProcessor;
 use USync\AST\Visitor;
 use USync\Context;
 use USync\Serializing\YamlSerializer;
@@ -102,7 +101,7 @@ function usync_drush_command() {
 /**
  * Get graph using Drush common options.
  *
- * @return \USync\AST\NodeInterface
+ * @return \USync\Context
  */
 function _drush_usync_list($sources) {
 
@@ -179,14 +178,10 @@ function drush_usync_tree() {
     $pathes = explode(',', $pathes);
   }
 
-  $graph    = _drush_usync_list(func_get_args());
+  $context  = _drush_usync_list(func_get_args());
   $found    = [];
-  $context  = new Context($graph);
-
-  $statProcessor = new StatProcessor();
 
   $visitor = new Visitor(Visitor::TOP_BOTTOM);
-  $visitor->addProcessor($statProcessor);
   $visitor->addProcessor(function (NodeInterface $node, Context $context) use (&$found, $pathes, $partial) {
     // This visitor has the only purpose to find Drupal revelant entries in the
     // graph, that would trigger a Drupal update. Any other info isn't revelant
@@ -206,7 +201,7 @@ function drush_usync_tree() {
     }
   });
 
-  $visitor->execute($graph, $context);
+  $visitor->execute($context->getGraph(), $context);
 
   foreach ($found as $node) {
     $output = [];
@@ -234,8 +229,57 @@ function drush_usync_tree() {
 
   drush_print(dt("@count/@total displayed nodes", array(
     '@count' => count($found),
-    '@total' => count($statProcessor),
+    '@total' => $context->count('node'),
   )));
+
+  _drush_usync_timer_table($context);
+}
+
+function _usync_average($array) {
+  $count = 0;
+  $total = 0;
+  foreach ($array as $value) {
+    $count++;
+    $total += $value;
+  }
+  return round($total / $count);
+}
+
+function _usync_format_time($ms) {
+  
+}
+
+function _drush_usync_timer_table(Context $context) {
+  $rows = [];
+  $rows[] = [dt("timer"), dt("cnt"), dt("min"), dt("max"), dt("avg"), dt("sum")];
+
+  foreach ($context->getTimers() as $name => $timers) {
+
+    $values = [];
+    $total  = 0;
+
+    foreach ($timers as $timer) {
+      /** @var $timer \USync\Timer */
+      $value = $timer->get();
+      $total += $value;
+      $values[] = $value;
+    }
+
+    if (1 === count($values)) {
+      $rows[] = [$name, 1, '-', '-', '-', $total];
+    } else {
+      $rows[] = [
+        $name,
+        count($values),
+        min($values),
+        max($values),
+        _usync_average($values),
+        $total,
+      ];
+    }
+  }
+
+  return drush_print_table($rows, true);
 }
 
 function _drush_usync_extract_path($path, $type) {
@@ -298,9 +342,8 @@ function drush_usync_run() {
   try {
     $tx = db_transaction();
 
-    $graph   = _drush_usync_list(func_get_args());
+    $context = _drush_usync_list(func_get_args());
     $loaders = usync_loader_list();
-    $context = new Context($graph);
 
     switch (drush_get_option('break', 'error')) {
 
@@ -322,10 +365,7 @@ function drush_usync_run() {
         break;
     }
 
-    $statProcessor = new StatProcessor();
-
     $visitor = new Visitor(Visitor::TOP_BOTTOM);
-    $visitor->addProcessor($statProcessor);
     $drupalProcessor = new DrupalProcessor($loaders);
 
     if (null !== $pathes) {
@@ -343,7 +383,7 @@ function drush_usync_run() {
     // Set up progress bar.
     if ($useProgress) {
       $progress = drush_create_progress();
-      $total = $statProcessor->count();
+      $total = $context->count('node');
       $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($progress, $total) {
         static $count = 0;
         $progress->setProgress($total, ++$count);
@@ -351,10 +391,12 @@ function drush_usync_run() {
       $progress->start();
     }
 
-    $visitor->execute($graph, $context);
+    $visitor->execute($context->getGraph(), $context);
     if ($useProgress) {
       $progress->end();
     }
+
+    _drush_usync_timer_table($context);
 
     // This seems, at some point, mandatory.
     field_cache_clear();

@@ -24,7 +24,7 @@ class MacroPass implements PassInterface
                 $path = 'macro' . Path::SEP . $path;
             }
 
-            $macro = (new Path($path))->find($context->graph);
+            $macro = (new Path($path))->find($context->getGraph());
 
             if (!$macro) {
                 throw new CompilerException(sprintf("'%s': '%s' macro does not exist", $node->getPath(), $node->getValue()));

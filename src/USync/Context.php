@@ -27,6 +27,30 @@ class Context
     const BREAK_FORCE = 4;
 
     /**
+     * @var callack[]
+     */
+    private $listeners = [];
+
+    /**
+     * @var Timer[][]
+     */
+    private $timers = [];
+
+    /**
+     * Root node we are working on
+     *
+     * @var NodeInterface
+     */
+    private $graph;
+
+    /**
+     * Arbitrary counters
+     *
+     * @var int[]
+     */
+    private $counters = [];
+
+    /**
      * Break on.
      *
      * @var string
@@ -34,20 +58,114 @@ class Context
     public $breakOn = self::BREAK_DATALOSS;
 
     /**
-     * Root node we are working on
+     * Set graph
      *
-     * @var unknown
+     * @param NodeInterface $graph
      */
-    public $graph;
+    public function setGraph(NodeInterface $graph)
+    {
+        if ($this->graph) {
+            throw new \Exception("Cannot change graph");
+        }
+
+        $this->graph = $graph;
+    }
 
     /**
-     * Default contructor
+     * Get graph
      *
-     * @param \USync\AST\NodeInterface $graph
+     * @return NodeInterface
      */
-    public function __construct(NodeInterface $graph = null)
+    public function getGraph()
     {
-        $this->graph = $graph;
+        if (!$this->graph) {
+            throw new \LogicException("Graph is not set");
+        }
+        return $this->graph;
+    }
+
+    /**
+     * Add a listener
+     *
+     * @param string $type
+     * @param callable $callback
+     */
+    final public function on($type, callable $callback)
+    {
+        $this->listeners[$type][] = $callback;
+    }
+
+    final public function incr($name)
+    {
+        if (!isset($this->counters[$name])) {
+            $this->counters[$name] = 0;
+        }
+        $this->counters[$name]++;
+    }
+
+    final public function decr($name)
+    {
+        if (!isset($this->counters[$name])) {
+            $this->counters[$name] = 0;
+        }
+        $this->counters[$name]--;
+    }
+
+    final public function count($name)
+    {
+        if (!isset($this->counters[$name])) {
+            return 0;
+        }
+        return $this->counters[$name];
+    }
+
+    /**
+     * Start a timer
+     *
+     * @param string $name
+     *
+     * @return Timer
+     */
+    final public function time($name)
+    {
+        return $this->timers[$name][] = new Timer($name);
+    }
+
+    /**
+     * Get all timers
+     *
+     * @return Timer[][]
+     *   First dimension keys are timer names, values are Timer instances
+     */
+    final public function getTimers()
+    {
+        return $this->timers;
+    }
+
+    final public function resetTimers()
+    {
+        $this->timers = [];
+    }
+
+    /**
+     * Notifiy an event
+     *
+     * @param string $type
+     * @param ... $arguments
+     */
+    final public function notify($type)
+    {
+        if (empty($this->listeners[$type])) {
+            return;
+        }
+
+        $args = func_get_args();
+        array_shift($type);
+        array_unshift($args, $this);
+
+        foreach ($this->listeners[$type] as $callback) {
+            call_user_func_array($callback, $args);
+        }
     }
 
     /**
