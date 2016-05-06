@@ -28,7 +28,7 @@ class RoleLoader extends AbstractLoader
             $value = $node->getChild('name')->getValue();
 
             if (!is_string($value)) {
-                $context->logCritical(sprintf("%s: name attribute is not a string", $node->getPath()));
+                $context->getLogger()->logCritical(sprintf("%s: name attribute is not a string", $node->getPath()));
             }
 
             return $value;
@@ -74,7 +74,7 @@ class RoleLoader extends AbstractLoader
         $existing = (array)$this->loadExistingRole($node, $context);
 
         if (!$existing) {
-            $context->logCritical(sprintf("%s: does not exists", $node->getPath()));
+            $context->getLogger()->logCritical(sprintf("%s: does not exists", $node->getPath()));
         }
 
         // @todo
@@ -96,6 +96,25 @@ class RoleLoader extends AbstractLoader
         // Handle permissions as well.
     }
 
+    private function writeRole($role)
+    {
+        $role->name = trim($role->name);
+
+        if (!isset($role->weight)) {
+            $role->weight = db_query("SELECT MAX(weight) + 1 FROM {role}")->fetchField();
+        }
+
+        module_invoke_all('user_role_presave', $role);
+
+        if ($role->rid) {
+            drupal_write_record('role', $role, 'rid');
+            module_invoke_all('user_role_update', $role);
+        } else {
+            drupal_write_record('role', $role);
+            module_invoke_all('user_role_insert', $role);
+        }
+    }
+
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $role = $this->loadExistingRole($node, $context);
@@ -114,30 +133,46 @@ class RoleLoader extends AbstractLoader
 
         if ($node->hasChild('permission')) {
 
-            $valid = array_keys(module_invoke_all('permission'));
+            $valid = [];
+            foreach (module_implements('permission') as $module) {
+                $modulePermissions = module_invoke($module, 'permission');
+                if ($modulePermissions) {
+                    foreach (array_keys($modulePermissions) as $permission) {
+                        $valid[$permission] = $module;
+                    }
+                }
+            }
 
             foreach ($node->getChild('permission')->getChildren() as $permission) {
                 $name = $permission->getValue();
 
                 if (!is_string($name)) {
-                    $context->logWarning(sprintf("%s: permission is not a string value, ignoring", $permission->getPath()));
+                    $context->getLogger()->logWarning(sprintf("%s: permission is not a string value, ignoring", $permission->getPath()));
                     continue;
                 }
-                if (!in_array($name, $valid)) {
-                    $context->logWarning(sprintf("%s: permission does not exists, ignoring", $permission->getPath()));
+                if (!isset($valid[$name])) {
+                    $context->getLogger()->logWarning(sprintf("%s: permission does not exists, ignoring", $permission->getPath()));
                     continue;
                 }
 
-                $rolePermissions[] = $name;
+                $rolePermissions[$name] = $valid[$name];
             }
         }
 
         $role = (object)$object;
-        user_role_save($role);
+        $this->writeRole($role);
 
         if ($rolePermissions) {
-            user_role_revoke_permissions($role->rid, $valid);
-            user_role_grant_permissions($role->rid, $rolePermissions);
+            db_query("DELETE FROM {role_permission} WHERE rid = ?", [$role->rid]);
+            $q = db_insert('role_permission')->fields(['rid', 'permission', 'module']);
+            foreach ($rolePermissions as $permission => $module) {
+                $q->values([$role->rid, $permission, $module]);
+            }
+            $q->execute();
+            //user_role_revoke_permissions($role->rid, $valid);
+            //user_role_grant_permissions($role->rid, $rolePermissions);
+            drupal_static_reset('user_access');
+            drupal_static_reset('user_role_permissions');
         }
     }
 

@@ -201,7 +201,9 @@ class Loader
             case self::LOAD_DELETE:
                 $context->getLogger()->log(sprintf(" - %s%s", $dirtyPrefix, $node->getPath()));
                 if ($loader->exists($node, $context)) {
+                    $context->notify('load:delete:pre', $node);
                     $loader->deleteExistingObject($node, $context, $dirtyAllowed);
+                    $context->notify('load:delete:post', $node);
                 }
                 return;
 
@@ -252,7 +254,9 @@ class Loader
 
                 // unset($object['keep'], $object['drop']);
 
+                $context->notify('load:sync:pre', $node);
                 $identifier = $loader->synchronize($node, $context, $dirtyAllowed);
+                $context->notify('load:sync:pre', $node);
 
                 if ($identifier && $node instanceof DrupalNodeInterface) {
                     $node->setDrupalIdentifier($identifier);
