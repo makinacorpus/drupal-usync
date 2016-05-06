@@ -119,7 +119,7 @@ class ViewModeLoader extends AbstractLoader
         $name       = $node->getName();
 
         $instances = field_info_instances($entityType, $bundle);
-        $extra = field_info_extra_fields($entityType, $bundle, 'display');
+        $extra = $this->getExtraFieldsDisplay($entityType, $bundle);
 
         $data = [];
         $order = [];
@@ -177,7 +177,7 @@ class ViewModeLoader extends AbstractLoader
         // modes with both extra fields and real fields
         $instances = field_info_instances($entityType, $bundle);
         $bundleSettings = field_bundle_settings($entityType, $bundle);
-        $extra = field_info_extra_fields($entityType, $bundle, 'display');
+        $extra = $this->getExtraFieldsDisplay($entityType, $bundle);
 
         $weight = 0;
         $displayExtra = [];
@@ -302,5 +302,14 @@ class ViewModeLoader extends AbstractLoader
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof ViewNode;
+    }
+
+    protected function getExtraFieldsDisplay($entityType, $bundle)
+    {
+        // Resets a webform's static cache to ensure to get the "webform" extra
+        // field information. The webform features may have been enabled for the
+        // current content type after the static cache has been built.
+        drupal_static_reset('webform_node_types');
+        return field_info_extra_fields($entityType, $bundle, 'display');
     }
 }
