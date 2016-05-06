@@ -7,7 +7,6 @@
 use USync\AST\Drupal\DrupalNodeInterface;
 use USync\AST\NodeInterface;
 use USync\AST\Path;
-use USync\AST\Visitor;
 use USync\Context;
 use USync\Loading\Loader;
 use USync\Logger\DrushLogger;
@@ -184,58 +183,45 @@ function drush_usync_tree() {
   }
 
   $context  = _drush_usync_list(func_get_args());
-  $found    = [];
+  $list     = (new Loader())->listAll($context, $pathes, $partial);
 
-  $visitor = new Visitor(Visitor::TOP_BOTTOM);
-  $visitor->addProcessor(function (NodeInterface $node, Context $context) use (&$found, $pathes, $partial) {
-    // This visitor has the only purpose to find Drupal revelant entries in the
-    // graph, that would trigger a Drupal update. Any other info isn't revelant
-    // for Drupal users.
-    if (!$node instanceof DrupalNodeInterface) {
-      return;
-    }
-    if (null !== $pathes) { // Proceed to patch match.
-      foreach ($pathes as $pattern) {
-        if (false !== Path::match($node->getPath(), $pattern, $partial)) {
-          $found[] = $node;
-          break;
-        }
-      }
-    } else {
-      $found[] = $node;
-    }
-  });
+  foreach ($list as $data) {
+    /** @var $loader \USync\Loading\LoaderInterface */
+    /** @var $node \USync\AST\NodeInterface */
+    list($node, $loader, $mode) = $data;
 
-  $visitor->execute($context->getGraph(), $context);
-
-  foreach ($found as $node) {
     $output = [];
 
-    if ($node instanceof DrupalNodeInterface) {
-      if (false && $node->exists()) {
-        $output[] = " ~";
-      } else if ($node->shouldDelete()) { // @todo Handle delete
+    switch ($mode) {
+
+      case Loader::LOAD_DELETE:
         $output[] = " -";
-      } else {
-        $output[] = " +";
-      }
-      // @todo Handle modified?
+        break;
+
+      case Loader::LOAD_IGNORE:
+        $output[] = "  ";
+        break;
+
+      case Loader::LOAD_SYNC:
+        if ($loader->exists($node, $context)) {
+          $output[] = " ~";
+        } else {
+          $output[] = " +";
+        }
+        break;
     }
 
     $output[] = $node->getPath();
-    if ($node instanceof DrupalNodeInterface && $node->isDirty()) {
-      $output[] = "DIRTY";
-    }
-    if ($node instanceof DrupalNodeInterface && $node->isMerge()) {
-      $output[] = "MERGE";
+    if ($node instanceof DrupalNodeInterface) {
+      if ($node->isDirty()) {
+        $output[] = "DIRTY";
+      }
+      if ($node->isMerge()) {
+        $output[] = "MERGE";
+      }
     }
     drush_print(implode(" ", $output));
   }
-
-  drush_print(dt("@count/@total displayed nodes", array(
-    '@count' => count($found),
-    '@total' => $context->count('node'),
-  )));
 
   _drush_usync_timer_table($context);
 }
@@ -248,10 +234,6 @@ function _usync_average($array) {
     $total += $value;
   }
   return round($total / $count);
-}
-
-function _usync_format_time($ms) {
-  
 }
 
 function _drush_usync_timer_table(Context $context) {
@@ -339,7 +321,6 @@ function drush_usync_run() {
 
   $pathes  = drush_get_option('match');
   $partial = (bool)drush_get_option('partial');
-  $useProgress = (bool)drush_get_option('progress', false);
 
   if (empty($pathes)) {
     $pathes = null;
@@ -353,7 +334,6 @@ function drush_usync_run() {
     $tx = db_transaction();
 
     $context = _drush_usync_list(func_get_args());
-    $loaders = usync_loader_list();
 
     switch (drush_get_option('break', 'error')) {
 
@@ -377,48 +357,7 @@ function drush_usync_run() {
 
     (new Loader())->loadAll($context, $pathes, $partial);
 
-    /*
-    $visitor = new Visitor(Visitor::TOP_BOTTOM);
-    $drupalProcessor = new DrupalProcessor($loaders);
-
-    if (null !== $pathes) {
-      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $pathes, $partial) {
-        foreach ($pathes as $pattern) {
-          if (false !== Path::match($node->getPath(), $pattern, $partial)) {
-            $drupalProcessor->execute($node, $context);
-          }
-        }
-      });
-    } else {
-      $visitor->addProcessor($drupalProcessor);
-    }
-
-    // Set up progress bar.
-    if ($useProgress) {
-      $progress = drush_create_progress();
-      $total = $context->count('node');
-      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($progress, $total) {
-        static $count = 0;
-        $progress->setProgress($total, ++$count);
-      });
-      $progress->start();
-    }
-
-    $visitor->execute($context->getGraph(), $context);
-    if ($useProgress) {
-      $progress->end();
-    }
-     */
-
     _drush_usync_timer_table($context);
-
-    // This seems, at some point, mandatory.
-    field_cache_clear();
-    // DO NOT EVER call menu_rebuild() manually, if you do this, Drupal will
-    // mix-up the menu links you manually saved using menu_link_save() and
-    // those still in cache at some point, and loose menu items parenting.
-    // This wrong behavior cost me a few hours to debug.
-    variable_set('menu_rebuild_needed', 1);
 
     unset($tx); // Explicit commit.
 
@@ -428,8 +367,7 @@ function drush_usync_run() {
         $tx->rollback();
       } catch (Exception $e2) {}
     }
-    print $e->getTraceAsString();
-    drupal_set_message($e->getMessage(), 'error');
+    throw $e;
   }
 }
 

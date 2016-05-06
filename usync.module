@@ -4,9 +4,9 @@
  * µSync module.
  */
 
-use USync\AST\Visitor;
 use USync\Context;
 use USync\TreeBuilding\GraphBuilder;
+use USync\Loading\Loader;
 
 /**
  * View mode variable nae.
@@ -145,7 +145,7 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
  *   Please ignore this parameter for now.
  */
 function usync_run_sources($sources = null, $patterns = null, $partial = false) {
-throw new \Exception("Please fix me");
+
   if ($sources && !is_array($sources)) {
     $sources = [$sources];
   }
@@ -159,34 +159,7 @@ throw new \Exception("Please fix me");
     $tx = db_transaction();
 
     $context = (new GraphBuilder($sources))->build();
-    $loaders = usync_loader_list();
-
-    $visitor = new Visitor(Visitor::TOP_BOTTOM);
-    /*
-    $drupalProcessor = new DrupalProcessor($loaders);
-
-    if (null !== $patterns) {
-      $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $patterns, $partial) {
-        foreach ($patterns as $pattern) {
-          if (false !== Path::match($node->getPath(), $pattern, $partial)) {
-            $drupalProcessor->execute($node, $context);
-          }
-        }
-      });
-    } else {
-      $visitor->addProcessor($drupalProcessor);
-    }
-     */
-
-    $visitor->execute($context->getGraph(), $context);
-
-    // This seems, at some point, mandatory.
-    field_cache_clear();
-    // DO NOT EVER call menu_rebuild() manually, if you do this, Drupal will
-    // mix-up the menu links you manually saved using menu_link_save() and
-    // those still in cache at some point, and loose menu items parenting.
-    // This wrong behavior cost me a few hours to debug.
-    variable_set('menu_rebuild_needed', 1);
+    (new Loader())->loadAll($context, $patterns, $partial);
 
     unset($tx); // Explicit commit.
 

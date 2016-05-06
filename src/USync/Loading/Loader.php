@@ -14,26 +14,32 @@ use USync\Context;
 
 class Loader
 {
-    /*
+    const LOAD_DELETE = 'delete';
+    const LOAD_IGNORE = 'ignore';
+    const LOAD_SYNC = 'sync';
+
+    /**
+     * Internal recursive visit() function the depth-first search topological
+     * sort algorithm
+     *
      * Topoligical sort, with depth-first search algorithm
      *   https://en.wikipedia.org/wiki/Topological_sorting
      *
-          L ← Empty list that will contain the sorted nodes
-          while there are unmarked nodes do
-              select an unmarked node n
-              visit(n) 
-
-          function visit(node n)
-              if n has a temporary mark then stop (not a DAG)
-              if n is not marked (i.e. has not been visited yet) then
-                  mark n temporarily
-                  for each node m with an edge from n to m do
-                      visit(m)
-                  mark n permanently
-                  unmark n temporarily
-                  add n to head of L
+     *    L ← Empty list that will contain the sorted nodes
+     *    while there are unmarked nodes do
+     *        select an unmarked node n
+     *        visit(n) 
+     *
+     *    function visit(node n)
+     *        if n has a temporary mark then stop (not a DAG)
+     *        if n is not marked (i.e. has not been visited yet) then
+     *            mark n temporarily
+     *            for each node m with an edge from n to m do
+     *                visit(m)
+     *            mark n permanently
+     *            unmark n temporarily
+     *            add n to head of L
      */
-
     private function visitDependencies($node, $map, &$stack, &$sorted, &$missing, Context $context)
     {
         if ($node->done) {
@@ -65,6 +71,15 @@ class Loader
         $sorted[] = $node->path;
     }
 
+    /**
+     * From the given dependency map, sort items using a topological sort
+     *
+     * @param string[][] $dependencyMap
+     * @param Context $context
+     *
+     * @return string[]
+     *   Topologically ordered path list
+     */
     protected function resolveDependencies($dependencyMap, Context $context)
     {
         $timer = $context->time('loader:dependencies');
@@ -99,14 +114,17 @@ class Loader
         return $sorted;
     }
 
-    protected function extractObjects(Context $context)
+    /**
+     * Extract meaningfull objects from the graph, and apply dependency sort
+     *
+     * @param Context $context
+     * @param LoaderInterface[] $loaders
+     */
+    protected function extractObjects(Context $context, array $loaders)
     {
         $dependencyMap = [];
 
         $timer = $context->time('loader:extract');
-
-        // @todo un-hardcode this
-        $loaders = usync_loader_list();
 
         $visitor = new Visitor();
         $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($loaders, &$dependencyMap) {
@@ -128,6 +146,41 @@ class Loader
     }
 
     /**
+     * Determine which action should be done with the given node
+     *
+     * @param NodeInterface $node
+     * @param Context $context
+     * @param LoaderInterface $loader
+     *
+     * @return string
+     *   One of the \USync\Loading\Loader::LOAD_* constant
+     */
+    protected function getLoadMode(NodeInterface $node, Context $context, LoaderInterface $loader)
+    {
+        if ($node instanceof DeleteNode || $node instanceof NullValueNode) {
+            $mode = self::LOAD_DELETE;
+        } else if ($node instanceof DefaultNode) {
+            $mode = self::LOAD_SYNC;
+        } else if ($node instanceof BooleanValueNode) {
+            if ($node->getValue()) {
+                $mode = self::LOAD_SYNC;
+            } else {
+                $mode = self::LOAD_DELETE;
+            }
+        } else if ($node instanceof DrupalNodeInterface && $node->shouldIgnore()) {
+            $mode = self::LOAD_IGNORE;
+        } else {
+            if ($node instanceof DrupalNodeInterface && $node->shouldDelete()) {
+                $mode = self::LOAD_DELETE;
+            } else {
+                $mode = self::LOAD_SYNC;
+            }
+        }
+
+        return $mode;
+    }
+
+    /**
      * Implementation for execute()
      *
      * @param Node $node
@@ -136,43 +189,23 @@ class Loader
      */
     protected function load(NodeInterface $node, Context $context, LoaderInterface $loader)
     {
-        if ($node instanceof DeleteNode || $node instanceof NullValueNode) {
-            $mode = 'delete';
-        } else if ($node instanceof DefaultNode) {
-            $mode = 'sync';
-        } else if ($node instanceof BooleanValueNode) {
-            if ($node->getValue()) {
-                $mode = 'sync';
-            } else {
-                $mode = 'delete';
-            }
-        } else if ($node instanceof DrupalNodeInterface && $node->shouldIgnore()) {
-            $mode = 'ignore';
-        } else {
-            if ($node instanceof DrupalNodeInterface && $node->shouldDelete()) {
-                $mode = 'delete';
-            } else {
-                $mode = 'sync';
-            }
-        }
-
         $dirtyAllowed = $node->hasAttribute('dirty') && $node->getAttribute('dirty');
         $dirtyPrefix = $dirtyAllowed ? '! ' : '';
 
-        switch ($mode) {
+        switch ($this->getLoadMode($node, $context, $loader)) {
 
-            case 'ignore':
+            case self::LOAD_IGNORE:
                 $context->getLogger()->log(sprintf(" ? %s%s", $dirtyPrefix, $node->getPath()));
                 return;
 
-            case 'delete':
+            case self::LOAD_DELETE:
                 $context->getLogger()->log(sprintf(" - %s%s", $dirtyPrefix, $node->getPath()));
                 if ($loader->exists($node, $context)) {
                     $loader->deleteExistingObject($node, $context, $dirtyAllowed);
                 }
                 return;
 
-            case 'sync':
+            case self::LOAD_SYNC:
                 /*
                 $object = $node->getValue();
 
@@ -228,11 +261,58 @@ class Loader
         }
     }
 
+    /**
+     * Alter-ego of loadAll() except it won't process the objects by return
+     * a typologically ordered list instead
+     *
+     * @param Context $context
+     * @param string[] $pathes
+     *   If set, only the matching paths will be loaded
+     * @param string $partial
+     *   If set, path will be treated as partial match (see the Path class)
+     *
+     * @return $ret
+     *   Keys are paths, values are the operation that shall be done
+     */
+    public function listAll(Context $context, $pathes = null, $partial = false)
+    {
+        $ret = [];
+
+        // @todo un-hardcode this
+        $loaders = usync_loader_list();
+
+        $list = $this->extractObjects($context, $loaders);
+
+        // Proceed with sorted dependency map, inject all the things!
+        foreach ($list as $path) {
+            $nodes = (new Path($path))->find($context->getGraph());
+            foreach ($nodes as $node) {
+                foreach ($loaders as $loader) {
+                    if ($loader->canProcess($node)) {
+                        $ret[] = [$node, $loader, $this->getLoadMode($node, $context, $loader)];
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Load objects from the graph
+     *
+     * @param Context $context
+     * @param string[] $pathes
+     *   If set, only the matching paths will be loaded
+     * @param string $partial
+     *   If set, path will be treated as partial match (see the Path class)
+     */
     public function loadAll(Context $context, $pathes = null, $partial = false)
     {
-        $list = $this->extractObjects($context);
-
+        // @todo un-hardcode this
         $loaders = usync_loader_list();
+
+        $list = $this->extractObjects($context, $loaders);
 
         // Proceed with sorted dependency map, inject all the things!
         foreach ($list as $path) {
@@ -248,10 +328,9 @@ class Loader
             }
         }
 
-        /*
-        $visitor = new Visitor(Visitor::TOP_BOTTOM);
-        $drupalProcessor = new DrupalProcessor($loaders);
+        $context->notify('load:finished');
 
+        /*
         if (null !== $pathes) {
           $visitor->addProcessor(function (NodeInterface $node, Context $context) use ($drupalProcessor, $pathes, $partial) {
             foreach ($pathes as $pattern) {
@@ -263,10 +342,9 @@ class Loader
         } else {
           $visitor->addProcessor($drupalProcessor);
         }
-
-        $visitor->execute($context->getGraph(), $context);
          */
 
+        // @todo move this out ot a listener
         // This seems, at some point, mandatory.
         field_cache_clear();
         // DO NOT EVER call menu_rebuild() manually, if you do this, Drupal will
