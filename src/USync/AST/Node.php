@@ -39,7 +39,7 @@ class Node implements NodeInterface
      */
     public function __construct($name, $value = null)
     {
-        $this->name = $name;
+        $this->name = (string)$name;
     }
 
     public function isTerminal()
