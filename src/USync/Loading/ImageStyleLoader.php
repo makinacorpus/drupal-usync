@@ -105,12 +105,21 @@ class ImageStyleLoader extends AbstractLoader
 
             foreach ($node->getChild('effects')->getChildren() as $effectNode) {
                 $name = $effectNode->getName();
+                if (is_numeric($name)) {
+                    if (array_key_exists('type', $effectNode->getValue())) {
+                        $name = $effectNode->getValue()['type'];
+                    } else {
+                        $context->logWarning(sprintf("%s: effect has no type, ignoring", $effectNode->getPath()));
+                        continue;
+                    }
+                }
 
                 if (!in_array($name, $valid)) {
                     $context->logWarning(sprintf("%s: effect does not exists, ignoring", $effectNode->getPath()));
                     continue;
                 }
 
+                $effect = [];
                 // FIXME Handle effects more appropriately
                 if (isset($style['effects']) && count($style['effects']) > $index) {
                     $chunk = array_slice($style['effects'], $index++, 1);
@@ -127,6 +136,9 @@ class ImageStyleLoader extends AbstractLoader
 
                 $effect['name'] = $name;
                 $effect['data'] = $effectNode->getValue();
+                if (isset($effect['data']['type'])) {
+                    unset($effect['data']['type']);
+                }
                 $effect['isid'] = $style['isid'];
                 $effect['weight'] = $weight++;
                 image_effect_save($effect);
