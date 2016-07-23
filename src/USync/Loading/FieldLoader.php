@@ -161,7 +161,7 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
         }
 
         if (array_key_exists('settings', $object) && !is_array($object['settings'])) {
-            // @todo Log
+            $context->log(sprintf("%s: no settings provided, defaulting with empty array", $node->getPath()));
             $object['settings'] = array();
         }
 
