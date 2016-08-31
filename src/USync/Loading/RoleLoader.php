@@ -106,7 +106,7 @@ class RoleLoader extends AbstractLoader
 
         module_invoke_all('user_role_presave', $role);
 
-        if ($role->rid) {
+        if (isset($role->rid)) {
             drupal_write_record('role', $role, 'rid');
             module_invoke_all('user_role_update', $role);
         } else {
