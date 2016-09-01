@@ -170,10 +170,15 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
             $object['cardinality'] = 1;
         }
 
-        // Consistency check, priori to do anything, ensure the database tables
+        // Consistency check, prior to do anything, ensure the database tables
         // are not already there, this happens, sometimes
         if (!$existing) {
             if (empty($object['storage']) || 'field_sql_storage' === $object['storage']['type']) {
+
+                // Prevents warning on unspecified key
+                if (!isset($object['deleted'])) {
+                    $object['deleted'] = false;
+                }
 
                 $tables = [
                     _field_sql_storage_tablename($object),
