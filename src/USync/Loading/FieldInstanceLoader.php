@@ -93,7 +93,13 @@ class FieldInstanceLoader extends AbstractLoader implements VerboseLoaderInterfa
             'bundle'      => $bundle,
             'field_name'  => $fieldName,
         );
-        if (empty($default['label'])) {
+
+        $object = $node->getValue();
+        if (!is_array($object)) {
+            $object = array();
+        }
+
+        if (empty($object['label'])) {
             // Field data 'label' key is not part of the Drupal signature
             // but this module will inject it anyway and should be persisted
             // along the field 'data' key in database
@@ -104,11 +110,6 @@ class FieldInstanceLoader extends AbstractLoader implements VerboseLoaderInterfa
             } else {
                 $default['label'] = $field['label'];
             }
-        }
-
-        $object = $node->getValue();
-        if (!is_array($object)) {
-            $object = array();
         }
 
         // This is a forced default from this module: never display new
