@@ -334,20 +334,20 @@ function drush_usync_run() {
     switch (drush_get_option('break', 'error')) {
 
       case 'warning':
-        $context->breakOn = Context::BREAK_WARNING;
+        $context->setBreakOn(Context::BREAK_WARNING);
         break;
 
       case 'dataloss':
-        $context->breakOn = Context::BREAK_DATALOSS;
+        $context->setBreakOn(Context::BREAK_DATALOSS);
         break;
 
       case 'force':
-        $context->breakOn = Context::BREAK_FORCE;
+        $context->setBreakOn(Context::BREAK_FORCE);
         break;
 
       default:
       case 'error':
-        $context->breakOn = Context::BREAK_ERROR;
+        $context->setBreakOn(Context::BREAK_ERROR);
         break;
     }
 

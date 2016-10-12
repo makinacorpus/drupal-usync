@@ -90,6 +90,19 @@ class Context
     }
 
     /**
+     * Set break level
+     *
+     * @param integer $level
+     */
+    public function setBreakOn($level)
+    {
+        $this->breakOn = (int) $level;
+        if ($this->logger) {
+            $this->logger->breakOn($this->breakOn);
+        }
+    }
+
+    /**
      * Set graph
      *
      * @param NodeInterface $graph
