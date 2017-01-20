@@ -9,6 +9,8 @@ use USync\TreeBuilding\ArrayTreeBuilder;
 
 class ViewModeLoader extends AbstractLoader
 {
+    const USYNC_ALL_KEYWORD = '__all__';
+
     public function getType()
     {
         return 'view_mode';
@@ -186,7 +188,17 @@ class ViewModeLoader extends AbstractLoader
         // Then deal with fields and such
         foreach ($node->getValue() as $propertyName => $formatter) {
 
-            if (isset($instances[$propertyName])) {
+            if (self::USYNC_ALL_KEYWORD === $propertyName) {
+
+                // We activate all instances with their default formatter
+                foreach (array_keys($instances) as $field_name) {
+                    $displayField[$field_name] = drupal_array_merge_deep(
+                      $this->getFieldDefault($node, $entityType, $bundle, $field_name, $context),
+                      ['weight' => $weight++]
+                    );
+                }
+
+            } elseif (isset($instances[$propertyName])) {
 
                 $display = array();
 
@@ -195,6 +207,10 @@ class ViewModeLoader extends AbstractLoader
                     if (true === $formatter || 'default' === $formatter) {
                         $formatter = array();
                     } else if (false === $formatter || null === $formatter || 'delete' === $formatter) {
+                        // We may have used '__all__' property , so better check it
+                        if (isset($displayField[$propertyName])) {
+                            unset($displayField[$propertyName]);
+                        }
                         continue;
                     } else if (!is_string($formatter)) {
                         $context->logWarning(sprintf("%s: %s invalid value for formatter", $node->getPath(), $propertyName));

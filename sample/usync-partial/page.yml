@@ -1,0 +1,22 @@
+# Page node type
+depends: ['usync_sample:usync-partial/common.yml']
+
+entity:
+  node:
+
+    page:
+      name: Page simple
+      field:
+        teaser: true
+        body: true
+
+
+view:
+  node:
+
+    page:
+      default:
+        teaser: true
+
+      full:
+        __all__: true

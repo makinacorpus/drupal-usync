@@ -14,6 +14,8 @@ usync[] = usync/
 ; This would be synchronized using:
 ;   drush usr --source=usync_sample:usync-partial/blog.yml
 usync[] = usync-partial/blog.yml
+usync[] = usync-partial/page.yml
+usync[] = usync-partial/common.yml
 
 ; The module as a whole can be synchronized at once using:
 ;   drush usr --source=usync_sample:

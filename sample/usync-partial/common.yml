@@ -1,0 +1,30 @@
+# Common elements to all content types
+macro:
+
+  teaserfield:
+    label: Texte d'accroche
+    type: text_long
+    instance:
+      required: false
+      settings:
+        text_processing: 0
+    widget:
+      type: text_textarea
+      settings:
+        rows: 3
+
+  textfield:
+    label: Corps
+    type: text_long
+    instance:
+      required: true
+      settings:
+        text_processing: 1
+    widget:
+      type: text_textarea
+      settings:
+        rows: 30
+
+field:
+  teaser: '@teaserfield'
+  body: '@textfield'
