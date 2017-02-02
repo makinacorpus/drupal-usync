@@ -125,6 +125,6 @@ class VocabularyEntityLoader extends AbstractEntityLoader
 
     public function canProcess(NodeInterface $node)
     {
-        return $node instanceof EntityNode && 'vocabulary' === $node->getEntityType();
+        return $node instanceof EntityNode && 'taxonomy_term' === $node->getEntityType();
     }
 }
