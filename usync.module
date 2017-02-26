@@ -89,7 +89,11 @@ function usync_loader_list() {
     $loaders[] = new \USync\Loading\MenuLoader();
   }
   elseif(module_exists('umenu')) {
-    $loaders[] = new \USync\Loading\UMenuLoader(umenu_get_storage());
+    if (class_exists('MakinaCorpus\\Umenu\\DrupalMenuStorage')) {
+      $loaders[] = new \USync\Loading\UMenu1Loader(umenu_get_storage());
+    } else {
+      $loaders[] = new \USync\Loading\UMenu2Loader(umenu_get_storage());
+    }
   }
 
   if ($moduleLoaders = module_invoke_all(__FUNCTION__)) {

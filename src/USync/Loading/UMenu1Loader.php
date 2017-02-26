@@ -2,13 +2,15 @@
 
 namespace USync\Loading;
 
-
 use MakinaCorpus\Umenu\DrupalMenuStorage;
 use USync\AST\Drupal\MenuNode;
 use USync\AST\NodeInterface;
 use USync\Context;
 
-class UMenuLoader extends AbstractLoader
+/**
+ * UMenu v1.x loader.
+ */
+class UMenu1Loader extends AbstractLoader
 {
     /** @var DrupalMenuStorage */
     private $storage;
