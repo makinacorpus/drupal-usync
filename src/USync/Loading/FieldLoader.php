@@ -37,15 +37,18 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
      * Get all instances of the given field
      *
      * @param string $name
+     * @return array
      */
     protected function getInstances($name)
     {
         $ret = array();
 
-        foreach (field_info_instances() as $bundles) {
-            foreach ($bundles as $instance) {
-                if ($instance['field_name'] === $name) {
-                    $ret[] = $instance;
+        foreach (field_info_instances() as $entity_types) {
+            foreach ($entity_types as $bundles) {
+                foreach ($bundles as $instance) {
+                    if ($instance['field_name'] === $name) {
+                        $ret[] = $instance;
+                    }
                 }
             }
         }
@@ -221,17 +224,18 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
                 $instances = $this->getInstances($name);
 
                 if (empty($instances)) {
-                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $node->getPath(), $type, $eType));
+                    $context->logWarning(sprintf("%s: type change (%s -> %s): no instances", $node->getPath(), $eType, $type));
                 } else {
-                  // @todo Ensure there is data if there is instances
-                  if (false) {
-                      $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $node->getPath(), $type, $eType));
-                  } else {
-                        // @todo Safe should ensure schema is the same
-                        if (false) {
-                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $node->getPath(), $type, $eType));
+                    if (!field_has_data($name)) {
+                        $context->logWarning(sprintf("%s: type change (%s -> %s): existing instances are empty", $node->getPath(), $eType, $type));
+                    } else {
+                        // @todo we need a more thorough inspection here
+                        $schema = module_invoke($typeInfo['module'], 'field_schema', $object);
+                        if (empty(array_diff_key($existing['columns'], $schema['columns']))) {
+                            $context->logWarning(sprintf("%s: type change (%s -> %s): field schema is the same", $node->getPath(), $eType, $type));
+                            $doDelete = false;
                         } else {
-                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected", $node->getPath(), $type, $eType));
+                            $context->logDataloss(sprintf("%s: type change (%s -> %s): data loss detected", $node->getPath(), $eType, $type));
                         }
                     }
                 }
@@ -242,6 +246,7 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
                 field_create_field($object);
                 // @todo Recreate instances
             } else {
+                // @todo recreate field manually or else we get FieldException
                 field_update_field($object);
             }
         } else {
