@@ -165,7 +165,7 @@ class RoleLoader extends AbstractLoader
                     continue;
                 }
                 if (!isset($valid[$name])) {
-                    $context->getLogger()->logWarning(sprintf("%s: permission does not exists, ignoring", $permission->getPath()));
+                    $context->getLogger()->logWarning(sprintf("%s: permission '%s' does not exists, ignoring", $permission->getPath(), $name));
                     continue;
                 }
 
