@@ -115,6 +115,20 @@ class RoleLoader extends AbstractLoader
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function processInheritance(NodeInterface $node, NodeInterface $parent, Context $context, $dirtyAllowed = false)
+    {
+        // For roles, we are only going to inherit from permissions and merge
+        // them into our own object.
+        if (!$parent->hasChild('permission')) {
+            return $context->getLogger()->log(sprintf("%s: parent %s has no permissions to inherit from", $node->getPath(), $parent->getPath()));
+        }
+
+        $node->getChild('permission')->mergeWith($parent->getChild('permission'));
+    }
+
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         $role = $this->loadExistingRole($node, $context);
