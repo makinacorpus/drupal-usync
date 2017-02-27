@@ -121,6 +121,16 @@ interface LoaderInterface
     public function rename(NodeInterface $node, $newpath, Context $context, $force = false, $dirtyAllowed = false);
 
     /**
+     * Process inheritance
+     *
+     * @param NodeInterface $node
+     * @param NodeInterface $parent
+     * @param \USync\Context $context
+     * @param boolean $dirtyAllowed
+     */
+    public function processInheritance(NodeInterface $node, NodeInterface $parent, Context $context, $dirtyAllowed = false);
+
+    /**
      * Synchronize incoming object
      *
      * @param \USync\AST\NodeInterface $node

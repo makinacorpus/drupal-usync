@@ -129,4 +129,12 @@ abstract class AbstractLoader implements LoaderInterface
         $this->deleteExistingObject($node, $context);
          */
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function processInheritance(NodeInterface $node, NodeInterface $parent, Context $context, $dirtyAllowed = false)
+    {
+        $context->getLogger()->logWarning(sprintf("%s: %s: inheritance is not implemented, skipped", $node->getPath(), get_class($this)));
+    }
 }

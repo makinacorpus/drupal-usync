@@ -28,7 +28,7 @@ class Loader
      *    L ← Empty list that will contain the sorted nodes
      *    while there are unmarked nodes do
      *        select an unmarked node n
-     *        visit(n) 
+     *        visit(n)
      *
      *    function visit(node n)
      *        if n has a temporary mark then stop (not a DAG)
@@ -253,6 +253,21 @@ class Loader
                 }
 
                 // unset($object['keep'], $object['drop']);
+
+                // Business nheritance processing
+                if ($node->hasAttribute('inherits')) {
+
+                    $fromPath = $node->getAttribute('inherits');
+                    $parents  = $node->getRoot()->find($fromPath);
+
+                    if (!$parents) {
+                        $context->getLogger()->logCritical(sprintf("%s: cannot inherit from non-existing: %s", $node->getPath(), $fromPath));
+                    }
+
+                    foreach ($parents as $parent) {
+                        $loader->processInheritance($node, $parent, $context);
+                    }
+                }
 
                 $context->notify('load:sync:pre', $node);
                 $identifier = $loader->synchronize($node, $context, $dirtyAllowed);

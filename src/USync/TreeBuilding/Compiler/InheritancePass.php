@@ -1,12 +1,12 @@
 <?php
 
-namespace USync\TreeBuilding\Compiler; 
+namespace USync\TreeBuilding\Compiler;
 
 use USync\AST\Node;
 use USync\Context;
 
 /**
- * Validates and process inherit information on nodes. 
+ * Validates and process inherit information on nodes.
  */
 class InheritancePass implements PassInterface
 {
