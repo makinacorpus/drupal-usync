@@ -6,6 +6,8 @@ use USync\AST\Drupal\RoleNode;
 use USync\AST\NodeInterface;
 use USync\Context;
 use USync\AST\ValueNode;
+use Drupal\node\Node;
+use USync\AST\StringNode;
 
 class RoleLoader extends AbstractLoader
 {
@@ -126,7 +128,12 @@ class RoleLoader extends AbstractLoader
             return $context->getLogger()->log(sprintf("%s: parent %s has no permissions to inherit from", $node->getPath(), $parent->getPath()));
         }
 
-        $node->getChild('permission')->mergeWith($parent->getChild('permission'));
+        $permissionList = $node->getChild('permission');
+
+        foreach ($parent->getChild('permission')->getChildren() as $permission) {
+            $name = $permission->getValue();
+            $permissionList->addChild((new StringNode($name, $name)));
+        }
     }
 
     public function synchronize(NodeInterface $node, Context $context, $dirtyAllowed = false)
