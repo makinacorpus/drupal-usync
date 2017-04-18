@@ -5,8 +5,6 @@
  */
 
 use USync\AST\Drupal\DrupalNodeInterface;
-use USync\AST\NodeInterface;
-use USync\AST\Path;
 use USync\Context;
 use USync\Loading\Loader;
 use USync\Logger\DrushLogger;
@@ -60,12 +58,6 @@ function usync_drush_command() {
       'options'     => array(),
       // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
     ),
-    'usync-list' => array(
-      'description' => "List sources modules",
-      'aliases'     => array("usl"),
-      'options'     => array(),
-      // 'bootstrap'   => DRUSH_BOOTSTRAP_FULL,
-    ),
     'usync-extract' => array(
       'description' => "Export a file from the given components",
       'aliases'     => array("usx"),
@@ -98,6 +90,7 @@ function usync_drush_command() {
 /**
  * Get graph using Drush common options.
  *
+ * @param $sources
  * @return \USync\Context
  */
 function _drush_usync_list($sources) {
@@ -222,6 +215,12 @@ function drush_usync_tree() {
   _drush_usync_timer_table($context);
 }
 
+/**
+ * Utility function to get the average of an array of numbers
+ *
+ * @param $array
+ * @return float
+ */
 function _usync_average($array) {
   $count = 0;
   $total = 0;
@@ -232,6 +231,12 @@ function _usync_average($array) {
   return round($total / $count);
 }
 
+/**
+ * Prints a well-formatted usync timer table
+ *
+ * @param \USync\Context $context
+ * @return object|\ReflectionClass
+ */
 function _drush_usync_timer_table(Context $context) {
   $rows = [];
   $rows[] = [dt("timer"), dt("cnt"), dt("min"), dt("max"), dt("avg"), dt("sum")];
@@ -270,6 +275,13 @@ function _drush_usync_timer_table(Context $context) {
   return drush_print_table($rows, true);
 }
 
+/**
+ * Utility function to extract a path
+ *
+ * @param $path
+ * @param $type
+ * @return bool|string
+ */
 function _drush_usync_extract_path($path, $type) {
 
   if (!empty($type)) {
@@ -575,7 +587,6 @@ function drush_usync_field_default_value() {
 
   $instances = field_info_instances();
   $potential_defaults = [];
-  $shouldUpdate = [];
 
   $countAutodetectedInstances = 0;
   $countSkippedInstances = 0;

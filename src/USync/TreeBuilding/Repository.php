@@ -30,7 +30,7 @@ class Repository
     private $repositoryFile;
 
     /**
-     * @var Resource[]
+     * @var \USync\TreeBuilding\Resource[]
      */
     private $resources = [];
 
@@ -73,6 +73,9 @@ class Repository
         $this->repositoryFile = $repositoryFile;
     }
 
+    /**
+     * @return \string[][]
+     */
     public function getModuleList()
     {
         if (null === $this->moduleList) {
@@ -132,7 +135,7 @@ class Repository
     }
 
     /**
-     * @return Resource[]
+     * @return \USync\TreeBuilding\Resource[]
      */
     public function getResourcesAll()
     {
@@ -181,7 +184,7 @@ class Repository
      * @param string $source
      *   The resource cannot be a module name, it must point to a single file
      *
-     * @return Resource
+     * @return \USync\TreeBuilding\Resource
      */
     public function getResource($source)
     {
