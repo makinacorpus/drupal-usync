@@ -77,6 +77,7 @@ function usync_loader_list() {
     new \USync\Loading\ImageStyleLoader(),
     new \USync\Loading\FieldLoader($instanceLoader),
     new \USync\Loading\MenuItemLoader(),
+    new \USync\Loading\GenericEntityLoader(),
     new \USync\Loading\NodeEntityLoader(),
     $instanceLoader,
     new \USync\Loading\RoleLoader(),

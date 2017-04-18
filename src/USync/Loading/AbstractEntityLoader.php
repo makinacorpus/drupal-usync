@@ -18,7 +18,7 @@ abstract class AbstractEntityLoader extends AbstractLoader
      *
      * @param string $entityType
      */
-    public function __construct($entityType)
+    public function __construct($entityType = null)
     {
         $this->entityType = $entityType;
     }
