@@ -4,13 +4,14 @@ namespace USync\Loading;
 
 use USync\AST\Drupal\RoleNode;
 use USync\AST\NodeInterface;
-use USync\Context;
-use USync\AST\ValueNode;
-use Drupal\node\Node;
 use USync\AST\StringNode;
+use USync\Context;
 
 class RoleLoader extends AbstractLoader
 {
+    /**
+     * {@inheritDoc}
+     */
     public function getType()
     {
         return 'role';
@@ -45,7 +46,7 @@ class RoleLoader extends AbstractLoader
      * @param NodeInterface $node
      * @param Context $context
      *
-     * @return stdClass
+     * @return \stdClass
      */
     protected function loadExistingRole(NodeInterface $node, Context $context)
     {
@@ -62,6 +63,9 @@ class RoleLoader extends AbstractLoader
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function exists(NodeInterface $node, Context $context)
     {
         if ($this->loadExistingRole($node, $context)) {
@@ -71,6 +75,9 @@ class RoleLoader extends AbstractLoader
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getExistingObject(NodeInterface $node, Context $context)
     {
         $existing = (array)$this->loadExistingRole($node, $context);
@@ -79,12 +86,21 @@ class RoleLoader extends AbstractLoader
             $context->getLogger()->logCritical(sprintf("%s: does not exists", $node->getPath()));
         }
 
-        // @todo
         // Handle permissions as well.
+        $role = array_intersect_key($existing, ['name' => true]);
 
-        return array_intersect_key($existing, ['name']);
+        // Handle permissions as well.
+        $query = db_select('role_permission', 'rp')->fields('rp', ['permission']);
+        $query->innerJoin('role', 'r', 'r.rid = rp.rid');
+        $query->condition('r.machine_name', $this->getRoleName($node, $context));
+        $role['permission'] = $query->execute()->fetchCol();
+
+        return $role;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
         if ($role = $this->loadExistingRole($node, $context)) {
@@ -92,12 +108,22 @@ class RoleLoader extends AbstractLoader
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function updateNodeFromExisting(NodeInterface $node, Context $context)
     {
+        parent::updateNodeFromExisting($node, $context);
+
         // @todo
         // Handle permissions as well.
     }
 
+    /**
+     * Write a role to the db, effectively dispatching drupal hooks
+     *
+     * @param $role
+     */
     private function writeRole($role)
     {
         $role->name = trim($role->name);
@@ -125,7 +151,7 @@ class RoleLoader extends AbstractLoader
         // For roles, we are only going to inherit from permissions and merge
         // them into our own object.
         if (!$parent->hasChild('permission')) {
-            return $context->getLogger()->log(sprintf("%s: parent %s has no permissions to inherit from", $node->getPath(), $parent->getPath()));
+            $context->getLogger()->logWarning(sprintf("%s: parent %s has no permissions to inherit from", $node->getPath(), $parent->getPath()));
         }
 
         $permissionList = $node->getChild('permission');
@@ -197,6 +223,9 @@ class RoleLoader extends AbstractLoader
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof RoleNode;
