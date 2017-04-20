@@ -168,6 +168,7 @@ class RoleLoader extends AbstractLoader
 
         $object = [
             'name' => $this->getRoleName($node, $context),
+            'machine_name' => $node->getName(), // This is used by sf_dic
         ];
 
         if ($role) {
