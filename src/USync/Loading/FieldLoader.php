@@ -37,6 +37,7 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
      * Get all instances of the given field
      *
      * @param string $name
+     * @return array
      */
     protected function getInstances($name)
     {
@@ -44,7 +45,7 @@ class FieldLoader extends AbstractLoader implements VerboseLoaderInterface
 
         foreach (field_info_instances() as $bundles) {
             foreach ($bundles as $instance) {
-                if ($instance['field_name'] === $name) {
+                if (isset($instance['field_name']) && $instance['field_name'] === $name) {
                     $ret[] = $instance;
                 }
             }
