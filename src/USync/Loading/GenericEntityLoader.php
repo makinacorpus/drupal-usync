@@ -1,8 +1,6 @@
 <?php
 
-
 namespace USync\Loading;
-
 
 use USync\AST\NodeInterface;
 use USync\Context;
@@ -42,12 +40,14 @@ class GenericEntityLoader extends AbstractEntityLoader
         /* @var $node \USync\AST\Drupal\EntityNode */
         $order = [];
 
+        /** @var \USync\AST\Drupal\EntityNode $node */
+        $entityType = $node->getEntityType();
         $bundle = $node->getBundle();
 
         // First, fields
         $field = [];
-        foreach (field_info_instances($this->entityType, $bundle) as $instance) {
-            $field[] = 'entity.'.$this->entityType.'.'.$bundle.'.field.'.$instance['field_name'];
+        foreach (field_info_instances($entityType, $bundle) as $instance) {
+            $field[] = 'entity.'.$entityType.'.'.$bundle.'.field.'.$instance['field_name'];
             $order[] = isset($instance['weight']) ? $instance['weight'] : 0;
         }
 
@@ -64,13 +64,15 @@ class GenericEntityLoader extends AbstractEntityLoader
         /* @var $node \USync\AST\Drupal\EntityNode */
         $ret = $this->getDependencies($node, $context);
 
+        /** @var \USync\AST\Drupal\EntityNode $node */
+        $entityType = $node->getEntityType();
         $bundle = $node->getBundle();
 
         // Let's go for view modes too
         $view = [];
-        $view[] = 'view.'.$this->entityType.'.'.$bundle.'.default';
-        foreach (entity_get_info($this->entityType)['view modes'] as $viewMode => $settings) {
-            $view[] = 'view.'.$this->entityType.'.'.$bundle.'.'.$viewMode;
+        $view[] = 'view.'.$entityType.'.'.$bundle.'.default';
+        foreach (entity_get_info($entityType)['view modes'] as $viewMode => $settings) {
+            $view[] = 'view.'.$entityType.'.'.$bundle.'.'.$viewMode;
         }
 
         return array_merge($ret, $view);
@@ -84,13 +86,10 @@ class GenericEntityLoader extends AbstractEntityLoader
         $canProcess = parent::canProcess($node);
 
         if ($canProcess) {
-            $blacklist = [
-                'node',
-                'vocabulary',
-            ];
-            $entityType = $node->getAttribute('type');
-            if (!in_array($entityType, $blacklist)) {
-                $this->entityType = $entityType;
+            /** @var \USync\AST\Drupal\EntityNode $node */
+            if (in_array($node->getEntityType(), ['node', 'vocabulary'])) {
+                // 'node' and 'vocabulary' types have specific implementations
+                return false;
             }
         }
 
