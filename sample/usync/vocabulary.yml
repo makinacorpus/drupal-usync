@@ -1,0 +1,5 @@
+entity:
+  taxonomy_term:
+    faq_category:
+      name: Catégories de la FAQ
+      description: Catégories déstinées à l'organisation des questions fréquemment posées.
