@@ -23,18 +23,31 @@ abstract class AbstractEntityLoader extends AbstractLoader
         $this->entityType = $entityType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getType()
     {
         return 'entity_' . $this->entityType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function exists(NodeInterface $node, Context $context)
     {
-        $info = entity_get_info($this->entityType);
+        if ($node instanceof EntityNode) {
+            $info = entity_get_info($node->getEntityType());
 
-        return !empty($info) && !empty($info['bundles'][$node->getName()]);
+            return !empty($info) && !empty($info['bundles'][$node->getName()]);
+        }
+
+        return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function canProcess(NodeInterface $node)
     {
         return $node instanceof EntityNode;
