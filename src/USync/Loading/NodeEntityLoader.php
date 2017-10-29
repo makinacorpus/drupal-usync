@@ -33,7 +33,7 @@ class NodeEntityLoader extends AbstractEntityLoader implements VerboseLoaderInte
     {
         /* @var $node EntityNode */
         $bundle = $node->getName();
-        $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle));
+        $exists = (int)db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => $bundle))->fetchField();
 
         if ($exists) {
             $context->logDataloss(sprintf("%s: node type has nodes", $node->getPath()));
