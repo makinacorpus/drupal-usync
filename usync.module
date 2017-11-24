@@ -133,6 +133,40 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
 }
 
 /**
+ * Alter-ego of usync_run_sources() allowing data loss
+ */
+function usync_run_with_data_loss_allowed($sources = null, $patterns = null, $partial = false) {
+
+  if ($sources && !is_array($sources)) {
+    $sources = [$sources];
+  }
+  if ($patterns && !is_array($patterns)) {
+    $patterns = [$patterns];
+  }
+
+  $tx = null;
+
+  try {
+    $tx = db_transaction();
+
+    $context = (new GraphBuilder($sources))->build();
+    $context->setBreakOn(Context::BREAK_FORCE);
+
+    (new Loader())->loadAll($context, $patterns, $partial);
+
+    unset($tx); // Explicit commit.
+
+  } catch (\Exception $e) {
+    if ($tx) {
+      try {
+        $tx->rollback();
+      } catch (Exception $e2) {}
+    }
+    throw $e;
+  }
+}
+
+/**
  * Run sync.
  *
  * You may call this during your updates, it does work.
@@ -148,6 +182,8 @@ function usync_run($module, $sources = null, $patterns = null, $partial = false)
  *   Can be null, a single pattern or an array of patterns to match
  * @param string $partial
  *   Please ignore this parameter for now.
+ * @param bool $force
+ *   Allow data breaking changes (use it wisely)
  */
 function usync_run_sources($sources = null, $patterns = null, $partial = false) {
 
