@@ -141,7 +141,7 @@ class FieldInstanceLoader extends AbstractLoader implements VerboseLoaderInterfa
         }
 
         // Dynamically determine weight using position relative to parent node
-        if ($node->hasParent()) {
+        if ($node->hasParent() && !isset($object['widget']['weight'])) {
             $instance['widget']['weight'] = $node->getParent()->getChildPosition($node);
         }
 
