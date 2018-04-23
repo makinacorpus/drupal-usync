@@ -81,7 +81,7 @@ class ImageStyleLoader extends AbstractLoader
      */
     public function deleteExistingObject(NodeInterface $node, Context $context, $dirtyAllowed = false)
     {
-        return image_style_delete($node->getName());
+        return image_style_delete($this->getExistingObject($node, $context));
     }
 
     /**
